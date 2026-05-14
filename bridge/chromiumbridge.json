@@ -1,0 +1,9 @@
+{
+  "name": "chromiumbridge",
+  "description": "ChromeBridge native messaging host \u2014 seamless Firefox-to-Chromium handoff",
+  "path": "m:\\.systemfile\\ChromiumBridge\\bridge\\chromiumbridge.bat",
+  "type": "stdio",
+  "allowed_extensions": [
+    "chromiumbridge@faisalbhuiyan.com"
+  ]
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=360">
+  <title>ChromeBridge</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container" id="popup-container">
+
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="header-left">
+        <span class="header-icon">🌉</span>
+        <span class="header-title">ChromeBridge</span>
+      </div>
+      <div class="header-right">
+        <span class="status-dot" id="status-dot" title="Bridge status"></span>
+        <span class="status-label" id="status-label">Checking…</span>
+      </div>
+    </header>
+
+    <!-- Bridge Not Ready State -->
+    <div class="state-offline" id="state-offline" hidden>
+      <div class="offline-icon">⚠️</div>
+      <p class="offline-title">Bridge not connected</p>
+      <p class="offline-desc">Install and run the ChromeBridge native host to get started.</p>
+      <button class="btn btn-primary" id="btn-setup">Open Setup Guide</button>
+    </div>
+
+    <!-- Main Content (shown when bridge is ready) -->
+    <div class="state-ready" id="state-ready" hidden>
+
+      <!-- Domain Display -->
+      <div class="domain-section">
+        <span class="domain-label">Current site</span>
+        <span class="domain-value" id="domain-value">—</span>
+      </div>
+
+      <!-- Browser Picker -->
+      <div class="field-group">
+        <label class="field-label" for="browser-select">Browser</label>
+        <div class="select-wrapper">
+          <select class="select-input" id="browser-select">
+            <option value="">No browsers detected</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mode Toggle -->
+      <div class="field-group">
+        <label class="field-label">Window mode</label>
+        <div class="segmented-control" id="mode-control">
+          <button class="seg-btn" data-value="app">App</button>
+          <button class="seg-btn active" data-value="popup">Popup</button>
+          <button class="seg-btn" data-value="normal">Normal</button>
+        </div>
+      </div>
+
+      <!-- Profile Toggle -->
+      <div class="field-group">
+        <label class="field-label">Profile</label>
+        <div class="segmented-control" id="profile-control">
+          <button class="seg-btn active" data-value="ephemeral">Ephemeral</button>
+          <button class="seg-btn" data-value="persistent">Persistent</button>
+        </div>
+      </div>
+
+      <!-- Primary Action -->
+      <button class="btn btn-launch" id="btn-launch">
+        <span class="btn-launch-icon">🚀</span>
+        Open in Chromium
+      </button>
+
+      <!-- Always Checkbox -->
+      <label class="checkbox-row" id="always-row">
+        <input type="checkbox" id="chk-always">
+        <span class="checkbox-label">Always open this domain here</span>
+      </label>
+
+      <!-- Handoff Status -->
+      <div class="handoff-status" id="handoff-status" hidden>
+        <div class="spinner"></div>
+        <span>Launching…</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="popup-footer">
+      <a href="#" class="footer-link" id="link-options">⚙ Options</a>
+      <a href="#" class="footer-link" id="link-help">❓ Help</a>
+    </footer>
+
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

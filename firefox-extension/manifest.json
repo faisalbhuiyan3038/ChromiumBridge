@@ -1,0 +1,71 @@
+{
+  "manifest_version": 2,
+  "name": "ChromeBridge",
+  "version": "1.0.0",
+  "description": "Seamlessly hand off Firefox tabs to Chromium-based browsers with cookie portability, smart detection, and domain rules.",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "chromiumbridge@faisalbhuiyan.com",
+      "strict_min_version": "91.0"
+    }
+  },
+
+  "permissions": [
+    "nativeMessaging",
+    "cookies",
+    "history",
+    "activeTab",
+    "tabs",
+    "storage",
+    "contextMenus",
+    "<all_urls>"
+  ],
+
+  "background": {
+    "scripts": [
+      "background/native.js",
+      "background/rules.js",
+      "background/tabs.js",
+      "background/signals.js",
+      "background/main.js"
+    ]
+  },
+
+  "browser_action": {
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    },
+    "default_title": "ChromeBridge",
+    "default_popup": "popup/popup.html"
+  },
+
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": true
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/detector.js", "content/banner.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "MacCtrl+Shift+O"
+      },
+      "description": "Open ChromeBridge popup"
+    }
+  },
+
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  }
+}

@@ -16,7 +16,7 @@ The earlier plan stated: *"cookies.py → writes Cookies SQLite into temp profil
 
 One important permission note: `browser.cookies.getAll()` only returns cookies scoped to the extension's own origin by default. You must declare `<all_urls>` in the Firefox extension's `permissions` array to read cookies across all domains. This is a broad permission and should be disclosed clearly in the extension's store listing.
 
-The `cookies.py` module in the bridge is therefore not a SQLite writer — it becomes a relay: it receives the JSON array from Firefox and holds it until the Chromium companion is ready to consume it, either via a localhost IPC socket or a temp file the companion reads on first load.
+The `cookies.py` module in the bridge is therefore not a SQLite writer — it becomes a relay: it receives the JSON array from Firefox and stages it for the Chromium companion. The companion is **never installed from a store** — it is always loaded as an unpacked extension via `--load-extension`. Before each launch, the bridge creates a session directory (`bridge/sessions/{uuid}/companion_ext/`), copies the companion extension source into it, and writes `cookies.json` into that copy. The `--load-extension` flag points to this session-local copy, while `--user-data-dir` points to the actual profile (ephemeral or persistent). The companion reads `cookies.json` from its own directory via `chrome.runtime.getURL('cookies.json')` on both `onInstalled` (first launch) and `onStartup` (subsequent launches with persistent profiles). After Chromium exits, the session directory is always cleaned up regardless of profile mode — this keeps persistent profiles free of companion artifacts and supports concurrent sessions with isolated cookie payloads.
 
 ### 2. Profile Mode — Persistent vs. Ephemeral
 
@@ -96,6 +96,8 @@ Every planned feature, categorized and prioritized.
 | F17 | Custom CLI arguments in Advanced options | Bridge + Firefox ext |
 
 ### P2 — Smart Detection (Makes it proactive)
+
+All signal detectors are individually toggleable by the user from the Options → Signals tab. Each detector checks `browser.storage.sync` for its enabled state before monitoring. Detectors are disabled by default and must be explicitly enabled.
 
 | ID | Feature | Component |
 |---|---|---|
@@ -186,20 +188,23 @@ Firefox extension
   → array of plain decrypted CookieObjects
   → sent as JSON via native message to bridge.py
 
-bridge.py (cookies.py)
-  → writes cookie JSON to a temp file: /tmp/fx-bridge-{uuid}/cookies.json
-  → passes file path to Chromium via --load-extension + custom flag, or
-    exposes a localhost socket the companion reads from
+bridge.py (cookies.py + launcher.py)
+  → copies chromium-extension/ into session profile dir as companion_ext/
+  → writes cookies.json into companion_ext/
+  → launches Chromium with --load-extension={profile_dir}/companion_ext/
 
-Chromium companion (receiver.js) on first tab load
-  → reads cookie payload (from temp file or socket)
+Chromium companion (receiver.js) on install/startup
+  → reads cookies.json from own directory via chrome.runtime.getURL('cookies.json')
   → calls chrome.cookies.set() for each cookie
     (Chromium handles its own encryption internally)
-  → deletes the temp file after injection
-  → sends "cookies_injected" message back through the session
+  → reloads the active tab so cookies take effect
+  → sends "cookies_injected" status to console
 ```
 
-This approach avoids all SQLite manipulation and works across all OS/encryption combinations.
+The companion is **never installed from a browser store**. It is always loaded as an unpacked
+extension via `--load-extension`, with a per-session copy that includes the cookie payload.
+This avoids all SQLite manipulation, works across all OS/encryption combinations, and keeps
+the original companion source files immutable.
 
 ---
 
@@ -413,7 +418,7 @@ Get the pipeline working end to end with no features, just plumbing.
 
 - [ ] `rules.js` — domain rule engine, storage in `browser.storage.sync`
 - [ ] Domain rules options table (CRUD)
-- [ ] `content/detector.js` — DRM, HLS, buffering signals
+- [ ] `content/detector.js` — DRM, HLS, buffering signals (each individually toggleable via settings)
 - [ ] `content/banner.js` — suggestion UI, dismiss/always/open actions
 - [ ] Toolbar badge states
 - [ ] "Did it work?" prompt on Chromium close → one-click rule creation
@@ -454,7 +459,7 @@ Get the pipeline working end to end with no features, just plumbing.
 ### Phase 6 — Release Prep (Week 10)
 
 - [ ] Package Firefox extension (`.xpi`)
-- [ ] Package Chromium extension (unpacked with install instructions, Chrome Web Store submission)
+- [ ] Package Chromium companion extension (bundled with bridge, loaded unpacked via --load-extension — not store-distributed)
 - [ ] `install.py` tested on Linux, Windows, macOS
 - [ ] README with full setup guide
 - [ ] Submit to Firefox Add-ons (AMO)
@@ -471,7 +476,7 @@ Get the pipeline working end to end with no features, just plumbing.
 3. Wizard: "Download the ChromeBridge bridge" → one click downloads platform binary.
 4. Wizard runs `install.py` (or guides through manual steps on Windows).
 5. Wizard detects installed Chromium browsers, user picks default, sets profile preference.
-6. Wizard: "Install the Chromium companion?" → link to Chrome Web Store.
+6. Companion extension is bundled with the bridge — no separate install needed. Wizard confirms its presence.
 7. Done — toolbar icon turns green.
 
 ---
@@ -514,8 +519,8 @@ Get the pipeline working end to end with no features, just plumbing.
 
 | Layer | Technology | Why |
 |---|---|---|
-| Firefox extension | JS, MV2, WebExtensions API | Best native messaging support, MV2 stability in Firefox |
-| Chromium extension | JS, MV3 | Chrome Web Store requires MV3 |
+| Firefox extension | JS, MV2, WebExtensions API | Best native messaging support, MV2 stability in Firefox. Extension ID: `chromiumbridge@faisalbhuiyan.com` |
+| Chromium extension | JS, MV3 (unpacked, bundled with bridge) | Loaded via `--load-extension`, per-session copy with cookie payload |
 | Bridge | Python 3.8+ | Cross-platform, good subprocess control, easy JSON handling |
 | Distribution (non-devs) | PyInstaller | Single binary, no Python install required |
 | Config | JSON | Human-editable, no dependencies |
