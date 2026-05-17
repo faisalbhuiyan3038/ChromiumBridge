@@ -19,6 +19,7 @@ DEFAULT_CONFIG = {
     "session": {
         "profile_mode": "ephemeral",
         "persistent_profile_path": "",
+        "persistent_profiles": {},
         "port_cookies": True,
         "port_localstorage": True,
         "cleanup_on_close": True,

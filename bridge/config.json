@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "default_browser": "chrome",
+  "browser_overrides": {},
+  "window_modes": {
+    "default": "popup",
+    "app_domains": [
+      "netflix.com",
+      "youtube.com",
+      "figma.com"
+    ]
+  },
+  "session": {
+    "profile_mode": "ephemeral",
+    "persistent_profile_path": "",
+    "persistent_profiles": {},
+    "port_cookies": true,
+    "port_localstorage": true,
+    "cleanup_on_close": true,
+    "incognito_passthrough": true,
+    "discard_firefox_tab": false,
+    "record_history": true
+  },
+  "extension_presets": {
+    "streaming": [],
+    "work": [],
+    "minimal": []
+  },
+  "extra_flags": [
+    "--disable-infobars",
+    "--disable-sync"
+  ],
+  "domain_rules": {},
+  "signals": {
+    "drm_detection": false,
+    "hls_detection": false,
+    "buffering_threshold": 3,
+    "perf_longtask_threshold": 5
+  },
+  "ui": {
+    "show_banner": true,
+    "show_badge": true,
+    "badge_color": "#00A76F",
+    "feedback_prompt": true
+  }
+}

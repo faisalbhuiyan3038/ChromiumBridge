@@ -16,6 +16,7 @@ from cookies import stage_cookies
 from launcher import prepare_companion, build_flags, launch, wait_and_cleanup
 from config import load_config, save_config, get_config_value, set_config_value
 from logger import log_session, log_launch_time
+from cookie_server import start_cookie_server, stop_cookie_server
 
 
 def read_message():
@@ -81,9 +82,12 @@ def handle_launch(message):
 
         # Create profile
         if profile_mode == "persistent":
-            persistent_path = config.get("session", {}).get(
-                "persistent_profile_path", ""
-            )
+            # Check per-browser path first, then global fallback
+            session_cfg = config.get("session", {})
+            per_browser = session_cfg.get("persistent_profiles", {})
+            persistent_path = per_browser.get(browser_id, "")
+            if not persistent_path:
+                persistent_path = session_cfg.get("persistent_profile_path", "")
             profile_dir = resolve_persistent(persistent_path)
         else:
             profile_dir = create_ephemeral()
@@ -91,14 +95,24 @@ def handle_launch(message):
         # Prepare companion extension (session-local copy)
         companion_dir = prepare_companion(profile_dir)
 
-        # Stage cookies into companion copy
+        # Stage cookies into companion copy (for --load-extension path)
         if cookies:
             stage_cookies(cookies, companion_dir)
 
-        # Build flags
+        # Start localhost cookie server with target URL
+        # Chrome opens about:blank first; the companion injects cookies then
+        # navigates to the target URL. This prevents the server from creating
+        # a new session on the initial (cookieless) page load.
+        cookie_server = None
+        if cookies:
+            cookie_server = start_cookie_server(cookies, target_url=url)
+
+        # Build flags — use about:blank as the initial URL when we have cookies
+        # (companion will navigate to the real URL after injection)
+        launch_url = "about:blank" if cookies else url
         flags = build_flags(
             config=config,
-            url=url,
+            url=launch_url,
             mode=mode,
             profile_dir=profile_dir,
             companion_dir=companion_dir,
@@ -112,6 +126,9 @@ def handle_launch(message):
         # Wait for Chromium to close
         process.wait()
         duration_ms = int((time.time() - start_time) * 1000)
+
+        # Stop cookie server
+        stop_cookie_server(cookie_server)
 
         # Log session
         log_session(domain, browser_id, duration_ms, "closed")

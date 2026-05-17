@@ -1,10 +1,13 @@
 /**
  * popup.js — ChromeBridge popup logic.
  * Handles UI state, bridge communication, and user interactions.
+ * Persists the last-used browser, mode, and profile to browser.storage.local.
  */
 
 (function () {
   "use strict";
+
+  const POPUP_STATE_KEY = "popupLastState";
 
   // ── DOM References ─────────────────────────────────
   const statusDot = document.getElementById("status-dot");
@@ -55,7 +58,7 @@
     stateReady.hidden = true;
   }
 
-  function showReady() {
+  async function showReady() {
     statusDot.className = "status-dot online";
     statusLabel.textContent = "Ready";
     stateOffline.hidden = true;
@@ -72,7 +75,10 @@
     // Populate browser dropdown
     populateBrowsers();
 
-    // Apply existing rule if any
+    // Restore last saved state FIRST (before rule overrides)
+    await restoreLastState();
+
+    // Then apply existing rule if any (overrides saved state for that domain)
     if (_popupData.currentRule) {
       applyRule(_popupData.currentRule);
     }
@@ -103,7 +109,7 @@
       browserSelect.appendChild(opt);
     });
 
-    // Select default
+    // Select default from settings
     const defaultBrowser = _popupData.settings?.default_browser || "chrome";
     const hasDefault = _popupData.browsers.some((b) => b.id === defaultBrowser);
     if (hasDefault) {
@@ -140,14 +146,62 @@
     }
   }
 
+  // ── State Persistence ──────────────────────────────
+  async function saveLastState() {
+    const state = {
+      browser: browserSelect.value,
+      mode: _selectedMode,
+      profile: _selectedProfile,
+    };
+    try {
+      await browser.storage.local.set({ [POPUP_STATE_KEY]: state });
+    } catch {
+      // Storage not available
+    }
+  }
+
+  async function restoreLastState() {
+    try {
+      const result = await browser.storage.local.get(POPUP_STATE_KEY);
+      const state = result[POPUP_STATE_KEY];
+      if (!state) return;
+
+      // Restore browser selection
+      if (state.browser && _popupData.browsers?.some((b) => b.id === state.browser)) {
+        browserSelect.value = state.browser;
+      }
+
+      // Restore mode
+      if (state.mode) {
+        setSegmentedValue(modeControl, state.mode);
+        _selectedMode = state.mode;
+      }
+
+      // Restore profile
+      if (state.profile) {
+        setSegmentedValue(profileControl, state.profile);
+        _selectedProfile = state.profile;
+      }
+    } catch {
+      // Storage not available
+    }
+  }
+
   // ── Event Listeners ────────────────────────────────
   function setupEventListeners() {
-    // Segmented controls
+    // Segmented controls (save state on change)
     setupSegmentedControl(modeControl, (val) => {
       _selectedMode = val;
+      saveLastState();
     });
     setupSegmentedControl(profileControl, (val) => {
       _selectedProfile = val;
+      saveLastState();
+    });
+
+    // Browser selector (save state on change)
+    browserSelect.addEventListener("change", () => {
+      saveLastState();
     });
 
     // Launch button
@@ -198,6 +252,9 @@
     _isHandingOff = true;
     btnLaunch.disabled = true;
     handoffStatus.hidden = false;
+
+    // Persist current selections
+    await saveLastState();
 
     // Save "always" rule if checked
     if (chkAlways.checked && _popupData.tabInfo.domain) {

@@ -70,22 +70,36 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
 
     # Window mode
     if mode == "app":
+        # PWA-style: no URL bar, no extensions menu, minimal chrome
         flags.append(f"--app={url}")
     elif mode == "popup":
+        # Normal browser window but sized smaller — HAS URL bar + extensions
         flags.extend([
-            f"--app={url}",
-            "--window-size=1280,800",
+            "--new-window",
+            f"--window-size=1280,800",
         ])
-    # "normal" mode: URL is passed as a positional argument
+    # "normal" mode: full browser window, URL passed at end
 
-    # Load companion extension
-    flags.append(f"--load-extension={companion_dir}")
+    # Load companion extension (--enable-extensions is required on fresh profiles)
+    flags.extend([
+        "--enable-extensions",
+        f"--load-extension={companion_dir}",
+    ])
 
     # Suppress first-run UI
     flags.extend([
         "--no-first-run",
         "--no-default-browser-check",
         "--disable-default-apps",
+    ])
+
+    # Force Chrome to fully exit when all windows close.
+    # Without this, Chrome keeps background processes alive and reuses them
+    # on the next launch — which means onStartup/onInstalled never fire and
+    # the service worker keeps stale state.
+    flags.extend([
+        "--disable-background-mode",
+        "--disable-backgrounding-occluded-windows",
     ])
 
     # Incognito
@@ -99,8 +113,8 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
     elif isinstance(extra, str):
         flags.extend(extra.split())
 
-    # For normal mode, URL goes at the end
-    if mode == "normal":
+    # For popup and normal mode, URL goes at the end as a positional argument
+    if mode in ("popup", "normal"):
         flags.append(url)
 
     return flags

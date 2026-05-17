@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChromeBridge — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-root">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-icon">🌉</span>
+        <span class="sidebar-title">ChromeBridge</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="browsers">
+          <span class="nav-icon">🌐</span> Browsers
+        </button>
+        <button class="nav-item" data-tab="rules">
+          <span class="nav-icon">📋</span> Domain Rules
+        </button>
+        <button class="nav-item" data-tab="session">
+          <span class="nav-icon">🔧</span> Session
+        </button>
+        <button class="nav-item" data-tab="signals">
+          <span class="nav-icon">📡</span> Signals
+        </button>
+        <button class="nav-item" data-tab="advanced">
+          <span class="nav-icon">⚙️</span> Advanced
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="version-label">v1.0.0</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+
+      <!-- Tab: Browsers -->
+      <section class="tab-panel active" id="tab-browsers">
+        <div class="panel-header">
+          <h1 class="panel-title">Browsers</h1>
+          <p class="panel-desc">Detected Chromium-based browsers on your system.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Detected Browsers</h2>
+            <button class="btn btn-outline btn-sm" id="btn-rescan">↻ Re-scan</button>
+          </div>
+          <div class="browser-list" id="browser-list">
+            <p class="empty-state">Click "Re-scan" to detect browsers.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Domain Rules -->
+      <section class="tab-panel" id="tab-rules">
+        <div class="panel-header">
+          <h1 class="panel-title">Domain Rules</h1>
+          <p class="panel-desc">Configure per-domain handoff behavior.</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Rules</h2>
+            <div class="card-actions">
+              <button class="btn btn-outline btn-sm" id="btn-import-rules">Import</button>
+              <button class="btn btn-outline btn-sm" id="btn-export-rules">Export</button>
+              <button class="btn btn-primary btn-sm" id="btn-add-rule">+ Add Rule</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="rules-table">
+              <thead>
+                <tr>
+                  <th>Domain</th>
+                  <th>Action</th>
+                  <th>Browser</th>
+                  <th>Mode</th>
+                  <th>Profile</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rules-tbody">
+                <tr class="empty-row">
+                  <td colspan="6" class="empty-cell">No domain rules configured.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Add Rule Modal -->
+        <div class="modal-overlay" id="rule-modal" hidden>
+          <div class="modal">
+            <div class="modal-header">
+              <h3 class="modal-title">Add Domain Rule</h3>
+              <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label class="form-label">Domain</label>
+                <input type="text" class="form-input" id="rule-domain" placeholder="e.g. netflix.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Action</label>
+                <select class="form-select" id="rule-action">
+                  <option value="always">Always open in Chromium</option>
+                  <option value="ask">Ask every time</option>
+                  <option value="never">Never open in Chromium</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Browser</label>
+                  <select class="form-select" id="rule-browser">
+                    <option value="">Default</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Mode</label>
+                  <select class="form-select" id="rule-mode">
+                    <option value="">Default</option>
+                    <option value="app">App</option>
+                    <option value="popup">Popup</option>
+                    <option value="normal">Normal</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Profile</label>
+                <select class="form-select" id="rule-profile">
+                  <option value="">Default</option>
+                  <option value="ephemeral">Ephemeral</option>
+                  <option value="persistent">Persistent</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-outline" id="modal-cancel">Cancel</button>
+              <button class="btn btn-primary" id="modal-save">Save Rule</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Session -->
+      <section class="tab-panel" id="tab-session">
+        <div class="panel-header">
+          <h1 class="panel-title">Session</h1>
+          <p class="panel-desc">Configure session behavior and data portability.</p>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Default Profile</h2>
+          <div class="form-group">
+            <label class="form-label">Default profile mode</label>
+            <select class="form-select" id="session-profile-mode">
+              <option value="ephemeral">Ephemeral (temp, wiped on close)</option>
+              <option value="persistent">Persistent (kept across sessions)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card" id="persistent-profiles-card">
+          <h2 class="card-title">Persistent Profile Paths</h2>
+          <p class="card-desc">Specify a custom user data directory for each browser when using persistent mode. Leave blank to use the default path.</p>
+          <div id="persistent-profiles-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data Portability</h2>
+          <div class="toggle-group">
+            <label class="toggle-row">
+              <span class="toggle-label">Port cookies to Chromium</span>
+              <input type="checkbox" class="toggle-input" id="session-cookies" checked>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Port localStorage to Chromium</span>
+              <input type="checkbox" class="toggle-input" id="session-localstorage" checked>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Record handoffs in Firefox history</span>
+              <input type="checkbox" class="toggle-input" id="session-history" checked>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Behavior</h2>
+          <div class="toggle-group">
+            <label class="toggle-row">
+              <span class="toggle-label">Clean up temp profile on close</span>
+              <input type="checkbox" class="toggle-input" id="session-cleanup" checked>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Pass incognito state to Chromium</span>
+              <input type="checkbox" class="toggle-input" id="session-incognito" checked>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Discard Firefox tab after handoff</span>
+              <input type="checkbox" class="toggle-input" id="session-discard">
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Show feedback prompt on session close</span>
+              <input type="checkbox" class="toggle-input" id="session-feedback" checked>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-save-session">Save Session Settings</button>
+      </section>
+
+      <!-- Tab: Signals -->
+      <section class="tab-panel" id="tab-signals">
+        <div class="panel-header">
+          <h1 class="panel-title">Signal Detection</h1>
+          <p class="panel-desc">Enable smart detection to get notified when a site may work better in Chromium. All detectors are disabled by default.</p>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Detectors</h2>
+          <div class="toggle-group">
+            <label class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-label">DRM / Widevine detection</span>
+                <span class="toggle-desc">Detect when a site requests DRM media keys</span>
+              </div>
+              <input type="checkbox" class="toggle-input" id="signal-drm">
+            </label>
+            <label class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-label">HLS / m3u8 stream detection</span>
+                <span class="toggle-desc">Detect HLS streaming requests</span>
+              </div>
+              <input type="checkbox" class="toggle-input" id="signal-hls">
+            </label>
+            <label class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-label">Video buffering detection</span>
+                <span class="toggle-desc">Detect repeated video stalling events</span>
+              </div>
+              <input type="checkbox" class="toggle-input" id="signal-buffering">
+            </label>
+            <label class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-label">SecurityError detection</span>
+                <span class="toggle-desc">Detect cross-origin security errors</span>
+              </div>
+              <input type="checkbox" class="toggle-input" id="signal-security">
+            </label>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Thresholds</h2>
+          <div class="form-group">
+            <label class="form-label">Buffering event threshold</label>
+            <div class="range-row">
+              <input type="range" class="form-range" id="signal-buffering-threshold" min="1" max="10" value="3">
+              <span class="range-value" id="buffering-threshold-value">3</span>
+            </div>
+            <p class="form-hint">Number of buffering events before suggesting Chromium.</p>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-save-signals">Save Signal Settings</button>
+      </section>
+
+      <!-- Tab: Advanced -->
+      <section class="tab-panel" id="tab-advanced">
+        <div class="panel-header">
+          <h1 class="panel-title">Advanced</h1>
+          <p class="panel-desc">Bridge configuration, CLI flags, and diagnostics.</p>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Bridge Health</h2>
+          <div class="health-status" id="health-status">
+            <span class="health-dot" id="health-dot"></span>
+            <span id="health-text">Checking…</span>
+          </div>
+          <button class="btn btn-outline btn-sm" id="btn-check-health" style="margin-top:12px">Check Now</button>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Extra CLI Flags</h2>
+          <p class="card-desc">Additional command-line arguments appended to every Chromium launch. One per line.</p>
+          <textarea class="form-textarea" id="advanced-flags" rows="5" placeholder="--disable-infobars&#10;--disable-sync"></textarea>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Raw Config</h2>
+          <p class="card-desc">Edit the bridge's config.json directly. Be careful — invalid JSON will break the bridge.</p>
+          <textarea class="form-textarea monospace" id="advanced-config" rows="12" placeholder="Loading config…"></textarea>
+          <button class="btn btn-outline btn-sm" id="btn-save-config" style="margin-top:12px">Save Config</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

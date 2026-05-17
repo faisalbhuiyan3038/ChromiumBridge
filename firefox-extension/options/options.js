@@ -26,12 +26,16 @@
   // ── Browsers Tab ───────────────────────────────────
   const browserList = document.getElementById("browser-list");
   const btnRescan = document.getElementById("btn-rescan");
+  let _detectedBrowsers = [];
+  let _defaultBrowser = "chrome";
 
   btnRescan.addEventListener("click", async () => {
     btnRescan.disabled = true;
     btnRescan.textContent = "Scanning…";
     const result = await msg({ action: "detectBrowsers" });
-    renderBrowsers(result.browsers || []);
+    _detectedBrowsers = result.browsers || [];
+    renderBrowsers(_detectedBrowsers);
+    renderPersistentProfiles(_detectedBrowsers);
     btnRescan.disabled = false;
     btnRescan.textContent = "↻ Re-scan";
   });
@@ -43,8 +47,8 @@
     }
     browserList.innerHTML = browsers
       .map(
-        (b, i) => `
-      <div class="browser-item${i === 0 ? " default" : ""}">
+        (b) => `
+      <div class="browser-item${b.id === _defaultBrowser ? " default" : ""}">
         <div class="browser-info">
           <div>
             <span class="browser-name">${esc(b.name)}</span>
@@ -53,12 +57,26 @@
           </div>
         </div>
         <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary)">
-          <input type="radio" name="default-browser" value="${esc(b.id)}" ${i === 0 ? "checked" : ""}>
+          <input type="radio" name="default-browser" value="${esc(b.id)}" ${b.id === _defaultBrowser ? "checked" : ""}>
           Default
         </label>
       </div>`
       )
       .join("");
+
+    // Save on change
+    browserList.querySelectorAll('input[name="default-browser"]').forEach((radio) => {
+      radio.addEventListener("change", async () => {
+        _defaultBrowser = radio.value;
+        browserList.querySelectorAll(".browser-item").forEach((el) => el.classList.remove("default"));
+        radio.closest(".browser-item").classList.add("default");
+        const result = await browser.storage.sync.get("sessionSettings");
+        const s = result.sessionSettings || {};
+        s.default_browser = _defaultBrowser;
+        await browser.storage.sync.set({ sessionSettings: s });
+        showToast(`Default browser: ${radio.value}`);
+      });
+    });
   }
 
   // ── Domain Rules Tab ───────────────────────────────
@@ -150,17 +168,54 @@
 
   // ── Session Tab ────────────────────────────────────
   const sessionProfileMode = document.getElementById("session-profile-mode");
-  const persistentPathGroup = document.getElementById("persistent-path-group");
+  const persistentProfilesCard = document.getElementById("persistent-profiles-card");
+  const persistentProfilesList = document.getElementById("persistent-profiles-list");
+
+  // Track per-browser profile paths
+  let _persistentProfiles = {};
 
   sessionProfileMode.addEventListener("change", () => {
-    persistentPathGroup.hidden = sessionProfileMode.value !== "persistent";
+    // Show/hide per-browser profile paths based on mode
+    // Always show — user might use persistent for specific domain rules
   });
 
+  function renderPersistentProfiles(browsers) {
+    if (!browsers || !browsers.length) {
+      persistentProfilesList.innerHTML = '<p class="empty-state">Detect browsers first to configure per-browser profiles.</p>';
+      return;
+    }
+
+    persistentProfilesList.innerHTML = browsers
+      .map(
+        (b) => `
+      <div class="form-group">
+        <label class="form-label">${esc(b.name)} profile path</label>
+        <input type="text" class="form-input persistent-profile-input"
+               data-browser="${esc(b.id)}"
+               value="${esc(_persistentProfiles[b.id] || "")}"
+               placeholder="Leave blank for default (~/.fx-bridge/profiles/${esc(b.id)})">
+      </div>`
+      )
+      .join("");
+  }
+
   document.getElementById("btn-save-session").addEventListener("click", async () => {
+    // Collect per-browser profile paths
+    const profileInputs = document.querySelectorAll(".persistent-profile-input");
+    const persistentProfiles = {};
+    profileInputs.forEach((input) => {
+      const browserId = input.dataset.browser;
+      const path = input.value.trim();
+      if (path) {
+        persistentProfiles[browserId] = path;
+      }
+    });
+
     const settings = {
-      default_browser: "chrome",
+      default_browser: _defaultBrowser,
       profile_mode: sessionProfileMode.value,
-      persistent_profile_path: document.getElementById("session-persistent-path").value,
+      persistent_profile_path: "",
+      persistent_profiles: persistentProfiles,
       port_cookies: document.getElementById("session-cookies").checked,
       port_localstorage: document.getElementById("session-localstorage").checked,
       record_history: document.getElementById("session-history").checked,
@@ -176,9 +231,9 @@
   async function loadSessionSettings() {
     const data = await msg({ action: "getPopupData" });
     const s = data?.settings || {};
+    _defaultBrowser = s.default_browser || "chrome";
     sessionProfileMode.value = s.profile_mode || "ephemeral";
-    persistentPathGroup.hidden = sessionProfileMode.value !== "persistent";
-    document.getElementById("session-persistent-path").value = s.persistent_profile_path || "";
+    _persistentProfiles = s.persistent_profiles || {};
     document.getElementById("session-cookies").checked = s.port_cookies !== false;
     document.getElementById("session-localstorage").checked = s.port_localstorage !== false;
     document.getElementById("session-history").checked = s.record_history !== false;
@@ -186,6 +241,13 @@
     document.getElementById("session-incognito").checked = s.incognito_passthrough !== false;
     document.getElementById("session-discard").checked = !!s.discard_firefox_tab;
     document.getElementById("session-feedback").checked = s.feedback_prompt !== false;
+
+    // Load browsers to populate profile paths
+    if (data?.browsers?.length) {
+      _detectedBrowsers = data.browsers;
+      renderBrowsers(data.browsers);
+      renderPersistentProfiles(data.browsers);
+    }
   }
 
   // ── Signals Tab ────────────────────────────────────

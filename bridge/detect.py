@@ -1,6 +1,11 @@
 """
 detect.py — OS-agnostic Chromium browser detection and path resolution.
 Resolution priority: user override → known paths → Windows registry → shutil.which()
+
+IMPORTANT: Version detection is NOT done during detect_all() because running
+`browser.exe --version` on Windows opens visible browser windows. Version is
+read from the exe's file metadata on Windows, or via --version on Linux/macOS
+only when explicitly requested.
 """
 
 import os
@@ -132,8 +137,64 @@ def _check_registry(browser_id):
     return None
 
 
-def _get_version(path):
-    """Get browser version by running --version."""
+def _get_version_windows(path):
+    """
+    Get browser version on Windows by reading the exe's file version metadata.
+    Does NOT launch the browser.
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        # Get size of version info
+        size = ctypes.windll.version.GetFileVersionInfoSizeW(path, None)
+        if not size:
+            return None
+
+        # Read version info block
+        buf = ctypes.create_string_buffer(size)
+        if not ctypes.windll.version.GetFileVersionInfoW(path, 0, size, buf):
+            return None
+
+        # Query the fixed file info
+        p_val = ctypes.c_void_p()
+        val_len = wintypes.UINT()
+        if not ctypes.windll.version.VerQueryValueW(
+            buf, "\\", ctypes.byref(p_val), ctypes.byref(val_len)
+        ):
+            return None
+
+        # VS_FIXEDFILEINFO structure — extract version fields
+        class VS_FIXEDFILEINFO(ctypes.Structure):
+            _fields_ = [
+                ("dwSignature", wintypes.DWORD),
+                ("dwStrucVersion", wintypes.DWORD),
+                ("dwFileVersionMS", wintypes.DWORD),
+                ("dwFileVersionLS", wintypes.DWORD),
+                ("dwProductVersionMS", wintypes.DWORD),
+                ("dwProductVersionLS", wintypes.DWORD),
+                # rest not needed
+            ]
+
+        info = ctypes.cast(
+            p_val, ctypes.POINTER(VS_FIXEDFILEINFO)
+        ).contents
+
+        major = (info.dwProductVersionMS >> 16) & 0xFFFF
+        minor = info.dwProductVersionMS & 0xFFFF
+        build = (info.dwProductVersionLS >> 16) & 0xFFFF
+        patch = info.dwProductVersionLS & 0xFFFF
+
+        return f"{major}.{minor}.{build}.{patch}"
+    except Exception:
+        return None
+
+
+def _get_version_unix(path):
+    """
+    Get browser version on Linux/macOS by running --version.
+    Safe because Chromium browsers on these platforms just print and exit.
+    """
     try:
         result = subprocess.run(
             [path, "--version"],
@@ -142,58 +203,81 @@ def _get_version(path):
             timeout=5,
         )
         output = result.stdout.strip()
-        # Extract version number pattern
         match = re.search(r"(\d+\.\d+\.\d+(?:\.\d+)?)", output)
-        return match.group(1) if match else output
+        return match.group(1) if match else None
     except Exception:
         return None
+
+
+def get_version(path):
+    """Get browser version without opening a visible browser window."""
+    system = platform.system()
+    if system == "Windows":
+        return _get_version_windows(path)
+    else:
+        return _get_version_unix(path)
+
+
+def _find_single_browser(browser_id, config=None):
+    """
+    Find a single browser by ID. Returns { id, name, path } or None.
+    Does NOT run version detection. Does NOT scan other browsers.
+    """
+    config = config or {}
+    system = platform.system()
+    bdef = BROWSER_DEFS.get(browser_id)
+    if not bdef:
+        return None
+
+    overrides = config.get("browser_overrides", {})
+    path = None
+
+    # 1. User override
+    override = overrides.get(browser_id)
+    if override and os.path.isfile(override):
+        path = override
+
+    # 2. Known paths
+    if not path:
+        for candidate in _get_known_paths(browser_id, system):
+            if os.path.isfile(candidate):
+                path = candidate
+                break
+
+    # 3. Windows registry
+    if not path and system == "Windows":
+        path = _check_registry(browser_id)
+
+    # 4. shutil.which fallback
+    if not path:
+        for exe in bdef.get("executables", {}).get(system, []):
+            which_path = shutil.which(exe)
+            if which_path:
+                path = which_path
+                break
+
+    if path:
+        return {"id": browser_id, "name": bdef["name"], "path": path}
+
+    return None
 
 
 def detect_all(config=None):
     """
     Detect all installed Chromium-based browsers.
     Returns: [{ id, name, path, version }]
+
+    Version is detected safely (file metadata on Windows, --version on Unix).
+    NO browser windows are opened during detection.
     """
     config = config or {}
-    system = platform.system()
     found = []
-    overrides = config.get("browser_overrides", {})
 
-    for browser_id, bdef in BROWSER_DEFS.items():
-        path = None
-
-        # 1. User override
-        override = overrides.get(browser_id)
-        if override and os.path.isfile(override):
-            path = override
-
-        # 2. Known paths
-        if not path:
-            for candidate in _get_known_paths(browser_id, system):
-                if os.path.isfile(candidate):
-                    path = candidate
-                    break
-
-        # 3. Windows registry
-        if not path and system == "Windows":
-            path = _check_registry(browser_id)
-
-        # 4. shutil.which fallback
-        if not path:
-            for exe in bdef.get("executables", {}).get(system, []):
-                which_path = shutil.which(exe)
-                if which_path:
-                    path = which_path
-                    break
-
-        if path:
-            version = _get_version(path)
-            found.append({
-                "id": browser_id,
-                "name": bdef["name"],
-                "path": path,
-                "version": version,
-            })
+    for browser_id in BROWSER_DEFS:
+        result = _find_single_browser(browser_id, config)
+        if result:
+            result["version"] = get_version(result["path"])
+            found.append(result)
 
     return found
 
@@ -201,18 +285,7 @@ def detect_all(config=None):
 def resolve_browser(browser_id, config=None):
     """
     Resolve a single browser by ID. Returns absolute path or None.
+    Only checks the requested browser — does NOT scan all browsers.
     """
-    config = config or {}
-
-    # Check override first
-    override = config.get("browser_overrides", {}).get(browser_id)
-    if override and os.path.isfile(override):
-        return override
-
-    # Search normally
-    browsers = detect_all(config)
-    for b in browsers:
-        if b["id"] == browser_id:
-            return b["path"]
-
-    return None
+    result = _find_single_browser(browser_id, config)
+    return result["path"] if result else None

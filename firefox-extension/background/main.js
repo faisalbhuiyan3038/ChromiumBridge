@@ -236,6 +236,20 @@
 
         case "saveSessionSettings": {
           await browser.storage.sync.set({ sessionSettings: message.settings });
+          // Also push persistent_profiles to bridge config so Python can resolve them
+          if (message.settings.persistent_profiles) {
+            try {
+              await NativeHost.setConfig({
+                session: {
+                  persistent_profiles: message.settings.persistent_profiles,
+                  persistent_profile_path: message.settings.persistent_profile_path || "",
+                  profile_mode: message.settings.profile_mode || "ephemeral",
+                },
+              });
+            } catch (err) {
+              console.warn("[ChromeBridge] Could not sync persistent profiles to bridge:", err);
+            }
+          }
           return { success: true };
         }
 
