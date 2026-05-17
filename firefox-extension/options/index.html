@@ -55,6 +55,23 @@
             <p class="empty-state">Click "Re-scan" to detect browsers.</p>
           </div>
         </div>
+        <div class="card" style="margin-top:20px">
+          <div class="card-header">
+            <h2 class="card-title">Custom Browser Path</h2>
+            <button class="btn btn-outline btn-sm" id="btn-save-custom-browser">Save</button>
+          </div>
+          <p class="card-desc">If your browser isn't detected, provide its absolute path. Use an ID like "custom1".</p>
+          <div class="form-row">
+            <div class="form-group" style="flex:1">
+              <label class="form-label">Browser ID</label>
+              <input type="text" class="form-input" id="custom-browser-id" placeholder="e.g. custom_chrome">
+            </div>
+            <div class="form-group" style="flex:3">
+              <label class="form-label">Absolute Path</label>
+              <input type="text" class="form-input" id="custom-browser-path" placeholder="e.g. C:\Portable\chrome.exe">
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Tab: Domain Rules -->

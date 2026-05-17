@@ -126,6 +126,11 @@
     shadow.getElementById("cb-close").addEventListener("click", () => {
       removeBanner(host, shadow);
     });
+
+    // Auto-dismiss after 8 seconds
+    setTimeout(() => {
+      if (host.isConnected) removeBanner(host, shadow);
+    }, 8000);
   }
 
   // ── Remove Banner ──────────────────────────────────

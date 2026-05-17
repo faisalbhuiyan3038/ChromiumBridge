@@ -226,30 +226,32 @@ def _find_single_browser(browser_id, config=None):
     config = config or {}
     system = platform.system()
     bdef = BROWSER_DEFS.get(browser_id)
-    if not bdef:
-        return None
-
+    
     overrides = config.get("browser_overrides", {})
     path = None
 
-    # 1. User override
+    # 1. User override (supports completely custom IDs)
     override = overrides.get(browser_id)
     if override and os.path.isfile(override):
         path = override
 
+    # If it's a completely custom ID (no bdef) and no valid override path, fail
+    if not bdef and not path:
+        return None
+
     # 2. Known paths
-    if not path:
+    if not path and bdef:
         for candidate in _get_known_paths(browser_id, system):
             if os.path.isfile(candidate):
                 path = candidate
                 break
 
     # 3. Windows registry
-    if not path and system == "Windows":
+    if not path and bdef and system == "Windows":
         path = _check_registry(browser_id)
 
     # 4. shutil.which fallback
-    if not path:
+    if not path and bdef:
         for exe in bdef.get("executables", {}).get(system, []):
             which_path = shutil.which(exe)
             if which_path:
@@ -257,23 +259,25 @@ def _find_single_browser(browser_id, config=None):
                 break
 
     if path:
-        return {"id": browser_id, "name": bdef["name"], "path": path}
+        name = bdef["name"] if bdef else browser_id.capitalize()
+        return {"id": browser_id, "name": name, "path": path}
 
     return None
 
 
 def detect_all(config=None):
     """
-    Detect all installed Chromium-based browsers.
+    Detect all installed Chromium-based browsers, plus any custom overrides.
     Returns: [{ id, name, path, version }]
-
-    Version is detected safely (file metadata on Windows, --version on Unix).
-    NO browser windows are opened during detection.
     """
     config = config or {}
     found = []
+    
+    # Get all known IDs plus any custom IDs from overrides
+    overrides = config.get("browser_overrides", {})
+    all_ids = set(BROWSER_DEFS.keys()).union(overrides.keys())
 
-    for browser_id in BROWSER_DEFS:
+    for browser_id in sorted(all_ids):
         result = _find_single_browser(browser_id, config)
         if result:
             result["version"] = get_version(result["path"])

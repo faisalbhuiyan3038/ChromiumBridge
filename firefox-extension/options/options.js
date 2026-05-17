@@ -79,6 +79,32 @@
     });
   }
 
+  // Custom Browser
+  document.getElementById("btn-save-custom-browser").addEventListener("click", async () => {
+    const idInput = document.getElementById("custom-browser-id");
+    const pathInput = document.getElementById("custom-browser-path");
+    const id = idInput.value.trim().toLowerCase();
+    const path = pathInput.value.trim();
+
+    if (!id || !path) {
+      alert("Both Browser ID and Absolute Path are required.");
+      return;
+    }
+
+    // Get current config to merge
+    const config = await msg({ action: "getBridgeConfig" });
+    const overrides = config.browser_overrides || {};
+    overrides[id] = path;
+
+    await msg({ action: "setBridgeConfig", config: { browser_overrides: overrides } });
+    showToast(`Custom browser '${id}' saved.`);
+    
+    // Clear inputs and rescan
+    idInput.value = "";
+    pathInput.value = "";
+    btnRescan.click();
+  });
+
   // ── Domain Rules Tab ───────────────────────────────
   const rulesTbody = document.getElementById("rules-tbody");
   const ruleModal = document.getElementById("rule-modal");

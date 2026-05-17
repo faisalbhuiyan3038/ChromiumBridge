@@ -99,20 +99,17 @@ def handle_launch(message):
         if cookies:
             stage_cookies(cookies, companion_dir)
 
-        # Start localhost cookie server with target URL
-        # Chrome opens about:blank first; the companion injects cookies then
-        # navigates to the target URL. This prevents the server from creating
-        # a new session on the initial (cookieless) page load.
+        # Start localhost cookie server (companion fetches cookies from here)
         cookie_server = None
         if cookies:
             cookie_server = start_cookie_server(cookies, target_url=url)
 
-        # Build flags — use about:blank as the initial URL when we have cookies
-        # (companion will navigate to the real URL after injection)
-        launch_url = "about:blank" if cookies else url
+        # Build flags with the real URL
+        # Cookie injection happens via companion (inject + reload), so the
+        # first page load may be cookieless but the reload will have cookies.
         flags = build_flags(
             config=config,
-            url=launch_url,
+            url=url,
             mode=mode,
             profile_dir=profile_dir,
             companion_dir=companion_dir,
