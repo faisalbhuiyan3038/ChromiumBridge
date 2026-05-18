@@ -5,6 +5,7 @@ launcher.py — Flag builder, companion staging, and subprocess manager.
 import os
 import shutil
 import subprocess
+import tempfile
 import uuid
 
 from profile import cleanup
@@ -30,17 +31,17 @@ def _get_companion_source():
 
 def prepare_companion(profile_dir):
     """
-    Copy the companion extension into a session-specific directory.
-    This keeps the profile dir clean and supports concurrent sessions.
+    Copy the companion extension into a session-specific directory
+    on the LOCAL filesystem (system temp dir).
+
+    Chrome refuses to --load-extension from mapped/virtual drives,
+    so we must stage to a real local path.
 
     Returns the path to the session-local companion copy.
     """
-    bridge_dir = _get_bridge_dir()
-    sessions_dir = os.path.join(bridge_dir, "sessions")
-    os.makedirs(sessions_dir, exist_ok=True)
-
+    # Use the OS temp directory — always on a real local drive
     session_id = str(uuid.uuid4())[:12]
-    session_dir = os.path.join(sessions_dir, session_id)
+    session_dir = os.path.join(tempfile.gettempdir(), "cb-sessions", session_id)
     companion_dest = os.path.join(session_dir, "companion_ext")
 
     companion_src = _get_companion_source()

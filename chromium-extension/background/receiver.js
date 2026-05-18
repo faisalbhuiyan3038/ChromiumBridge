@@ -1,40 +1,56 @@
 /**
  * receiver.js — ChromeBridge Chromium companion service worker.
  *
- * Flow:
- *   1. Chrome opens the target URL directly (app/popup/normal mode)
- *   2. Companion fetches cookies from bridge's localhost server (port 47831)
+ * Cookie injection flow:
+ *   1. Browser opens the target URL (app/popup/normal mode)
+ *   2. Companion gets cookies from either:
+ *      a. Inline INJECTED_COOKIES (ephemeral --load-extension path)
+ *      b. Bridge's localhost HTTP server (persistent / manual-install path)
  *   3. Injects all cookies via chrome.cookies.set()
  *   4. Reloads the active tab so the server sees the injected cookies
  *
- * Token-based dedup: each bridge launch has a unique token stored in
- * chrome.storage.session to prevent re-injection on tab navigations.
+ * Dedup strategy:
+ *   - Server path: unique token per bridge launch (stored in session storage)
+ *   - Inline path: simple boolean flag in session storage
+ *   Both prevent the tabs.onUpdated fallback from re-injecting after reload.
  */
 
-// !! BRIDGE_COOKIE_INJECTION_POINT — replaced by bridge/cookies.py before launch !!
+// !! BRIDGE_COOKIE_INJECTION_POINT — replaced by bridge/cookies.py !!
 const INJECTED_COOKIES = null;
+const INJECTED_URL = null;
 
 const COOKIE_SERVER_URL = "http://127.0.0.1:47831/cookies";
 const MAX_RETRIES = 8;
 const RETRY_DELAY_MS = 500;
 const TOKEN_KEY = "_cb_last_token";
+const DONE_KEY = "_cb_done";
 
 let _injecting = false;
 
 /**
- * Main entry: fetch cookies, inject, reload.
+ * Main entry: fetch cookies, inject once, navigate.
  */
 async function injectCookies() {
   if (_injecting) return;
   _injecting = true;
 
   try {
+    // ── Quick bail: already injected this browser session ──
+    try {
+      const s = await chrome.storage.session.get(DONE_KEY);
+      if (s[DONE_KEY]) {
+        if (INJECTED_COOKIES) return; // inline → done forever
+        // server path: fall through to token check below
+      }
+    } catch { /* session storage unavailable — continue */ }
+
     let cookies = null;
     let token = null;
+    let targetUrl = INJECTED_URL;
 
     // Method 1: inline-injected cookies (--load-extension session copy)
     if (INJECTED_COOKIES && Array.isArray(INJECTED_COOKIES) && INJECTED_COOKIES.length > 0) {
-      console.log("[ChromeBridge Companion] Using inline-injected cookies.");
+      console.log("[ChromeBridge Companion] Using inline cookies.");
       cookies = INJECTED_COOKIES;
     }
 
@@ -44,38 +60,34 @@ async function injectCookies() {
       if (result) {
         cookies = result.cookies;
         token = result.token;
+        if (result.url) targetUrl = result.url;
       }
     }
 
-    if (!cookies || cookies.length === 0) {
-      return; // No cookies available — silent
-    }
+    if (!cookies || cookies.length === 0) return;
 
-    // Check if we already processed this session
+    // ── Token dedup (server path only) ──
     if (token) {
       const stored = await getStoredToken();
-      if (stored === token) {
-        return; // Already injected for this handoff
-      }
+      if (stored === token) return; // same handoff session
     }
 
-    // Inject cookies
+    // ── Inject cookies ──
     console.log(`[ChromeBridge Companion] Injecting ${cookies.length} cookies...`);
     await setCookies(cookies);
 
-    // Mark this session as processed
-    if (token) {
-      await storeToken(token);
-    }
+    // ── Mark done ──
+    if (token) await storeToken(token);
+    try { await chrome.storage.session.set({ [DONE_KEY]: true }); } catch {}
 
-    // Reload the active tab so the server sees the new cookies
-    await reloadActiveTab();
+    // ── Navigate tab to target URL ──
+    await updateActiveTab(targetUrl);
   } finally {
     _injecting = false;
   }
 }
 
-// ── Token Storage (chrome.storage.session clears on browser restart) ──
+// ── Token Storage ────────────────────────────────────
 
 async function getStoredToken() {
   try {
@@ -99,17 +111,18 @@ async function fetchFromServer() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
 
-      let cookies, token;
+      let cookies, token, url;
       if (Array.isArray(data)) {
-        cookies = data; token = null;
+        cookies = data; token = null; url = null;
       } else {
         cookies = data.cookies || [];
         token = data.token || null;
+        url = data.url || null;
       }
 
       if (cookies.length > 0) {
         console.log(`[ChromeBridge Companion] Got ${cookies.length} cookies from server.`);
-        return { cookies, token };
+        return { cookies, token, url };
       }
     } catch {
       if (attempt < MAX_RETRIES) {
@@ -163,26 +176,31 @@ async function setCookies(cookies) {
   console.log(`[ChromeBridge Companion] Done: ${success} set, ${failed} failed.`);
 }
 
-// ── Tab Reload ───────────────────────────────────────
+// ── Tab Navigation ───────────────────────────────────
 
-async function reloadActiveTab() {
+async function updateActiveTab(targetUrl) {
   try {
-    // Service workers don't always have a "currentWindow" during startup
+    // Service workers don't always have a "currentWindow" during startup.
+    // lastFocusedWindow is more reliable; fall back to any active tab.
     let tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     if (tabs.length === 0) {
-      tabs = await chrome.tabs.query({ active: true }); // fallback to any active tab
+      tabs = await chrome.tabs.query({ active: true });
     }
-    
+
     if (tabs.length > 0) {
-      // Small delay to ensure cookies are fully committed
       await new Promise((r) => setTimeout(r, 300));
-      await chrome.tabs.reload(tabs[0].id);
-      console.log("[ChromeBridge Companion] Tab reloaded with cookies.");
+      if (targetUrl) {
+        await chrome.tabs.update(tabs[0].id, { url: targetUrl });
+        console.log(`[ChromeBridge Companion] Tab navigated to ${targetUrl}`);
+      } else {
+        await chrome.tabs.reload(tabs[0].id);
+        console.log("[ChromeBridge Companion] Tab reloaded with cookies.");
+      }
     } else {
-      console.warn("[ChromeBridge Companion] Could not find active tab to reload.");
+      console.warn("[ChromeBridge Companion] No active tab found to navigate.");
     }
   } catch (err) {
-    console.warn("[ChromeBridge Companion] Reload failed:", err);
+    console.warn("[ChromeBridge Companion] Navigation failed:", err);
   }
 }
 
@@ -191,8 +209,9 @@ async function reloadActiveTab() {
 chrome.runtime.onInstalled.addListener(() => injectCookies());
 chrome.runtime.onStartup.addListener(() => injectCookies());
 
-// Reliable fallback: on any tab load, try injection (no-ops if same token)
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+// Fallback: fires on tab navigations. The DONE_KEY / token check
+// ensures this is a no-op after the first successful injection.
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {
   if (changeInfo.status === "loading") {
     injectCookies();
   }

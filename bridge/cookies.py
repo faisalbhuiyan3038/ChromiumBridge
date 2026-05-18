@@ -13,13 +13,14 @@ import json
 PLACEHOLDER = "const INJECTED_COOKIES = null;"
 
 
-def stage_cookies(cookies, companion_dir):
+def stage_cookies(cookies, target_url, companion_dir):
     """
-    Embed the cookie array directly into the companion's receiver.js file.
-    Replaces the `const INJECTED_COOKIES = null;` placeholder with actual data.
+    Embed the cookie array and target URL directly into the companion's receiver.js file.
+    Replaces the placeholders with actual data.
 
     Args:
-        cookies: list of cookie dicts from Firefox's browser.cookies.getAll()
+        cookies: list of cookie dicts
+        target_url: the real destination URL
         companion_dir: path to the session-local companion extension copy
     """
     if not cookies:
@@ -38,7 +39,15 @@ def stage_cookies(cookies, companion_dir):
 
     # Replace the placeholder with actual cookie data
     replacement = f"const INJECTED_COOKIES = {cookie_json};"
-    content = content.replace(PLACEHOLDER, replacement, 1)
+    content = content.replace("const INJECTED_COOKIES = null;", replacement, 1)
+
+    if target_url:
+        escaped_url = target_url.replace("'", "\\'")
+        content = content.replace(
+            "const INJECTED_URL = null;", 
+            f"const INJECTED_URL = '{escaped_url}';", 
+            1
+        )
 
     with open(receiver_path, "w", encoding="utf-8") as f:
         f.write(content)

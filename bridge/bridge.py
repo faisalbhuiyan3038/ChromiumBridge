@@ -16,7 +16,7 @@ from cookies import stage_cookies
 from launcher import prepare_companion, build_flags, launch, wait_and_cleanup
 from config import load_config, save_config, get_config_value, set_config_value
 from logger import log_session, log_launch_time
-from cookie_server import start_cookie_server, stop_cookie_server
+from cookie_server import start_cookie_server, stop_cookie_server, COOKIE_PORT
 
 
 def read_message():
@@ -97,19 +97,23 @@ def handle_launch(message):
 
         # Stage cookies into companion copy (for --load-extension path)
         if cookies:
-            stage_cookies(cookies, companion_dir)
+            stage_cookies(cookies, url, companion_dir)
 
         # Start localhost cookie server (companion fetches cookies from here)
         cookie_server = None
         if cookies:
             cookie_server = start_cookie_server(cookies, target_url=url)
+            
+        # Use loading page as initial URL if server started successfully
+        if cookie_server:
+            launch_url = f"http://127.0.0.1:{COOKIE_PORT}/"
+        else:
+            launch_url = url
 
-        # Build flags with the real URL
-        # Cookie injection happens via companion (inject + reload), so the
-        # first page load may be cookieless but the reload will have cookies.
+        # Build flags with the initial URL
         flags = build_flags(
             config=config,
-            url=url,
+            url=launch_url,
             mode=mode,
             profile_dir=profile_dir,
             companion_dir=companion_dir,

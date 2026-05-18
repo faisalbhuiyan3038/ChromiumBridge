@@ -27,6 +27,12 @@ class _CookieHandler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(self.response_data)
+        elif self.path == "/":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            html = '<html><head><title>ChromeBridge</title></head><body style="background:#222;color:#eee;text-align:center;padding-top:20vh;font-family:sans-serif;"><h2>Loading session...</h2></body></html>'
+            self.wfile.write(html.encode("utf-8"))
         else:
             self.send_response(404)
             self.end_headers()
