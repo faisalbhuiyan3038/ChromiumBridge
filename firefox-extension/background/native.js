@@ -115,6 +115,30 @@ const NativeHost = (() => {
     return sendMessage({ action: "config_set", config });
   }
 
+  /**
+   * Reinstall the native host with optional new paths.
+   * @param {string} [pythonPath] - New Python executable path.
+   * @param {string} [bridgeDir] - New bridge directory path.
+   * @returns {Promise<Object>}
+   */
+  async function reinstall(pythonPath, bridgeDir) {
+    const payload = { action: "reinstall" };
+    if (pythonPath) payload.python_path = pythonPath;
+    if (bridgeDir) payload.bridge_dir = bridgeDir;
+    return sendMessage(payload);
+  }
+
+  /**
+   * Detect existing browser profiles.
+   * @param {string} [browserId] - Specific browser ID, or empty for all.
+   * @returns {Promise<Object>} { profiles: [...] } or { profiles: { browserId: [...] } }
+   */
+  async function detectProfiles(browserId) {
+    const payload = { action: "detect_profiles" };
+    if (browserId) payload.browser_id = browserId;
+    return sendMessage(payload);
+  }
+
   return {
     sendMessage,
     connect,
@@ -124,5 +148,7 @@ const NativeHost = (() => {
     detectBrowsers,
     getConfig,
     setConfig,
+    reinstall,
+    detectProfiles,
   };
 })();

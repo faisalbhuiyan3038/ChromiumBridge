@@ -75,10 +75,13 @@
     // Populate browser dropdown
     populateBrowsers();
 
-    // Restore last saved state FIRST (before rule overrides)
+    // Apply settings defaults (from options page) as the baseline
+    applySettingsDefaults();
+
+    // Restore last saved popup state (overrides settings defaults)
     await restoreLastState();
 
-    // Then apply existing rule if any (overrides saved state for that domain)
+    // Then apply existing rule if any (overrides everything for that domain)
     if (_popupData.currentRule) {
       applyRule(_popupData.currentRule);
     }
@@ -115,6 +118,20 @@
     if (hasDefault) {
       browserSelect.value = defaultBrowser;
     }
+  }
+
+  function applySettingsDefaults() {
+    const settings = _popupData.settings || {};
+
+    // Default profile mode from options page (ephemeral/persistent)
+    const defaultProfile = settings.profile_mode || "ephemeral";
+    setSegmentedValue(profileControl, defaultProfile);
+    _selectedProfile = defaultProfile;
+
+    // Default window mode from options page
+    const defaultMode = settings.default_mode || "popup";
+    setSegmentedValue(modeControl, defaultMode);
+    _selectedMode = defaultMode;
   }
 
   function getBrowserEmoji(id) {

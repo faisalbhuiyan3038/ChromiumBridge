@@ -49,7 +49,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content/detector.js", "content/banner.js"],
+      "js": ["content/detector.js", "content/banner.js", "content/storage-extractor.js"],
       "run_at": "document_idle"
     }
   ],

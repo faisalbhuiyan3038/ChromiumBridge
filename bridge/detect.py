@@ -293,3 +293,123 @@ def resolve_browser(browser_id, config=None):
     """
     result = _find_single_browser(browser_id, config)
     return result["path"] if result else None
+
+
+# ── User Data Directory Locations ─────────────────────
+# Known default user-data-dir paths per browser per OS.
+_USER_DATA_DIRS = {
+    "chrome": {
+        "Windows": [
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "User Data"),
+        ],
+        "Linux": [os.path.expanduser("~/.config/google-chrome")],
+        "Darwin": [os.path.expanduser("~/Library/Application Support/Google/Chrome")],
+    },
+    "edge": {
+        "Windows": [
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "Edge", "User Data"),
+        ],
+        "Linux": [os.path.expanduser("~/.config/microsoft-edge")],
+        "Darwin": [os.path.expanduser("~/Library/Application Support/Microsoft Edge")],
+    },
+    "brave": {
+        "Windows": [
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "BraveSoftware", "Brave-Browser", "User Data"),
+        ],
+        "Linux": [os.path.expanduser("~/.config/BraveSoftware/Brave-Browser")],
+        "Darwin": [os.path.expanduser("~/Library/Application Support/BraveSoftware/Brave-Browser")],
+    },
+    "chromium": {
+        "Windows": [
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "Chromium", "User Data"),
+        ],
+        "Linux": [os.path.expanduser("~/.config/chromium")],
+        "Darwin": [os.path.expanduser("~/Library/Application Support/Chromium")],
+    },
+    "vivaldi": {
+        "Windows": [
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "Vivaldi", "User Data"),
+        ],
+        "Linux": [os.path.expanduser("~/.config/vivaldi")],
+        "Darwin": [os.path.expanduser("~/Library/Application Support/Vivaldi")],
+    },
+    "opera": {
+        "Windows": [
+            os.path.join(os.environ.get("APPDATA", ""), "Opera Software", "Opera Stable"),
+        ],
+        "Linux": [os.path.expanduser("~/.config/opera")],
+        "Darwin": [os.path.expanduser("~/Library/Application Support/com.operasoftware.Opera")],
+    },
+}
+
+
+def _find_user_data_dir(browser_id):
+    """Find the User Data directory for a browser on the current OS."""
+    system = platform.system()
+    candidates = _USER_DATA_DIRS.get(browser_id, {}).get(system, [])
+    for path in candidates:
+        if path and os.path.isdir(path):
+            return path
+    return None
+
+
+def _read_profile_name(profile_path):
+    """Read the user-visible profile name from Preferences JSON."""
+    prefs_path = os.path.join(profile_path, "Preferences")
+    if not os.path.isfile(prefs_path):
+        return None
+    try:
+        with open(prefs_path, "r", encoding="utf-8") as f:
+            import json as _json
+            prefs = _json.load(f)
+        # Profile name is typically in profile.name
+        return prefs.get("profile", {}).get("name", None)
+    except Exception:
+        return None
+
+
+def detect_profiles(browser_id, config=None):
+    """
+    Detect existing profiles for a specific Chromium browser.
+    Scans the browser's User Data directory for profile subdirectories.
+
+    Returns: [{ "id": "Default", "name": "Person 1", "path": "C:\\...\\Default" }]
+    """
+    user_data_dir = _find_user_data_dir(browser_id)
+    if not user_data_dir:
+        return []
+
+    profiles = []
+
+    # Chromium profiles are named "Default", "Profile 1", "Profile 2", etc.
+    # Some browsers also use "Guest Profile", "System Profile" — skip those.
+    skip_dirs = {"System Profile", "Guest Profile", "Crashpad", "GrShaderCache",
+                 "ShaderCache", "BrowserMetrics", "Safe Browsing", "Crowd Deny",
+                 "MEIPreload", "WidevineCdm", "pnacl", "SwReporter"}
+
+    try:
+        for entry in os.listdir(user_data_dir):
+            entry_path = os.path.join(user_data_dir, entry)
+            if not os.path.isdir(entry_path):
+                continue
+            if entry in skip_dirs:
+                continue
+
+            # Check if it looks like a profile directory (has Preferences file)
+            prefs_file = os.path.join(entry_path, "Preferences")
+            if not os.path.isfile(prefs_file):
+                continue
+
+            display_name = _read_profile_name(entry_path) or entry
+            profiles.append({
+                "id": entry,
+                "name": display_name,
+                "path": entry_path,
+            })
+    except OSError:
+        pass
+
+    # Sort: "Default" first, then alphabetically
+    profiles.sort(key=lambda p: (p["id"] != "Default", p["id"]))
+    return profiles
+

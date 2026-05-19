@@ -11,6 +11,8 @@ CONFIG_FILENAME = "config.json"
 DEFAULT_CONFIG = {
     "version": 2,
     "default_browser": "chrome",
+    "python_path": "",
+    "bridge_dir": "",
     "browser_overrides": {},
     "window_modes": {
         "default": "popup",
@@ -22,6 +24,7 @@ DEFAULT_CONFIG = {
         "persistent_profiles": {},
         "port_cookies": True,
         "port_localstorage": True,
+        "port_sessionstorage": True,
         "cleanup_on_close": True,
         "incognito_passthrough": True,
         "discard_firefox_tab": False,

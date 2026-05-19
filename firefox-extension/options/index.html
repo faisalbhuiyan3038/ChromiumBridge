@@ -172,7 +172,7 @@
         </div>
 
         <div class="card">
-          <h2 class="card-title">Default Profile</h2>
+          <h2 class="card-title">Defaults</h2>
           <div class="form-group">
             <label class="form-label">Default profile mode</label>
             <select class="form-select" id="session-profile-mode">
@@ -180,11 +180,19 @@
               <option value="persistent">Persistent (kept across sessions)</option>
             </select>
           </div>
+          <div class="form-group">
+            <label class="form-label">Default window mode</label>
+            <select class="form-select" id="session-default-mode">
+              <option value="popup">Popup (compact window)</option>
+              <option value="normal">Normal (full browser, maximized)</option>
+              <option value="app">App (minimal UI, no extensions toolbar)</option>
+            </select>
+          </div>
         </div>
 
         <div class="card" id="persistent-profiles-card">
           <h2 class="card-title">Persistent Profile Paths</h2>
-          <p class="card-desc">Specify a custom user data directory for each browser when using persistent mode. Leave blank to use the default path.</p>
+          <p class="card-desc">Choose an existing browser profile or specify a custom user data directory. <strong>⚠ Close the target browser before using its profile — Chromium locks profiles in use.</strong></p>
           <div id="persistent-profiles-list">
             <!-- Populated by JS -->
           </div>
@@ -200,6 +208,10 @@
             <label class="toggle-row">
               <span class="toggle-label">Port localStorage to Chromium</span>
               <input type="checkbox" class="toggle-input" id="session-localstorage" checked>
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-label">Port sessionStorage to Chromium</span>
+              <input type="checkbox" class="toggle-input" id="session-sessionstorage" checked>
             </label>
             <label class="toggle-row">
               <span class="toggle-label">Record handoffs in Firefox history</span>
@@ -299,6 +311,20 @@
             <span id="health-text">Checking…</span>
           </div>
           <button class="btn btn-outline btn-sm" id="btn-check-health" style="margin-top:12px">Check Now</button>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Bridge Paths</h2>
+          <p class="card-desc">Configure the location of the Python interpreter and bridge scripts. Useful if you extracted the package to a custom location.</p>
+          <div class="form-group">
+            <label class="form-label">Python executable path</label>
+            <input type="text" class="form-input" id="advanced-python-path" placeholder="Auto-detected (e.g. C:\Python\python.exe)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bridge folder path</label>
+            <input type="text" class="form-input" id="advanced-bridge-dir" placeholder="Auto-detected (e.g. C:\ChromiumBridge\bridge)">
+          </div>
+          <button class="btn btn-outline btn-sm" id="btn-reinstall" style="margin-top:8px">🔄 Reinstall Native Host</button>
+          <span class="reinstall-status" id="reinstall-status" style="margin-left:12px;font-size:12px;color:var(--text-secondary)"></span>
         </div>
         <div class="card">
           <h2 class="card-title">Extra CLI Flags</h2>

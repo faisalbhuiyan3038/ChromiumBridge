@@ -21,6 +21,11 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "js": ["content/storage-injector.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
       "js": ["content/return-button.js"],
       "run_at": "document_idle"
     }

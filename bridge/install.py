@@ -24,9 +24,9 @@ def get_bridge_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def get_bridge_script():
+def get_bridge_script(bridge_dir=None):
     """Get the absolute path to bridge.py."""
-    return os.path.join(get_bridge_dir(), "bridge.py")
+    return os.path.join(bridge_dir or get_bridge_dir(), "bridge.py")
 
 
 def get_python_path():
@@ -34,19 +34,19 @@ def get_python_path():
     return sys.executable
 
 
-def generate_host_manifest(bridge_dir):
+def generate_host_manifest(bridge_dir, python_path=None):
     """
     Generate the native messaging host manifest.
     On Windows, the path should be to a .bat wrapper since Firefox can't
     directly execute .py files.
     """
     system = platform.system()
+    python_path = python_path or get_python_path()
 
     if system == "Windows":
         # Create a .bat wrapper
         bat_path = os.path.join(bridge_dir, "chromiumbridge.bat")
-        python_path = get_python_path()
-        bridge_script = get_bridge_script()
+        bridge_script = get_bridge_script(bridge_dir)
 
         with open(bat_path, "w") as f:
             f.write(f'@echo off\n"{python_path}" -u "{bridge_script}"\n')
@@ -54,7 +54,7 @@ def generate_host_manifest(bridge_dir):
         path_value = bat_path
     else:
         # On Unix, use bridge.py directly (must be executable)
-        bridge_script = get_bridge_script()
+        bridge_script = get_bridge_script(bridge_dir)
         os.chmod(bridge_script, 0o755)
         path_value = bridge_script
 
@@ -86,17 +86,19 @@ def get_manifest_install_path(system):
         raise RuntimeError(f"Unsupported OS: {system}")
 
 
-def install():
+def install(python_path=None, bridge_dir=None):
     """Install the native messaging host."""
     system = platform.system()
-    bridge_dir = get_bridge_dir()
+    bridge_dir = bridge_dir or get_bridge_dir()
+    python_path = python_path or get_python_path()
 
     print(f"[ChromeBridge] Installing native messaging host...")
     print(f"  OS: {system}")
     print(f"  Bridge dir: {bridge_dir}")
+    print(f"  Python path: {python_path}")
 
     # Generate manifest
-    manifest = generate_host_manifest(bridge_dir)
+    manifest = generate_host_manifest(bridge_dir, python_path)
     manifest_path = get_manifest_install_path(system)
 
     # Ensure parent directory exists
@@ -121,10 +123,36 @@ def install():
             print(f"  ERROR: Failed to create registry key: {e}")
             return False
 
+    # Save paths to config for future reinstalls
+    try:
+        from config import load_config, save_config
+        config = load_config()
+        config["python_path"] = python_path
+        config["bridge_dir"] = bridge_dir
+        save_config(config)
+    except Exception:
+        pass
+
     print(f"\n[ChromeBridge] Installation complete!")
     print(f"  Host name: {HOST_NAME}")
     print(f"  Extension ID: {EXTENSION_ID}")
     return True
+
+
+def reinstall_from_config():
+    """
+    Re-run installation using paths from config.json.
+    Called by the bridge when the user updates paths from the options page.
+    """
+    try:
+        from config import load_config
+        config = load_config()
+        python_path = config.get("python_path") or get_python_path()
+        bridge_dir = config.get("bridge_dir") or get_bridge_dir()
+        success = install(python_path=python_path, bridge_dir=bridge_dir)
+        return {"status": "ok" if success else "error"}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 def uninstall():
@@ -170,12 +198,24 @@ def main():
         action="store_true",
         help="Uninstall the native messaging host",
     )
+    parser.add_argument(
+        "--python-path",
+        type=str,
+        default=None,
+        help="Absolute path to the Python interpreter",
+    )
+    parser.add_argument(
+        "--bridge-dir",
+        type=str,
+        default=None,
+        help="Absolute path to the bridge scripts directory",
+    )
     args = parser.parse_args()
 
     if args.uninstall:
         uninstall()
     else:
-        install()
+        install(python_path=args.python_path, bridge_dir=args.bridge_dir)
 
 
 if __name__ == "__main__":

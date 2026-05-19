@@ -16,6 +16,29 @@ def _get_bridge_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
+def _get_center_position(win_w, win_h):
+    """
+    Calculate top-left coordinates to center a window of size (win_w, win_h).
+    Uses ctypes on Windows for actual monitor size; falls back to defaults.
+    """
+    try:
+        import platform
+        if platform.system() == "Windows":
+            import ctypes
+            user32 = ctypes.windll.user32
+            screen_w = user32.GetSystemMetrics(0)
+            screen_h = user32.GetSystemMetrics(1)
+        else:
+            # Reasonable fallback for Linux/macOS
+            screen_w, screen_h = 1920, 1080
+    except Exception:
+        screen_w, screen_h = 1920, 1080
+
+    cx = max(0, (screen_w - win_w) // 2)
+    cy = max(0, (screen_h - win_h) // 2)
+    return cx, cy
+
+
 def _get_companion_source():
     """Get the path to the bundled chromium-extension source."""
     bridge_dir = _get_bridge_dir()
@@ -74,12 +97,16 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
         # PWA-style: no URL bar, no extensions menu, minimal chrome
         flags.append(f"--app={url}")
     elif mode == "popup":
-        # Normal browser window but sized smaller — HAS URL bar + extensions
+        # Compact focused window — has URL bar + extensions, but smaller
+        cx, cy = _get_center_position(960, 640)
         flags.extend([
             "--new-window",
-            f"--window-size=1280,800",
+            f"--window-size=960,640",
+            f"--window-position={cx},{cy}",
         ])
-    # "normal" mode: full browser window, URL passed at end
+    elif mode == "normal":
+        # Full browser window, maximized
+        flags.append("--start-maximized")
 
     # Load companion extension (--enable-extensions is required on fresh profiles)
     flags.extend([

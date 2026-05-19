@@ -110,6 +110,25 @@
       }
     }
 
+    // Collect localStorage and sessionStorage from the tab's content script
+    let storageData = { localStorage: null, sessionStorage: null, origin: null };
+    if (settings.port_localstorage !== false || settings.port_sessionstorage !== false) {
+      try {
+        const response = await browser.tabs.sendMessage(tabId, { action: "extractStorage" });
+        if (response) {
+          storageData.origin = response.origin || null;
+          if (settings.port_localstorage !== false) {
+            storageData.localStorage = response.localStorage || null;
+          }
+          if (settings.port_sessionstorage !== false) {
+            storageData.sessionStorage = response.sessionStorage || null;
+          }
+        }
+      } catch (err) {
+        console.warn("[ChromeBridge] Could not extract storage data:", err);
+      }
+    }
+
     // Record in Firefox history
     if (settings.record_history !== false) {
       await TabManager.recordHandoff(url);
@@ -121,6 +140,7 @@
       url,
       domain,
       cookies,
+      storage: storageData,
       browser: browserTarget,
       mode,
       profile,
@@ -279,6 +299,14 @@
           const result = await NativeHost.detectBrowsers();
           if (result.browsers) _detectedBrowsers = result.browsers;
           return result;
+        }
+
+        case "reinstall": {
+          return NativeHost.reinstall(message.pythonPath, message.bridgeDir);
+        }
+
+        case "detectProfiles": {
+          return NativeHost.detectProfiles(message.browserId);
         }
 
         // Content script signals

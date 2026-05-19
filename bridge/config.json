@@ -1,7 +1,9 @@
 {
   "version": 2,
   "default_browser": "chrome",
-  "browser_overrides": {},
+  "browser_overrides": {
+    "viv_second": "M:\\Vivaldi\\Application\\vivaldi.exe"
+  },
   "window_modes": {
     "default": "popup",
     "app_domains": [
@@ -11,9 +13,11 @@
     ]
   },
   "session": {
-    "profile_mode": "ephemeral",
+    "profile_mode": "persistent",
     "persistent_profile_path": "",
-    "persistent_profiles": {},
+    "persistent_profiles": {
+      "viv_second": "M:/Vivaldi/User Data/Default"
+    },
     "port_cookies": true,
     "port_localstorage": true,
     "cleanup_on_close": true,

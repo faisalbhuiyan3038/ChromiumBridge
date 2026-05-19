@@ -162,3 +162,17 @@
 {"type":"launch_time","timestamp":1779094840.0363142,"browser":"brave","seconds":2.77}
 {"type":"session","timestamp":1779094847.058808,"domain":"localhost","browser":"brave","duration_ms":2247,"outcome":"closed"}
 {"type":"launch_time","timestamp":1779094847.0590904,"browser":"brave","seconds":2.32}
+{"type":"session","timestamp":1779096135.1440356,"domain":"localhost","browser":"chrome","duration_ms":7366,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779096135.144334,"browser":"chrome","seconds":7.85}
+{"type":"session","timestamp":1779096145.3481178,"domain":"localhost","browser":"brave","duration_ms":4807,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779096145.348386,"browser":"brave","seconds":4.83}
+{"type":"session","timestamp":1779096153.139122,"domain":"localhost","browser":"brave","duration_ms":4596,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779096153.1393483,"browser":"brave","seconds":4.84}
+{"type":"session","timestamp":1779096158.881855,"domain":"localhost","browser":"brave","duration_ms":3118,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779096158.8832414,"browser":"brave","seconds":3.35}
+{"type":"session","timestamp":1779172155.4393299,"domain":"localhost","browser":"viv_second","duration_ms":35207,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779172155.4412527,"browser":"viv_second","seconds":35.49}
+{"type":"session","timestamp":1779172277.651564,"domain":"localhost","browser":"viv_second","duration_ms":11360,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779172277.6518238,"browser":"viv_second","seconds":11.62}
+{"type":"session","timestamp":1779172309.08647,"domain":"localhost","browser":"viv_second","duration_ms":8706,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779172309.0873165,"browser":"viv_second","seconds":9.09}

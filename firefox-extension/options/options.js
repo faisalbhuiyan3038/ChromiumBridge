@@ -35,7 +35,7 @@
     const result = await msg({ action: "detectBrowsers" });
     _detectedBrowsers = result.browsers || [];
     renderBrowsers(_detectedBrowsers);
-    renderPersistentProfiles(_detectedBrowsers);
+    await renderPersistentProfiles(_detectedBrowsers);
     btnRescan.disabled = false;
     btnRescan.textContent = "↻ Re-scan";
   });
@@ -197,41 +197,93 @@
   const persistentProfilesCard = document.getElementById("persistent-profiles-card");
   const persistentProfilesList = document.getElementById("persistent-profiles-list");
 
-  // Track per-browser profile paths
+  // Track per-browser profile paths and detected profiles cache
   let _persistentProfiles = {};
+  let _detectedProfiles = {};  // browserId -> [{id, name, path}]
 
   sessionProfileMode.addEventListener("change", () => {
     // Show/hide per-browser profile paths based on mode
     // Always show — user might use persistent for specific domain rules
   });
 
-  function renderPersistentProfiles(browsers) {
+  async function renderPersistentProfiles(browsers) {
     if (!browsers || !browsers.length) {
       persistentProfilesList.innerHTML = '<p class="empty-state">Detect browsers first to configure per-browser profiles.</p>';
       return;
     }
 
+    // Fetch detected profiles for all browsers
+    try {
+      const result = await msg({ action: "detectProfiles" });
+      _detectedProfiles = result.profiles || {};
+    } catch {
+      _detectedProfiles = {};
+    }
+
     persistentProfilesList.innerHTML = browsers
-      .map(
-        (b) => `
-      <div class="form-group">
-        <label class="form-label">${esc(b.name)} profile path</label>
-        <input type="text" class="form-input persistent-profile-input"
-               data-browser="${esc(b.id)}"
-               value="${esc(_persistentProfiles[b.id] || "")}"
-               placeholder="Leave blank for default (~/.fx-bridge/profiles/${esc(b.id)})">
-      </div>`
-      )
+      .map((b) => {
+        const profiles = _detectedProfiles[b.id] || [];
+        const currentPath = _persistentProfiles[b.id] || "";
+        // Check if current path matches a detected profile
+        const matchesDetected = profiles.some((p) => p.path === currentPath);
+        const isCustom = currentPath && !matchesDetected;
+
+        let optionsHtml = `<option value="">Default (~/.fx-bridge/profiles/${esc(b.id)})</option>`;
+        profiles.forEach((p) => {
+          const selected = p.path === currentPath ? "selected" : "";
+          optionsHtml += `<option value="${esc(p.path)}" ${selected}>${esc(p.name)} (${esc(p.id)})</option>`;
+        });
+        optionsHtml += `<option value="__custom__" ${isCustom ? "selected" : ""}>Custom path…</option>`;
+
+        return `
+        <div class="form-group profile-group" data-browser="${esc(b.id)}">
+          <label class="form-label">${esc(b.name)} profile</label>
+          <select class="form-select profile-select" data-browser="${esc(b.id)}">
+            ${optionsHtml}
+          </select>
+          <input type="text" class="form-input persistent-profile-input"
+                 data-browser="${esc(b.id)}"
+                 value="${isCustom ? esc(currentPath) : ""}"
+                 placeholder="Enter absolute path to profile directory"
+                 style="margin-top:6px;${isCustom ? "" : "display:none"}">
+        </div>`;
+      })
       .join("");
+
+    // Toggle custom input visibility on dropdown change
+    persistentProfilesList.querySelectorAll(".profile-select").forEach((select) => {
+      select.addEventListener("change", () => {
+        const browserId = select.dataset.browser;
+        const customInput = persistentProfilesList.querySelector(
+          `.persistent-profile-input[data-browser="${browserId}"]`
+        );
+        if (select.value === "__custom__") {
+          customInput.style.display = "";
+          customInput.focus();
+        } else {
+          customInput.style.display = "none";
+          customInput.value = "";
+        }
+      });
+    });
   }
 
   document.getElementById("btn-save-session").addEventListener("click", async () => {
-    // Collect per-browser profile paths
-    const profileInputs = document.querySelectorAll(".persistent-profile-input");
+    // Collect per-browser profile paths from dropdowns/custom inputs
+    const profileGroups = document.querySelectorAll(".profile-group");
     const persistentProfiles = {};
-    profileInputs.forEach((input) => {
-      const browserId = input.dataset.browser;
-      const path = input.value.trim();
+    profileGroups.forEach((group) => {
+      const browserId = group.dataset.browser;
+      const select = group.querySelector(".profile-select");
+      const customInput = group.querySelector(".persistent-profile-input");
+      let path = "";
+      if (select) {
+        if (select.value === "__custom__") {
+          path = customInput ? customInput.value.trim() : "";
+        } else {
+          path = select.value;
+        }
+      }
       if (path) {
         persistentProfiles[browserId] = path;
       }
@@ -240,10 +292,12 @@
     const settings = {
       default_browser: _defaultBrowser,
       profile_mode: sessionProfileMode.value,
+      default_mode: document.getElementById("session-default-mode").value,
       persistent_profile_path: "",
       persistent_profiles: persistentProfiles,
       port_cookies: document.getElementById("session-cookies").checked,
       port_localstorage: document.getElementById("session-localstorage").checked,
+      port_sessionstorage: document.getElementById("session-sessionstorage").checked,
       record_history: document.getElementById("session-history").checked,
       cleanup_on_close: document.getElementById("session-cleanup").checked,
       incognito_passthrough: document.getElementById("session-incognito").checked,
@@ -259,9 +313,11 @@
     const s = data?.settings || {};
     _defaultBrowser = s.default_browser || "chrome";
     sessionProfileMode.value = s.profile_mode || "ephemeral";
+    document.getElementById("session-default-mode").value = s.default_mode || "popup";
     _persistentProfiles = s.persistent_profiles || {};
     document.getElementById("session-cookies").checked = s.port_cookies !== false;
     document.getElementById("session-localstorage").checked = s.port_localstorage !== false;
+    document.getElementById("session-sessionstorage").checked = s.port_sessionstorage !== false;
     document.getElementById("session-history").checked = s.record_history !== false;
     document.getElementById("session-cleanup").checked = s.cleanup_on_close !== false;
     document.getElementById("session-incognito").checked = s.incognito_passthrough !== false;
@@ -272,7 +328,7 @@
     if (data?.browsers?.length) {
       _detectedBrowsers = data.browsers;
       renderBrowsers(data.browsers);
-      renderPersistentProfiles(data.browsers);
+      await renderPersistentProfiles(data.browsers);
     }
   }
 
@@ -317,6 +373,50 @@
     } catch { alert("Invalid JSON."); }
   });
 
+  // Reinstall native host with updated paths
+  document.getElementById("btn-reinstall").addEventListener("click", async () => {
+    const btn = document.getElementById("btn-reinstall");
+    const status = document.getElementById("reinstall-status");
+    const pythonPath = document.getElementById("advanced-python-path").value.trim();
+    const bridgeDir = document.getElementById("advanced-bridge-dir").value.trim();
+
+    btn.disabled = true;
+    status.textContent = "Reinstalling…";
+    status.style.color = "var(--text-secondary)";
+
+    try {
+      // First save the paths to config
+      const configUpdate = {};
+      if (pythonPath) configUpdate.python_path = pythonPath;
+      if (bridgeDir) configUpdate.bridge_dir = bridgeDir;
+      if (Object.keys(configUpdate).length > 0) {
+        await msg({ action: "setBridgeConfig", config: configUpdate });
+      }
+
+      // Then trigger reinstall
+      const result = await msg({
+        action: "reinstall",
+        pythonPath: pythonPath || undefined,
+        bridgeDir: bridgeDir || undefined,
+      });
+
+      if (result.status === "ok") {
+        status.textContent = "✓ Reinstalled successfully";
+        status.style.color = "var(--success, #00A76F)";
+        showToast("Native host reinstalled.");
+      } else {
+        status.textContent = "✕ " + (result.error || "Failed");
+        status.style.color = "var(--error, #FF5630)";
+      }
+    } catch (err) {
+      status.textContent = "✕ " + err.message;
+      status.style.color = "var(--error, #FF5630)";
+    }
+
+    btn.disabled = false;
+    setTimeout(() => (status.textContent = ""), 5000);
+  });
+
   async function checkHealth() {
     const dot = document.getElementById("health-dot");
     const text = document.getElementById("health-text");
@@ -339,6 +439,10 @@
       document.getElementById("advanced-config").value = JSON.stringify(config, null, 2);
       const flags = config.extra_flags || [];
       document.getElementById("advanced-flags").value = flags.join("\n");
+
+      // Populate bridge path fields
+      document.getElementById("advanced-python-path").value = config.python_path || "";
+      document.getElementById("advanced-bridge-dir").value = config.bridge_dir || "";
     }
   }
 

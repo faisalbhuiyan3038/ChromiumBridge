@@ -10,13 +10,14 @@ import struct
 import time
 import traceback
 
-from detect import detect_all, resolve_browser
+from detect import detect_all, resolve_browser, detect_profiles
 from profile import create_ephemeral, resolve_persistent, cleanup
 from cookies import stage_cookies
 from launcher import prepare_companion, build_flags, launch, wait_and_cleanup
 from config import load_config, save_config, get_config_value, set_config_value
 from logger import log_session, log_launch_time
 from cookie_server import start_cookie_server, stop_cookie_server, COOKIE_PORT
+from install import reinstall_from_config
 
 
 def read_message():
@@ -99,10 +100,15 @@ def handle_launch(message):
         if cookies:
             stage_cookies(cookies, url, companion_dir)
 
+        # Extract storage data (localStorage/sessionStorage)
+        storage_data = message.get("storage", {})
+
         # Start localhost cookie server (companion fetches cookies from here)
         cookie_server = None
-        if cookies:
-            cookie_server = start_cookie_server(cookies, target_url=url)
+        if cookies or storage_data:
+            cookie_server = start_cookie_server(
+                cookies, target_url=url, storage_data=storage_data
+            )
             
         # Use loading page as initial URL if server started successfully
         if cookie_server:
@@ -174,6 +180,43 @@ def handle_config_set(message):
         return {"error": str(e)}
 
 
+def handle_reinstall(message):
+    """Re-run native host installation with current config paths."""
+    try:
+        # Optionally update paths in config first
+        new_python = message.get("python_path")
+        new_bridge_dir = message.get("bridge_dir")
+        if new_python or new_bridge_dir:
+            config = load_config()
+            if new_python:
+                config["python_path"] = new_python
+            if new_bridge_dir:
+                config["bridge_dir"] = new_bridge_dir
+            save_config(config)
+        return reinstall_from_config()
+    except Exception as e:
+        return {"error": str(e), "traceback": traceback.format_exc()}
+
+
+def handle_detect_profiles(message):
+    """Detect existing browser profiles for a specific browser."""
+    try:
+        config = load_config()
+        browser_id = message.get("browser_id", "")
+        if browser_id:
+            profiles = detect_profiles(browser_id, config)
+            return {"profiles": profiles}
+        else:
+            # Detect for all known browsers
+            all_profiles = {}
+            browsers = detect_all(config)
+            for b in browsers:
+                all_profiles[b["id"]] = detect_profiles(b["id"], config)
+            return {"profiles": all_profiles}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 def main():
     """Main message loop."""
     while True:
@@ -193,6 +236,10 @@ def main():
             response = handle_config_get()
         elif action == "config_set":
             response = handle_config_set(message)
+        elif action == "reinstall":
+            response = handle_reinstall(message)
+        elif action == "detect_profiles":
+            response = handle_detect_profiles(message)
         elif action == "health":
             response = {"status": "ok", "timestamp": time.time()}
         else:
