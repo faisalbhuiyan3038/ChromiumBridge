@@ -90,7 +90,19 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
     flags = []
 
     # User data directory
-    flags.append(f"--user-data-dir={profile_dir}")
+    # Detect whether profile_dir is a profile subdirectory (e.g. "User Data\Default")
+    # or a user data directory (e.g. "User Data"). Chromium's --user-data-dir must point
+    # at the User Data level; if we point at the profile subfolder it creates Default\Default.
+    prefs_file = os.path.join(profile_dir, "Preferences")
+    if os.path.isfile(prefs_file):
+        # It's a profile directory — split into user data dir + profile name
+        user_data_dir = os.path.dirname(profile_dir)
+        profile_name = os.path.basename(profile_dir)
+        flags.append(f"--user-data-dir={user_data_dir}")
+        flags.append(f"--profile-directory={profile_name}")
+    else:
+        # It's already a user data directory (ephemeral or custom user data dir)
+        flags.append(f"--user-data-dir={profile_dir}")
 
     # Window mode
     if mode == "app":

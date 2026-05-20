@@ -1,6 +1,8 @@
 {
   "version": 2,
-  "default_browser": "chrome",
+  "default_browser": "brave",
+  "python_path": "",
+  "bridge_dir": "",
   "browser_overrides": {
     "viv_second": "M:\\Vivaldi\\Application\\vivaldi.exe"
   },
@@ -16,10 +18,11 @@
     "profile_mode": "persistent",
     "persistent_profile_path": "",
     "persistent_profiles": {
-      "viv_second": "M:/Vivaldi/User Data/Default"
+      "brave": "C:\\Users\\User\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default"
     },
     "port_cookies": true,
     "port_localstorage": true,
+    "port_sessionstorage": true,
     "cleanup_on_close": true,
     "incognito_passthrough": true,
     "discard_firefox_tab": false,

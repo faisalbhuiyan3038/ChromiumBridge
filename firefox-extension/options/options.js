@@ -27,7 +27,7 @@
   const browserList = document.getElementById("browser-list");
   const btnRescan = document.getElementById("btn-rescan");
   let _detectedBrowsers = [];
-  let _defaultBrowser = "chrome";
+  let _defaultBrowser = "brave";
 
   btnRescan.addEventListener("click", async () => {
     btnRescan.disabled = true;
@@ -45,6 +45,11 @@
       browserList.innerHTML = '<p class="empty-state">No Chromium browsers detected.</p>';
       return;
     }
+
+    if (_defaultBrowser && !browsers.some((b) => b.id === _defaultBrowser)) {
+      _defaultBrowser = browsers[0].id;
+    }
+
     browserList.innerHTML = browsers
       .map(
         (b) => `
@@ -223,17 +228,11 @@
     persistentProfilesList.innerHTML = browsers
       .map((b) => {
         const profiles = _detectedProfiles[b.id] || [];
-        const currentPath = _persistentProfiles[b.id] || "";
-        // Check if current path matches a detected profile
-        const matchesDetected = profiles.some((p) => p.path === currentPath);
-        const isCustom = currentPath && !matchesDetected;
-
         let optionsHtml = `<option value="">Default (~/.fx-bridge/profiles/${esc(b.id)})</option>`;
         profiles.forEach((p) => {
-          const selected = p.path === currentPath ? "selected" : "";
-          optionsHtml += `<option value="${esc(p.path)}" ${selected}>${esc(p.name)} (${esc(p.id)})</option>`;
+          optionsHtml += `<option value="${esc(p.path)}">${esc(p.name)} (${esc(p.id)})</option>`;
         });
-        optionsHtml += `<option value="__custom__" ${isCustom ? "selected" : ""}>Custom path…</option>`;
+        optionsHtml += `<option value="__custom__">Custom path…</option>`;
 
         return `
         <div class="form-group profile-group" data-browser="${esc(b.id)}">
@@ -243,20 +242,38 @@
           </select>
           <input type="text" class="form-input persistent-profile-input"
                  data-browser="${esc(b.id)}"
-                 value="${isCustom ? esc(currentPath) : ""}"
                  placeholder="Enter absolute path to profile directory"
-                 style="margin-top:6px;${isCustom ? "" : "display:none"}">
+                 style="margin-top:6px;display:none">
         </div>`;
       })
       .join("");
 
-    // Toggle custom input visibility on dropdown change
+    // Explicitly set values and bind events
     persistentProfilesList.querySelectorAll(".profile-select").forEach((select) => {
+      const browserId = select.dataset.browser;
+      const customInput = persistentProfilesList.querySelector(
+        `.persistent-profile-input[data-browser="${browserId}"]`
+      );
+
+      // Restore saved value
+      const currentPath = _persistentProfiles[browserId] || "";
+      const profiles = _detectedProfiles[browserId] || [];
+      const matchesDetected = profiles.some((p) => p.path === currentPath);
+
+      if (currentPath) {
+        if (matchesDetected) {
+          select.value = currentPath;
+        } else {
+          select.value = "__custom__";
+          customInput.value = currentPath;
+          customInput.style.display = "";
+        }
+      } else {
+        select.value = "";
+      }
+
+      // Handle change event
       select.addEventListener("change", () => {
-        const browserId = select.dataset.browser;
-        const customInput = persistentProfilesList.querySelector(
-          `.persistent-profile-input[data-browser="${browserId}"]`
-        );
         if (select.value === "__custom__") {
           customInput.style.display = "";
           customInput.focus();
@@ -311,7 +328,7 @@
   async function loadSessionSettings() {
     const data = await msg({ action: "getPopupData" });
     const s = data?.settings || {};
-    _defaultBrowser = s.default_browser || "chrome";
+    _defaultBrowser = s.default_browser || "brave";
     sessionProfileMode.value = s.profile_mode || "ephemeral";
     document.getElementById("session-default-mode").value = s.default_mode || "popup";
     _persistentProfiles = s.persistent_profiles || {};

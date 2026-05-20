@@ -58,13 +58,11 @@ async function injectCookies() {
     if (!cookies) {
       const result = await fetchFromServer();
       if (result) {
-        cookies = result.cookies;
+        cookies = result.cookies || [];
         token = result.token;
         if (result.url) targetUrl = result.url;
       }
     }
-
-    if (!cookies || cookies.length === 0) return;
 
     // ── Token dedup (server path only) ──
     if (token) {
@@ -73,8 +71,10 @@ async function injectCookies() {
     }
 
     // ── Inject cookies ──
-    console.log(`[ChromeBridge Companion] Injecting ${cookies.length} cookies...`);
-    await setCookies(cookies);
+    if (cookies && cookies.length > 0) {
+      console.log(`[ChromeBridge Companion] Injecting ${cookies.length} cookies...`);
+      await setCookies(cookies);
+    }
 
     // ── Mark done ──
     if (token) await storeToken(token);
@@ -120,8 +120,8 @@ async function fetchFromServer() {
         url = data.url || null;
       }
 
-      if (cookies.length > 0) {
-        console.log(`[ChromeBridge Companion] Got ${cookies.length} cookies from server.`);
+      if (cookies !== undefined) {
+        console.log(`[ChromeBridge Companion] Got ${cookies.length || 0} cookies from server.`);
         return { cookies, token, url };
       }
     } catch {
@@ -214,5 +214,14 @@ chrome.runtime.onStartup.addListener(() => injectCookies());
 chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {
   if (changeInfo.status === "loading") {
     injectCookies();
+  }
+});
+
+// Handle messages from content scripts
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (message.action === "closeWindow" && sender.tab) {
+    chrome.windows.remove(sender.tab.windowId).catch(() => {
+      chrome.tabs.remove(sender.tab.id).catch(() => {});
+    });
   }
 });

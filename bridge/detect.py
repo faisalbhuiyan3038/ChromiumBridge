@@ -16,15 +16,6 @@ import re
 
 # Known browser definitions: id → { name, executables, registry_names }
 BROWSER_DEFS = {
-    "chrome": {
-        "name": "Google Chrome",
-        "executables": {
-            "Windows": ["chrome.exe"],
-            "Linux": ["google-chrome", "google-chrome-stable"],
-            "Darwin": ["Google Chrome"],
-        },
-        "registry_key": r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
-    },
     "edge": {
         "name": "Microsoft Edge",
         "executables": {
@@ -86,7 +77,6 @@ def _get_known_paths(browser_id, system):
             os.path.join(os.environ.get("LOCALAPPDATA", ""), ""),
         ]
         subpaths = {
-            "chrome": [r"Google\Chrome\Application"],
             "edge": [r"Microsoft\Edge\Application"],
             "brave": [r"BraveSoftware\Brave-Browser\Application"],
             "chromium": [r"Chromium\Application"],
@@ -225,6 +215,10 @@ def _find_single_browser(browser_id, config=None):
     """
     config = config or {}
     system = platform.system()
+
+    if browser_id == "chrome":
+        return None
+
     bdef = BROWSER_DEFS.get(browser_id)
     
     overrides = config.get("browser_overrides", {})
@@ -291,6 +285,8 @@ def resolve_browser(browser_id, config=None):
     Resolve a single browser by ID. Returns absolute path or None.
     Only checks the requested browser — does NOT scan all browsers.
     """
+    if browser_id == "chrome":
+        return None
     result = _find_single_browser(browser_id, config)
     return result["path"] if result else None
 
@@ -298,13 +294,6 @@ def resolve_browser(browser_id, config=None):
 # ── User Data Directory Locations ─────────────────────
 # Known default user-data-dir paths per browser per OS.
 _USER_DATA_DIRS = {
-    "chrome": {
-        "Windows": [
-            os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "User Data"),
-        ],
-        "Linux": [os.path.expanduser("~/.config/google-chrome")],
-        "Darwin": [os.path.expanduser("~/Library/Application Support/Google/Chrome")],
-    },
     "edge": {
         "Windows": [
             os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "Edge", "User Data"),

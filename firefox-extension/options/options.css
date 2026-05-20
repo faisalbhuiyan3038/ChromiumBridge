@@ -198,3 +198,29 @@ body {
 .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--border); }
 
 [hidden] { display: none !important; }
+
+/* ── Chrome Exclusion Notice ──────────────────────── */
+.chrome-notice {
+  background: rgba(255, 171, 0, 0.08);
+  border: 1px solid rgba(255, 171, 0, 0.24);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+}
+.chrome-notice-icon {
+  font-size: 20px;
+  line-height: 1;
+  margin-top: 2px;
+}
+.chrome-notice-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8C5B00;
+}
+.chrome-notice-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #664200;
+}

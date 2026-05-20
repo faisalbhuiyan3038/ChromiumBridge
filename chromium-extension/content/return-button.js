@@ -125,7 +125,7 @@
     document.documentElement.appendChild(host);
 
     shadow.getElementById("return-btn").addEventListener("click", () => {
-      window.close();
+      chrome.runtime.sendMessage({ action: "closeWindow" });
     });
 
     shadow.getElementById("dismiss-btn").addEventListener("click", () => {

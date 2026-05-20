@@ -95,7 +95,7 @@
 
     // Determine handoff parameters (overrides > rule > defaults)
     const settings = await getSessionSettings();
-    const browserTarget = overrides.browser || rule.browser || settings.default_browser || "chrome";
+    const browserTarget = overrides.browser || rule.browser || settings.default_browser || "brave";
     const mode = overrides.mode || rule.mode || "popup";
     const profile = overrides.profile || rule.profile || settings.profile_mode || "ephemeral";
     const incognito = settings.incognito_passthrough || false;
@@ -197,7 +197,7 @@
   async function getSessionSettings() {
     const result = await browser.storage.sync.get("sessionSettings");
     return result.sessionSettings || {
-      default_browser: "chrome",
+      default_browser: "brave",
       profile_mode: "ephemeral",
       port_cookies: true,
       port_localstorage: true,

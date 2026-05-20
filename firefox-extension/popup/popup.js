@@ -75,13 +75,10 @@
     // Populate browser dropdown
     populateBrowsers();
 
-    // Apply settings defaults (from options page) as the baseline
+    // Apply options page defaults as the baseline
     applySettingsDefaults();
 
-    // Restore last saved popup state (overrides settings defaults)
-    await restoreLastState();
-
-    // Then apply existing rule if any (overrides everything for that domain)
+    // Then apply domain rule if any (only override that can win)
     if (_popupData.currentRule) {
       applyRule(_popupData.currentRule);
     }
@@ -113,7 +110,7 @@
     });
 
     // Select default from settings
-    const defaultBrowser = _popupData.settings?.default_browser || "chrome";
+    const defaultBrowser = _popupData.settings?.default_browser || "brave";
     const hasDefault = _popupData.browsers.some((b) => b.id === defaultBrowser);
     if (hasDefault) {
       browserSelect.value = defaultBrowser;
@@ -164,44 +161,15 @@
   }
 
   // ── State Persistence ──────────────────────────────
+  // NOTE: The popup no longer saves its own browser/mode/profile state.
+  // It always reflects the Options page defaults. Only domain rules
+  // can override these values. This prevents stale state conflicts.
   async function saveLastState() {
-    const state = {
-      browser: browserSelect.value,
-      mode: _selectedMode,
-      profile: _selectedProfile,
-    };
-    try {
-      await browser.storage.local.set({ [POPUP_STATE_KEY]: state });
-    } catch {
-      // Storage not available
-    }
+    // No-op: popup state is driven by options settings + domain rules only.
   }
 
   async function restoreLastState() {
-    try {
-      const result = await browser.storage.local.get(POPUP_STATE_KEY);
-      const state = result[POPUP_STATE_KEY];
-      if (!state) return;
-
-      // Restore browser selection
-      if (state.browser && _popupData.browsers?.some((b) => b.id === state.browser)) {
-        browserSelect.value = state.browser;
-      }
-
-      // Restore mode
-      if (state.mode) {
-        setSegmentedValue(modeControl, state.mode);
-        _selectedMode = state.mode;
-      }
-
-      // Restore profile
-      if (state.profile) {
-        setSegmentedValue(profileControl, state.profile);
-        _selectedProfile = state.profile;
-      }
-    } catch {
-      // Storage not available
-    }
+    // No-op: state is applied by applySettingsDefaults() and applyRule().
   }
 
   // ── Event Listeners ────────────────────────────────

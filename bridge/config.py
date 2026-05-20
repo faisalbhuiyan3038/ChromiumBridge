@@ -10,7 +10,7 @@ CONFIG_FILENAME = "config.json"
 
 DEFAULT_CONFIG = {
     "version": 2,
-    "default_browser": "chrome",
+    "default_browser": "brave",
     "python_path": "",
     "bridge_dir": "",
     "browser_overrides": {},
