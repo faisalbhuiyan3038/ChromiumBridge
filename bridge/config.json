@@ -1,8 +1,8 @@
 {
   "version": 2,
   "default_browser": "brave",
-  "python_path": "",
-  "bridge_dir": "",
+  "python_path": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+  "bridge_dir": "M:\\.systemfile\\New folder\\bridge",
   "browser_overrides": {
     "viv_second": "M:\\Vivaldi\\Application\\vivaldi.exe"
   },

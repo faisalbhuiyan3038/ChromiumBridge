@@ -1,13 +1,16 @@
 {
   "manifest_version": 2,
-  "name": "ChromeBridge",
+  "name": "ChromiumBridge",
   "version": "1.0.0",
   "description": "Seamlessly hand off Firefox tabs to Chromium-based browsers with cookie portability, smart detection, and domain rules.",
 
   "browser_specific_settings": {
     "gecko": {
-      "id": "chromiumbridge@faisalbhuiyan.com",
-      "strict_min_version": "91.0"
+      "id": "chromiumbridges@faisalbhuiyan.com",
+      "strict_min_version": "91.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
 
@@ -37,7 +40,7 @@
       "48": "icons/icon-48.png",
       "96": "icons/icon-96.png"
     },
-    "default_title": "ChromeBridge",
+    "default_title": "ChromiumBridge",
     "default_popup": "popup/popup.html"
   },
 
@@ -60,7 +63,7 @@
         "default": "Ctrl+Shift+O",
         "mac": "MacCtrl+Shift+O"
       },
-      "description": "Open ChromeBridge popup"
+      "description": "Open ChromiumBridge popup"
     }
   },
 

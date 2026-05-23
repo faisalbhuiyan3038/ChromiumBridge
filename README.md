@@ -1,265 +1,152 @@
-# ChromeBridge 🌉
+# ChromiumBridge
 
-**Seamlessly hand off Firefox tabs to Chromium-based browsers — with your cookies, sessions, and sanity intact.**
+A Firefox extension to seamlessly move tabs to Chromium-based browsers (Brave, Edge, Vivaldi, etc.) while preserving cookies, session data, and login states. Ideal for DRM-protected content (Netflix, Spotify), HLS streams, or performance-heavy sites.
 
-Love Firefox as your daily driver but keep hitting sites that just *work better* in Chromium? DRM-locked streaming, HLS players, weird enterprise portals — you know the ones. ChromeBridge lets you stay in Firefox and blast those pages to Brave, Edge, Vivaldi, Opera, or any Chromium browser you like, with your login sessions coming along for the ride. No manual copy-pasting, no "please log in again," no headaches.
+## Features
 
----
+### Core Functionality
+- **One-Click Handoff**: Open the current tab in Chromium with a single click or keyboard shortcut (`Ctrl+Shift+O`).
+- **Cookie & Session Portability**: Transfers cookies, `localStorage`, and `sessionStorage` to Chromium, keeping you logged in.
+- **Smart Detection**: Optional detectors identify DRM content, HLS streams, buffering, or security errors and suggest switching to Chromium.
+- **Domain Rules**: Configure rules to always open specific domains (e.g., `netflix.com`) in Chromium with custom settings.
 
-## What It Does
+### Customization
+- **Window Modes**: Choose between `App` (minimal, PWA-style), `Popup` (960x640), or `Normal` (maximized).
+- **Profile Modes**: Use an `Ephemeral` (temporary) or `Persistent` (saved) Chromium profile.
+- **Context Menus**: Right-click on a page or link to open in Chromium.
+- **"Back to Firefox" Button**: Floating button in Chromium to return to the original Firefox tab.
 
-- **One-click handoff** — Click the toolbar button, right-click a page, or use `Ctrl+Shift+O` to send the current tab to Chromium.
-- **Cookie & session porting** — Cookies, localStorage, and sessionStorage travel with you. You stay logged in.
-- **Smart detection** — Optional in-page detectors can suggest switching to Chromium when they spot DRM, HLS streams, or repeated video buffering. All disabled by default — you're in control.
-- **Domain rules** — Set it and forget it. "Always open netflix.com in Brave in app mode." Done.
-- **Ephemeral or persistent profiles** — Use a clean temp session that wipes on close, or tap into your existing Chromium profile.
-- **Multiple window modes** — Open in a compact popup, a full normal window, or a minimal app-style window with no URL bar.
-- **"Back to Firefox" button** — A floating pill in every Chromium session lets you jump right back when you're done.
+### Technical Features
+- **Native Messaging Host**: Python-based bridge communicates between Firefox and Chromium.
+- **Local Cookie Server**: Temporary HTTP server delivers cookies and storage data to Chromium.
+- **Dynamic Extension Loading**: Chromium companion extension is loaded automatically for each session.
+- **Cross-Platform**: Works on Windows, Linux, and macOS.
 
-> **Note:** Google Chrome is deliberately not supported. Chrome restricts remote session debugging, unpacked extension loading, and local cookie injection when launched via command-line flags. Use Brave, Edge, Vivaldi, Opera, or a standard Chromium build instead.
+## How to Use
 
----
+### Quick Start
+1. Open a tab in Firefox (e.g., Netflix, a DRM-protected site, or a performance-heavy page).
+2. Click the toolbar icon or press `Ctrl+Shift+O` to open the popup.
+3. Select a Chromium browser, window mode, and profile mode.
+4. Click **"Open in Chromium"**. The tab will load in Chromium with your session intact.
+5. Use the **"Back to Firefox"** button in Chromium to return to the original tab.
 
-## How It Works (The Short Version)
+### Smart Detection
+Enable detectors in **Options → Signals** to monitor:
+- DRM/Widevine requests (e.g., Netflix, Spotify).
+- HLS/m3u8 streams (e.g., live video).
+- Video buffering (configurable threshold).
+- Cross-origin errors (`SecurityError`).
 
-ChromeBridge is three pieces that talk to each other:
+A toolbar badge (`!`) and in-page banner will suggest switching to Chromium when issues are detected.
 
-1. **Firefox Extension** — Lives in your toolbar. Collects cookies and session data from the current tab, sends everything to the Python bridge.
-2. **Python Bridge** — A local background process (registered as a Firefox native messaging host). Receives the handoff request, creates a session profile, injects your cookies, and launches Chromium with the right flags.
-3. **Chromium Companion Extension** — Automatically loaded into each Chromium session. Picks up the injected cookies and session data, navigates to your page, and shows the "Back to Firefox" button.
-
-You never interact with the bridge or companion directly. Install them once, and the Firefox extension handles the rest.
-
----
+### Domain Rules
+1. Open **Options → Domain Rules**.
+2. Click **"Add Rule"** and enter a domain (e.g., `netflix.com`).
+3. Select a browser, window mode, and profile mode.
+4. Choose an action (`Always`, `Ask`, or `Never`).
+5. Click **"Save"**. The rule will apply automatically for future visits.
 
 ## Setup
 
-There are three things to set up. It takes about 5 minutes.
-
 ### Prerequisites
-
-- **Firefox** (version 91 or later)
-- **Python 3.10+** installed and on your PATH
-- A Chromium-based browser: **Brave**, **Microsoft Edge**, **Vivaldi**, **Opera**, or **Chromium**
-
----
+- Firefox (v91+).
+- Python 3.10+ (installed and on `PATH`).
+- A Chromium-based browser: Brave, Edge, Vivaldi, Opera, or Chromium (Google Chrome is **not** supported).
 
 ### Step 1: Install the Python Bridge
-
-Download the `bridge` folder from the [GitHub Releases](https://github.com/yourusername/ChromiumBridge/releases) page and extract it somewhere permanent — you'll want to leave it in one place. Something like `C:\ChromiumBridge\bridge\` on Windows or `~/.chromiumbridge/bridge/` on Linux/macOS.
-
-Then open a terminal, navigate to that folder, and run:
-
-```bash
-python install.py
-```
-
-That's it. This script:
-- Detects your Python interpreter automatically
-- Creates a `.bat` wrapper on Windows (Firefox can't run `.py` files directly)
-- Writes the native messaging host manifest
-- Registers it with Firefox via the Windows registry (or the appropriate `native-messaging-hosts` directory on Linux/macOS)
-
-**Custom paths?** If your Python or bridge folder is in a non-standard location:
-
-```bash
-python install.py --python-path "C:\Custom\Python\python.exe" --bridge-dir "D:\Somewhere\bridge"
-```
-
-**Want to uninstall?**
-
-```bash
-python install.py --uninstall
-```
-
----
+1. Download `bridge-vX.X.X.zip` from [GitHub Releases](https://github.com/faisalbhuiyan3038/ChromiumBridge/releases).
+2. Extract both the `bridge` and `chromium-extension` folders to a permanent location (e.g., `C:\ChromiumBridge\bridge` or `~/.chromiumbridge/bridge`).
+3. Open a terminal in the `bridge` folder and run:
+   ```bash
+   python install.py
+   ```
+   - This will:
+     - Detect Python and create a wrapper script (`.bat` on Windows, executable on Linux/macOS).
+     - Generate a native messaging host manifest.
+     - Register the host with Firefox.
+4. **Custom Paths** (optional):
+   ```bash
+   python install.py --python-path "C:\Custom\Python\python.exe" --bridge-dir "D:\Somewhere\bridge"
+   ```
+5. **Uninstall**:
+   ```bash
+   python install.py --uninstall
+   ```
 
 ### Step 2: Install the Firefox Extension
-
-Download the `firefox-extension` folder (or `.xpi` file) from [GitHub Releases](https://github.com/yourusername/ChromiumBridge/releases).
-
-**For development / sideloading:**
-1. Open `about:debugging` in Firefox
-2. Click **"This Firefox"** in the sidebar
-3. Click **"Load Temporary Add-on..."**
-4. Navigate to the `firefox-extension` folder and select `manifest.json`
-
-**For a packaged `.xpi`:**
-1. Download the `.xpi` from Releases
-2. Drag it into any Firefox tab, or go to `about:addons` → gear icon → **"Install Add-on From File..."**
-3. Confirm the install
-
-Once installed, you'll see the ChromeBridge icon in your toolbar. Click it to open the popup.
-
----
+1. Download the firefox extension from [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/chromiumbridge/).
 
 ### Step 3: Load the Chromium Companion Extension
-
-This one's a bit different — the companion extension doesn't need to be installed permanently in your Chromium browser. The Python bridge automatically copies it into a temporary session folder and loads it via `--load-extension` every time you hand off a tab.
-
-**You don't need to do anything here.** Just make sure the `chromium-extension` folder is present alongside the bridge folder. The bridge finds it automatically.
-
-If you're curious, the companion handles:
-- Injecting your Firefox cookies into Chromium via `chrome.cookies.set()`
-- Injecting localStorage and sessionStorage at `document_start`
-- Showing the "Back to Firefox" floating button
-
----
+- No manual installation required. The Python bridge automatically:
+  1. Copies the `chromium-extension` folder to a temporary directory.
+  2. Loads it into Chromium via `--load-extension` when launching.
+- Ensure the `chromium-extension` folder is in the same parent directory as the `bridge` folder.
 
 ### Step 4: Configure
+1. Open the **Options page** (right-click the toolbar icon → **Options**).
+2. **Re-scan** to detect installed Chromium browsers.
+3. **Set Defaults**:
+   - Default browser (e.g., Brave).
+   - Default window mode (e.g., App for streaming sites).
+   - Default profile mode (Ephemeral/Persistent).
+4. **Domain Rules**: Add rules to auto-open specific domains in Chromium.
+5. **Signals**: Enable/disable smart detectors (e.g., DRM detection).
 
-Open the ChromeBridge **Options page** (right-click the toolbar icon → Options, or click "Options" in the popup). Here's what to do:
-
-1. **Click "Re-scan"** — The extension will detect all Chromium browsers on your system.
-2. **Pick your default browser** — Click the radio button next to your preferred browser.
-3. **Choose your session mode** — Ephemeral (clean temp session, wiped on close) or Persistent (uses your existing Chromium profile).
-4. **Set up domain rules (optional)** — Want Netflix to always open in Brave as an app? Add a rule. You can also set this from the popup with the "Always open this domain here" checkbox.
-
-That's it. You're ready to go.
-
----
-
-## Using ChromeBridge
-
-### The Popup
-
-Click the toolbar icon (or press `Ctrl+Shift+O`). You'll see:
-
-- **Bridge status** — Green dot means connected, red means the Python bridge isn't running.
-- **Current domain** — The site you're looking at.
-- **Browser picker** — Choose which Chromium browser to use.
-- **Window mode** — App (no URL bar), Popup (compact window), or Normal (full browser).
-- **Profile mode** — Ephemeral or Persistent.
-- **"Open in Chromium"** — Hit it and go.
-- **"Always open this domain here"** — Check this to save a domain rule instantly.
-
-### Context Menus
-
-Right-click anywhere on a page → **"Open in Chromium"**. Right-click a link → **"Open Link in Chromium"**. Same handoff, fewer clicks.
-
-### Smart Detection (Optional)
-
-In the Options page → Signals tab, you can enable detectors that watch for:
-- **DRM / Widevine** — Sites requesting media keys (Netflix, Spotify, etc.)
-- **HLS / m3u8 streams** — Live video streams
-- **Video buffering** — Repeated stalling events (configurable threshold)
-- **SecurityError** — Cross-origin errors that Chromium handles better
-
-When a detector triggers, you'll see a subtle toolbar badge (`!`) and an in-page banner suggesting you switch to Chromium. All detectors are **off by default**.
-
----
-
-## Supported Browsers
-
-| Browser | Supported |
-|---------|-----------|
-| Brave | ✅ |
-| Microsoft Edge | ✅ |
-| Vivaldi | ✅ |
-| Opera | ✅ |
-| Chromium (open-source) | ✅ |
-| Google Chrome | ❌ Deliberately excluded — see note above |
-
-**Custom browser?** In the Options page → Browsers tab, you can add any Chromium-based browser by providing its ID and absolute executable path.
-
----
-
-## Project Structure
-
+## File Structure
 ```
 ChromiumBridge/
 ├── bridge/                      # Python native messaging host
-│   ├── bridge.py                # Main entry point (stdio JSON dispatcher)
-│   ├── detect.py                # Browser detection and path resolution
-│   ├── launcher.py              # CLI flag builder and subprocess manager
-│   ├── profile.py               # Ephemeral/persistent profile management
-│   ├── cookies.py               # Cookie relay (inline injection)
-│   ├── cookie_server.py         # Localhost HTTP server for cookie delivery
+│   ├── bridge.py                # Main entry point
+│   ├── detect.py                # Browser detection
+│   ├── launcher.py              # CLI flag builder
+│   ├── profile.py               # Profile management
+│   ├── cookies.py               # Cookie relay
+│   ├── cookie_server.py         # Local cookie server
 │   ├── config.py                # Configuration management
 │   ├── config.json              # User configuration
-│   ├── install.py               # Native messaging host installer
-│   ├── logger.py                # Session logging
-│   └── manifest.json            # Native messaging host manifest template
+│   ├── install.py               # Native host installer
+│   └── manifest.json            # Native messaging host manifest
 │
 ├── firefox-extension/           # Firefox WebExtension (MV2)
-│   ├── manifest.json
+│   ├── manifest.json            # Extension manifest
 │   ├── background/              # Background scripts
-│   │   ├── main.js              # Orchestrator and message router
-│   │   ├── native.js            # Native messaging wrapper
-│   │   ├── rules.js             # Domain rule engine
-│   │   ├── tabs.js              # Tab lifecycle management
-│   │   └── signals.js           # Signal aggregation
-│   ├── popup/                   # Toolbar popup
+│   ├── popup/                   # Toolbar popup UI
 │   ├── options/                 # Settings page
 │   ├── content/                 # Content scripts
-│   │   ├── detector.js          # Smart signal detection
-│   │   ├── banner.js            # Suggestion/feedback banners
-│   │   └── storage-extractor.js # localStorage/sessionStorage extraction
-│   └── icons/
+│   └── icons/                   # Extension icons
 │
-└── chromium-extension/          # Chromium companion (MV3, loaded dynamically)
-    ├── manifest.json
-    ├── background/
-    │   └── receiver.js          # Cookie/session injection service worker
-    └── content/
-        ├── storage-injector.js  # localStorage/sessionStorage injection
-        └── return-button.js     # "Back to Firefox" floating button
+└── chromium-extension/          # Chromium companion (MV3)
+    ├── manifest.json            # Companion manifest
+    ├── background/              # Service worker
+    └── content/                 # Content scripts
 ```
 
----
-
-## Release Distribution
-
-This project is distributed via **GitHub Releases**. Each release contains three assets:
-
-| Asset | Contents |
-|-------|----------|
-| `bridge-vX.X.X.zip` | Python bridge folder — extract and run `python install.py` |
-| `firefox-extension-vX.X.X.xpi` | Packaged Firefox extension — install via `about:addons` |
-| `chromium-extension-vX.X.X.zip` | Chromium companion extension — placed alongside the bridge folder |
-
-The bridge and companion extension should be extracted to the **same parent directory** so the bridge can find the companion automatically.
-
----
+## Firefox vs. Chromium
+| Feature                | Firefox                          | Chromium                          |
+|------------------------|----------------------------------|-----------------------------------|
+| **Extension Type**     | MV2                              | MV3 (loaded dynamically)          |
+| **Installation**       | Manual (`.xpi` or sideload)      | Automatic (copied by bridge)      |
+| **User Interaction**   | Full UI (popup, options, rules)  | Silent (no UI)                    |
+| **Purpose**            | Initiates handoff                | Receives handoff                  |
+| **Cookie Handling**    | Extracts cookies                 | Injects cookies                   |
 
 ## Troubleshooting
+| Issue                                  | Solution                                                                                     |
+|----------------------------------------|----------------------------------------------------------------------------------------------|
+| Bridge not connected (red dot)         | Run `python install.py`, check registry (Windows) or `native-messaging-hosts` (Linux/macOS). |
+| Cookies not ported                     | Ensure you’re logged in on Firefox; avoid `SameSite=Strict` cookies.                         |
+| Blank page in Chromium                 | Try a different window mode (e.g., Normal instead of App).                                   |
+| No browsers detected                   | Click "Re-scan" in Options or add a custom browser path.                                   |
+| Companion extension not loading        | Ensure `chromium-extension` folder exists alongside `bridge`.                                |
 
-**Red dot in the popup ("Bridge not connected")**
-- Make sure you ran `python install.py` successfully
-- Check that the registry key exists at `HKCU\Software\Mozilla\NativeMessagingHosts\chromiumbridge` (Windows)
-- Try clicking "Check Now" in the Options page → Advanced tab
-
-**Chromium opens but my cookies aren't there**
-- Make sure you're logged into the site in Firefox first
-- Some sites use `SameSite=Strict` cookies that can't be read cross-tab — try navigating to the page in Firefox first, then hand off
-
-**Chromium opens a blank page**
-- Check the Options page → Advanced tab → Raw Config for any malformed JSON
-- Try a different window mode (Normal instead of App)
-
-**"No Chromium browsers detected"**
-- Click "Re-scan" in the Options page
-- If your browser is in a custom location, add it via the "Custom Browser Path" section
-- Google Chrome is deliberately not supported — use Brave, Edge, Vivaldi, Opera, or Chromium
-
-**Companion extension not loading**
-- Make sure the `chromium-extension` folder exists alongside the bridge folder
-- Check that `--enable-extensions` is in your CLI flags (it's added by default)
-
----
-
-## Privacy
-
-ChromeBridge runs **entirely locally**. No data leaves your machine. Cookies and session data are passed directly from Firefox to Chromium via a local process — no cloud, no servers, no tracking. The localhost cookie server (port 47831) only binds to `127.0.0.1` and shuts down when the Chromium session closes.
-
----
+## Privacy and Security
+- **Local-Only**: No data leaves your machine. Cookies and session data are transferred directly via a local process.
+- **Temporary Server**: The localhost cookie server (`127.0.0.1:47831`) shuts down when the Chromium session closes.
+- **No Tracking**: No analytics or telemetry.
 
 ## License
-
-MIT — do whatever you want with it.
+MIT © [Faisal Bhuiyan]
 
 ---
-
-## Contributing
-
-Found a bug? Want a feature? Open an issue or PR. All contributions welcome.
+**Download**: [GitHub Releases](https://github.com/yourusername/ChromiumBridge/releases)

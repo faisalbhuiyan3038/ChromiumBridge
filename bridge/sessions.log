@@ -254,3 +254,7 @@
 {"type":"launch_time","timestamp":1779271351.8559062,"browser":"chrome","seconds":9.87}
 {"type":"session","timestamp":1779272966.3247254,"domain":"localhost","browser":"edge","duration_ms":4026,"outcome":"closed"}
 {"type":"launch_time","timestamp":1779272966.3249655,"browser":"edge","seconds":4.05}
+{"type":"session","timestamp":1779516188.457728,"domain":"localhost","browser":"brave","duration_ms":3713,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779516188.4592183,"browser":"brave","seconds":4.14}
+{"type":"session","timestamp":1779516467.6516845,"domain":"localhost","browser":"brave","duration_ms":4715,"outcome":"closed"}
+{"type":"launch_time","timestamp":1779516467.6520128,"browser":"brave","seconds":4.85}
