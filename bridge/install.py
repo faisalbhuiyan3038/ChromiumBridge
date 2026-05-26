@@ -16,7 +16,7 @@ import argparse
 import shutil
 
 HOST_NAME = "chromiumbridge"
-EXTENSION_ID = "chromiumbridge@faisalbhuiyan.com"
+EXTENSION_ID = "chromiumbridges@faisalbhuiyan.com"
 
 
 def get_bridge_dir():

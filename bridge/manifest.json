@@ -3,5 +3,5 @@
   "description": "ChromeBridge native messaging host — seamless Firefox-to-Chromium handoff",
   "path": "<ABSOLUTE_PATH_TO_BRIDGE>",
   "type": "stdio",
-  "allowed_extensions": ["chromiumbridge@faisalbhuiyan.com"]
+  "allowed_extensions": ["chromiumbridges@faisalbhuiyan.com"]
 }

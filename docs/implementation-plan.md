@@ -52,14 +52,14 @@ All extension UI (popup, options, banner) uses a **Modern Minimal** aesthetic â€
 
 MV2 WebExtension with native messaging, cookie access, history integration, popup UI, options page, content scripts, and context menus.
 
-Extension ID: **`chromiumbridge@faisalbhuiyan.com`**
+Extension ID: **`chromiumbridges@faisalbhuiyan.com`**
 
 ---
 
 #### [NEW] [manifest.json](file:///m:/.systemfile/ChromiumBridge/firefox-extension/manifest.json)
 
 MV2 manifest with:
-- `browser_specific_settings.gecko.id`: `"chromiumbridge@faisalbhuiyan.com"`
+- `browser_specific_settings.gecko.id`: `"chromiumbridges@faisalbhuiyan.com"`
 - Permissions: `nativeMessaging`, `cookies`, `history`, `activeTab`, `tabs`, `storage`, `contextMenus`, `<all_urls>`
 - Background scripts: `background/main.js`, `background/native.js`, `background/rules.js`, `background/tabs.js`, `background/signals.js`
 - Content scripts: `content/detector.js` + `content/banner.js` (match `<all_urls>`)
@@ -298,7 +298,7 @@ Template native messaging host manifest:
   "description": "ChromeBridge native messaging host",
   "path": "<ABSOLUTE_PATH_TO_BRIDGE_PY>",
   "type": "stdio",
-  "allowed_extensions": ["chromiumbridge@faisalbhuiyan.com"]
+  "allowed_extensions": ["chromiumbridges@faisalbhuiyan.com"]
 }
 ```
 `install.py` replaces `<ABSOLUTE_PATH_TO_BRIDGE_PY>` with the actual path at install time.
