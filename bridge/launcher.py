@@ -131,6 +131,7 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
         "--no-first-run",
         "--no-default-browser-check",
         "--disable-default-apps",
+        "--disable-custom-jumplist",
     ])
 
     # Force Chrome to fully exit when all windows close.
