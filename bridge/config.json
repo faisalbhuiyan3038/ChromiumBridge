@@ -1,8 +1,10 @@
 {
   "version": 2,
   "default_browser": "brave",
-  "python_path": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-  "bridge_dir": "M:\\.systemfile\\New folder\\bridge",
+  "default_gecko_browser": "firefox",
+  "chrome_extension_id": "",
+  "python_path": "C:\\Users\\islam\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+  "bridge_dir": "E:\\Programming\\ChromiumBridge\\bridge",
   "browser_overrides": {
     "viv_second": "M:\\Vivaldi\\Application\\vivaldi.exe"
   },

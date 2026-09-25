@@ -1,5 +1,6 @@
 """
-launcher.py — Flag builder, companion staging, and subprocess manager.
+launcher.py — Flag builder, companion staging, and subprocess manager
+for both Chromium and Gecko browser families.
 """
 
 import os
@@ -29,7 +30,6 @@ def _get_center_position(win_w, win_h):
             screen_w = user32.GetSystemMetrics(0)
             screen_h = user32.GetSystemMetrics(1)
         else:
-            # Reasonable fallback for Linux/macOS
             screen_w, screen_h = 1920, 1080
     except Exception:
         screen_w, screen_h = 1920, 1080
@@ -42,7 +42,6 @@ def _get_center_position(win_w, win_h):
 def _get_companion_source():
     """Get the path to the bundled chromium-extension source."""
     bridge_dir = _get_bridge_dir()
-    # Go up one level from bridge/ to ChromeBridge/, then into chromium-extension/
     project_root = os.path.dirname(bridge_dir)
     companion_src = os.path.join(project_root, "chromium-extension")
     if not os.path.isdir(companion_src):
@@ -56,13 +55,7 @@ def prepare_companion(profile_dir):
     """
     Copy the companion extension into a session-specific directory
     on the LOCAL filesystem (system temp dir).
-
-    Chrome refuses to --load-extension from mapped/virtual drives,
-    so we must stage to a real local path.
-
-    Returns the path to the session-local companion copy.
     """
-    # Use the OS temp directory — always on a real local drive
     session_id = str(uuid.uuid4())[:12]
     session_dir = os.path.join(tempfile.gettempdir(), "cb-sessions", session_id)
     companion_dest = os.path.join(session_dir, "companion_ext")
@@ -73,54 +66,37 @@ def prepare_companion(profile_dir):
     return companion_dest
 
 
+# ── Chromium Flag Builder ──────────────────────────────
 def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
     """
     Build the full list of CLI flags for launching Chromium.
-
-    Args:
-        config: bridge config dict
-        url: target URL
-        mode: "app", "popup", or "normal"
-        profile_dir: user data directory (ephemeral or persistent)
-        companion_dir: path to session-local companion extension copy
-        incognito: whether to pass --incognito
-
-    Returns: list of flag strings
     """
     flags = []
 
     # User data directory
-    # Detect whether profile_dir is a profile subdirectory (e.g. "User Data\Default")
-    # or a user data directory (e.g. "User Data"). Chromium's --user-data-dir must point
-    # at the User Data level; if we point at the profile subfolder it creates Default\Default.
     prefs_file = os.path.join(profile_dir, "Preferences")
     if os.path.isfile(prefs_file):
-        # It's a profile directory — split into user data dir + profile name
         user_data_dir = os.path.dirname(profile_dir)
         profile_name = os.path.basename(profile_dir)
         flags.append(f"--user-data-dir={user_data_dir}")
         flags.append(f"--profile-directory={profile_name}")
     else:
-        # It's already a user data directory (ephemeral or custom user data dir)
         flags.append(f"--user-data-dir={profile_dir}")
 
     # Window mode
     if mode == "app":
-        # PWA-style: no URL bar, no extensions menu, minimal chrome
         flags.append(f"--app={url}")
     elif mode == "popup":
-        # Compact focused window — has URL bar + extensions, but smaller
         cx, cy = _get_center_position(960, 640)
         flags.extend([
             "--new-window",
-            f"--window-size=960,640",
+            "--window-size=960,640",
             f"--window-position={cx},{cy}",
         ])
     elif mode == "normal":
-        # Full browser window, maximized
         flags.append("--start-maximized")
 
-    # Load companion extension (--enable-extensions is required on fresh profiles)
+    # Load companion extension
     flags.extend([
         "--enable-extensions",
         f"--load-extension={companion_dir}",
@@ -132,13 +108,6 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
         "--no-default-browser-check",
         "--disable-default-apps",
         "--disable-custom-jumplist",
-    ])
-
-    # Force Chrome to fully exit when all windows close.
-    # Without this, Chrome keeps background processes alive and reuses them
-    # on the next launch — which means onStartup/onInstalled never fire and
-    # the service worker keeps stale state.
-    flags.extend([
         "--disable-background-mode",
         "--disable-backgrounding-occluded-windows",
     ])
@@ -154,17 +123,46 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
     elif isinstance(extra, str):
         flags.extend(extra.split())
 
-    # For popup and normal mode, URL goes at the end as a positional argument
+    # Positional URL
     if mode in ("popup", "normal"):
         flags.append(url)
 
     return flags
 
 
+# ── Gecko / Firefox Flag Builder ───────────────────────
+def build_gecko_flags(config, url, mode, profile_dir, incognito=False):
+    """
+    Build CLI arguments for launching Firefox / Gecko browsers.
+    Uses -profile, -no-remote, and -new-instance for total isolation.
+    """
+    flags = [
+        "-profile", profile_dir,
+        "-no-remote",
+        "-new-instance",
+    ]
+
+    if mode == "popup":
+        flags.extend(["-width", "960", "-height", "640"])
+
+    if incognito:
+        flags.append("-private-window")
+
+    # Extra Gecko flags from config if present
+    extra = config.get("extra_gecko_flags", config.get("extra_flags", []))
+    if isinstance(extra, list):
+        flags.extend(extra)
+    elif isinstance(extra, str):
+        flags.extend(extra.split())
+
+    flags.append(url)
+    return flags
+
+
 def launch(browser_path, flags):
     """
-    Launch Chromium with the given flags.
-    Returns the subprocess.Popen handle.
+    Launch a browser subprocess.
+    Returns subprocess.Popen handle.
     """
     cmd = [browser_path] + flags
     process = subprocess.Popen(
@@ -175,13 +173,11 @@ def launch(browser_path, flags):
     return process
 
 
-def wait_and_cleanup(profile_dir, profile_mode, companion_dir):
+def wait_and_cleanup(profile_dir, profile_mode, companion_dir=None):
     """
-    Clean up after Chromium exits.
-    - Session dir (companion copy) is always removed.
+    Clean up after browser exits.
+    - Session dir (companion copy) is always removed if provided.
     - Profile dir is removed only if ephemeral.
     """
-    # The companion_dir is inside sessions/{id}/companion_ext/
-    # We want to remove sessions/{id}/ entirely
     session_dir = os.path.dirname(companion_dir) if companion_dir else None
     cleanup(profile_dir, profile_mode, session_dir)

@@ -11,6 +11,8 @@ CONFIG_FILENAME = "config.json"
 DEFAULT_CONFIG = {
     "version": 2,
     "default_browser": "brave",
+    "default_gecko_browser": "firefox",
+    "chrome_extension_id": "",
     "python_path": "",
     "bridge_dir": "",
     "browser_overrides": {},

@@ -1,0 +1,9 @@
+{
+  "name": "chromiumbridge",
+  "description": "ChromiumBridge unified native messaging host (Firefox)",
+  "path": "E:\\Programming\\ChromiumBridge\\bridge\\chromiumbridge.bat",
+  "type": "stdio",
+  "allowed_extensions": [
+    "chromiumbridges@faisalbhuiyan.com"
+  ]
+}
