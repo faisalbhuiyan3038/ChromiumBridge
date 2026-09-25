@@ -25,7 +25,9 @@
   const handoffStatus = document.getElementById("handoff-status");
   const linkOptions = document.getElementById("link-options");
   const linkHelp = document.getElementById("link-help");
-  const btnSetup = document.getElementById("btn-setup");
+  const btnRetry = document.getElementById("btn-retry");
+  const offlineTitle = document.getElementById("offline-title");
+  const offlineDesc = document.getElementById("offline-desc");
 
   async function init() {
     setupEventListeners();
@@ -38,7 +40,7 @@
 
     chrome.runtime.sendMessage({ action: "getPopupData" }, (response) => {
       if (chrome.runtime.lastError || !response) {
-        setBridgeOffline("Bridge offline");
+        setBridgeOffline("Bridge offline", chrome.runtime.lastError?.message || "Failed to communicate with extension worker");
         return;
       }
 
@@ -52,7 +54,7 @@
         renderTabInfo();
         applyPreferences();
       } else {
-        setBridgeOffline("Bridge not ready");
+        setBridgeOffline("Bridge not connected", response.lastError || "Could not connect to native messaging host. Run python bridge/install.py to register.");
       }
     });
   }
@@ -64,9 +66,11 @@
     stateReady.hidden = false;
   }
 
-  function setBridgeOffline(reason) {
+  function setBridgeOffline(title, desc) {
     statusDot.className = "status-dot offline";
-    statusLabel.textContent = reason;
+    statusLabel.textContent = title;
+    if (offlineTitle) offlineTitle.textContent = title;
+    if (offlineDesc && desc) offlineDesc.textContent = desc;
     stateOffline.hidden = false;
     stateReady.hidden = true;
   }
@@ -196,13 +200,11 @@
     // Re-scan
     linkHelp.addEventListener("click", (e) => {
       e.preventDefault();
-      statusLabel.textContent = "Scanning…";
-      chrome.runtime.sendMessage({ action: "detectBrowsers" }, (response) => {
-        if (response?.browsers) {
-          renderBrowsers(response.browsers);
-          statusLabel.textContent = "Connected";
-        }
-      });
+      loadData();
+    });
+
+    btnRetry?.addEventListener("click", () => {
+      loadData();
     });
 
     // Options links

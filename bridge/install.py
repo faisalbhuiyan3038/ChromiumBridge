@@ -78,12 +78,90 @@ def get_executable_path(bridge_dir, python_path=None):
         bat_path = os.path.join(bridge_dir, "chromiumbridge.bat")
         bridge_script = get_bridge_script(bridge_dir)
         with open(bat_path, "w") as f:
-            f.write(f'@echo off\n"{python_path}" -u "{bridge_script}"\n')
+            f.write(f'@echo off\n"{python_path}" -u "{bridge_script}" %*\n')
         return bat_path
     else:
         bridge_script = get_bridge_script(bridge_dir)
         os.chmod(bridge_script, 0o755)
         return bridge_script
+
+
+def find_installed_chrome_extension_ids():
+    """
+    Scan local Chromium browser user data directories to find installed
+    or unpacked ChromiumBridge extension IDs across Chrome, Edge, Brave, Vivaldi, Opera.
+    """
+    found = set()
+    system = platform.system()
+    search_bases = []
+
+    if system == "Windows":
+        search_bases = [
+            os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\User Data"),
+            os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data"),
+            os.path.expandvars(r"%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data"),
+            os.path.expandvars(r"%LOCALAPPDATA%\Vivaldi\User Data"),
+            os.path.expandvars(r"%APPDATA%\Opera Software\Opera Stable"),
+            os.path.expandvars(r"%APPDATA%\Opera Software\Opera GX Stable"),
+            os.path.expandvars(r"%LOCALAPPDATA%\Chromium\User Data"),
+        ]
+    elif system == "Linux":
+        search_bases = [
+            os.path.expanduser("~/.config/google-chrome"),
+            os.path.expanduser("~/.config/chromium"),
+            os.path.expanduser("~/.config/BraveSoftware/Brave-Browser"),
+            os.path.expanduser("~/.config/microsoft-edge"),
+            os.path.expanduser("~/.config/vivaldi"),
+            os.path.expanduser("~/.config/opera"),
+        ]
+    elif system == "Darwin":
+        search_bases = [
+            os.path.expanduser("~/Library/Application Support/Google/Chrome"),
+            os.path.expanduser("~/Library/Application Support/Chromium"),
+            os.path.expanduser("~/Library/Application Support/BraveSoftware/Brave-Browser"),
+            os.path.expanduser("~/Library/Application Support/Microsoft Edge"),
+            os.path.expanduser("~/Library/Application Support/Vivaldi"),
+            os.path.expanduser("~/Library/Application Support/com.operasoftware.Opera"),
+        ]
+
+    for base in search_bases:
+        if not os.path.exists(base):
+            continue
+        candidates = [
+            os.path.join(base, "Preferences"),
+            os.path.join(base, "Secure Preferences"),
+        ]
+        try:
+            for entry in os.scandir(base):
+                if entry.is_dir():
+                    candidates.append(os.path.join(entry.path, "Preferences"))
+                    candidates.append(os.path.join(entry.path, "Secure Preferences"))
+        except Exception:
+            pass
+
+        for pfile in candidates:
+            if not os.path.isfile(pfile):
+                continue
+            try:
+                with open(pfile, "r", encoding="utf-8", errors="ignore") as f:
+                    data = json.load(f)
+                ext_settings = data.get("extensions", {}).get("settings", {})
+                for ext_id, ext_data in ext_settings.items():
+                    path = ext_data.get("path", "")
+                    manifest = ext_data.get("manifest", {})
+                    name = manifest.get("name", "") if isinstance(manifest, dict) else ""
+                    desc = manifest.get("description", "") if isinstance(manifest, dict) else ""
+                    if (
+                        "chromiumbridge" in path.lower()
+                        or "chrome-extension" in path.lower()
+                        or "chromiumbridge" in name.lower()
+                        or "gecko" in desc.lower()
+                    ):
+                        found.add(ext_id)
+            except Exception:
+                pass
+
+    return sorted(list(found))
 
 
 def generate_mozilla_manifest(bridge_dir, python_path=None):
@@ -105,14 +183,16 @@ def generate_chromium_manifest(bridge_dir, python_path=None, chrome_ids=None):
     origins = []
     if chrome_ids:
         for cid in chrome_ids:
-            if cid:
-                origins.append(f"chrome-extension://{cid}/")
+            if cid and cid.strip():
+                clean_id = cid.strip()
+                origin = f"chrome-extension://{clean_id}/"
+                if origin not in origins:
+                    origins.append(origin)
     
-    # Default fallback / wildcard development origins if none specified
+    # Chromium strictly disallows wildcards (*/*) in allowed_origins.
+    # Every entry must be a valid chrome-extension://<id>/ URI.
     if not origins:
-        origins = [
-            "chrome-extension://*/*",
-        ]
+        origins = ["chrome-extension://hhkcmembniihpafebbbhhbnmodppdfca/"]
 
     return {
         "name": HOST_NAME,
@@ -146,18 +226,32 @@ def install(python_path=None, bridge_dir=None, chrome_id=None):
     print(f"  Bridge dir: {bridge_dir}")
     print(f"  Python path: {python_path}")
 
-    # Load configured chrome_id if present
+    # Gather Chrome extension IDs
     chrome_ids = []
     if chrome_id:
         chrome_ids.append(chrome_id)
+
+    # 1. Stored ID in config.json
     try:
-        from config import load_config, save_config
+        from config import load_config
         cfg = load_config()
         stored_id = cfg.get("chrome_extension_id")
         if stored_id and stored_id not in chrome_ids:
             chrome_ids.append(stored_id)
     except Exception:
         pass
+
+    # 2. Auto-detect from installed Chromium browser profiles
+    detected_ids = find_installed_chrome_extension_ids()
+    for did in detected_ids:
+        if did not in chrome_ids:
+            chrome_ids.append(did)
+            print(f"  Auto-detected Chromium extension ID: {did}")
+
+    # 3. Fallback known ID (e.g. Edge unpacked)
+    fallback_id = "hhkcmembniihpafebbbhhbnmodppdfca"
+    if fallback_id not in chrome_ids:
+        chrome_ids.append(fallback_id)
 
     # 1. Mozilla Manifest
     moz_manifest = generate_mozilla_manifest(bridge_dir, python_path)
@@ -173,6 +267,7 @@ def install(python_path=None, bridge_dir=None, chrome_id=None):
     with open(chrome_manifest_path, "w", encoding="utf-8") as f:
         json.dump(chrome_manifest, f, indent=2)
     print(f"  Chromium manifest written to: {chrome_manifest_path}")
+    print(f"  Chromium allowed origins: {chrome_manifest['allowed_origins']}")
 
     # 3. Registration
     if system == "Windows":

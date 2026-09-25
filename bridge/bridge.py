@@ -10,6 +10,17 @@ import json
 import struct
 import time
 import traceback
+import logging
+import os
+
+# Write debug log next to the bridge script so issues can be diagnosed easily
+_log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bridge_debug.log")
+logging.basicConfig(
+    filename=_log_file,
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+log = logging.getLogger("bridge")
 
 from detect import (
     detect_all,
@@ -104,12 +115,18 @@ def handle_launch(message):
         incognito = message.get("incognito", False)
         storage_data = message.get("storage", {})
 
+        log.info("handle_launch: url=%s browser=%s cookies=%d storage_keys=%s",
+                 url, browser_id, len(cookies),
+                 list(storage_data.get("localStorage", {}).keys()) if storage_data.get("localStorage") else [])
+
         # Resolve browser path
         browser_path = resolve_browser(browser_id, config)
         if not browser_path:
+            log.error("Browser '%s' not found on this system", browser_id)
             return {"error": f"Browser '{browser_id}' not found on this system."}
 
         family = get_browser_family(browser_id)
+        log.info("Browser family: %s, path: %s", family, browser_path)
 
         # ── Branch A: Gecko Target (Firefox, LibreWolf, Floorp, Zen) ──
         if family == "gecko":
@@ -123,8 +140,11 @@ def handle_launch(message):
             else:
                 profile_dir = create_ephemeral()
 
+            log.info("Gecko profile dir: %s", profile_dir)
+
             # Direct SQLite cookie & pref injection
             stage_gecko_profile(profile_dir, cookies=cookies, target_url=url)
+            log.info("stage_gecko_profile complete: %d cookies injected", len(cookies))
 
             # Optional local storage server
             cookie_server = None
@@ -132,6 +152,7 @@ def handle_launch(message):
                 cookie_server = start_cookie_server(
                     cookies, target_url=url, storage_data=storage_data
                 )
+                log.info("Cookie server started" if cookie_server else "Cookie server FAILED to start")
 
             flags = build_gecko_flags(
                 config=config,
@@ -140,6 +161,7 @@ def handle_launch(message):
                 profile_dir=profile_dir,
                 incognito=incognito,
             )
+            log.info("Launching Firefox with flags: %s", flags)
 
             start_time = time.time()
             process = launch(browser_path, flags)
@@ -147,6 +169,7 @@ def handle_launch(message):
             # Wait for Gecko browser to exit
             process.wait()
             duration_ms = int((time.time() - start_time) * 1000)
+            log.info("Firefox exited after %d ms", duration_ms)
 
             stop_cookie_server(cookie_server)
             log_session(domain, browser_id, duration_ms, "closed")

@@ -3,11 +3,17 @@ cookies_gecko.py — Direct SQLite cookie injection for Gecko/Firefox target bro
 Firefox profiles store cookies in an unencrypted SQLite database (`cookies.sqlite`).
 This module creates and populates `cookies.sqlite` before launching Firefox,
 enabling instant, authenticated sessions with zero extension dependencies.
+
+Schema reference: Firefox 104+ moz_cookies table (verified against archiveteam.org)
 """
 
 import os
+import sys
 import time
 import sqlite3
+import logging
+
+log = logging.getLogger(__name__)
 
 
 GECKO_USER_PREFS = """
@@ -21,6 +27,23 @@ user_pref("browser.warnOnQuit", false);
 user_pref("browser.sessionstore.resume_from_crash", false);
 user_pref("browser.tabs.warnOnClose", false);
 """
+
+
+def _normalize_host(domain):
+    """
+    Normalize a Chrome cookie domain to Firefox moz_cookies host format.
+
+    Chrome:  ".example.com"  -> host-only domain (subdomain cookies)
+    Chrome:  "example.com"   -> exact host cookie
+    Firefox: ".example.com" means shared across subdomains (domain cookie)
+    Firefox: "example.com"  means exact host only
+    We preserve the Chrome convention exactly—it matches Firefox's expected format.
+    """
+    if not domain:
+        return domain
+    # Chrome uses leading dot for subdomain cookies. Firefox uses the same.
+    # No transformation needed; pass through as-is.
+    return domain
 
 
 def stage_gecko_profile(profile_dir, cookies=None, target_url=""):
@@ -49,21 +72,29 @@ def stage_gecko_profile(profile_dir, cookies=None, target_url=""):
 
     # 2. Populate cookies.sqlite if cookies are provided
     if cookies:
-        inject_gecko_cookies(profile_dir, cookies)
+        n_written = inject_gecko_cookies(profile_dir, cookies)
+        log.debug("stage_gecko_profile: injected %d cookies into %s", n_written, profile_dir)
+    else:
+        log.debug("stage_gecko_profile: no cookies to inject")
 
 
 def inject_gecko_cookies(profile_dir, cookies):
     """
     Create or update moz_cookies table in cookies.sqlite.
+    Uses the canonical Firefox 104+ schema (with rawSameSite column).
 
     Args:
         profile_dir: Firefox profile directory.
         cookies: List of cookie dictionaries (Chrome format).
+    Returns:
+        Number of cookies successfully written.
     """
     db_path = os.path.join(profile_dir, "cookies.sqlite")
     con = sqlite3.connect(db_path)
     cur = con.cursor()
 
+    # Firefox 104+ canonical schema
+    # rawSameSite is required — it stores the original value before browser overrides
     cur.execute("""
     CREATE TABLE IF NOT EXISTS moz_cookies (
         id INTEGER PRIMARY KEY,
@@ -79,52 +110,68 @@ def inject_gecko_cookies(profile_dir, cookies):
         isHttpOnly INTEGER,
         inBrowserElement INTEGER DEFAULT 0,
         sameSite INTEGER DEFAULT 0,
+        rawSameSite INTEGER DEFAULT 0,
         schemeMap INTEGER DEFAULT 0,
-        isPartitionedAttributeSet INTEGER DEFAULT 0,
-        updateTime INTEGER,
         CONSTRAINT moz_uniqueid UNIQUE (name, host, path, originAttributes)
     );
     """)
 
+    # Add rawSameSite column if it is missing (Firefox 104+ requirement)
+    try:
+        cur.execute("ALTER TABLE moz_cookies ADD COLUMN rawSameSite INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
     now_micros = int(time.time() * 1_000_000)
+    written = 0
 
     for c in cookies:
         name = c.get("name", "")
         value = c.get("value", "")
-        domain = c.get("domain", "")
+        domain = _normalize_host(c.get("domain", ""))
         path = c.get("path", "/")
-        
+
         # Expiry: Chrome gives float seconds epoch, Firefox expects integer seconds
         exp_raw = c.get("expirationDate")
         if exp_raw:
             expiry = int(exp_raw)
         else:
-            # Session cookie or fallback: 30 days
+            # Session cookie: use far-future expiry so Firefox treats it as persistent
             expiry = int(time.time() + 86400 * 30)
 
         secure = 1 if c.get("secure") else 0
         httponly = 1 if c.get("httpOnly") else 0
 
-        # Map sameSite
-        samesite_raw = str(c.get("sameSite", "lax")).lower()
+        # Map Chrome SameSite string to Firefox integer
+        # Firefox: 0=None/Unset, 1=Lax, 2=Strict
+        samesite_raw = str(c.get("sameSite", "unspecified")).lower()
         if "strict" in samesite_raw:
             samesite = 2
         elif "lax" in samesite_raw:
             samesite = 1
         else:
-            samesite = 0  # None / no_restriction
+            samesite = 0  # None / no_restriction / unspecified
 
-        # schemeMap: 1=HTTP, 2=HTTPS, 3=both
+        # rawSameSite mirrors sameSite (original value before overrides)
+        raw_samesite = samesite
+
+        # schemeMap: 1=HTTP-only, 2=HTTPS-only, 3=both
+        # If secure flag is set, HTTPS only; otherwise allow both
         scheme_map = 2 if secure else 3
 
         try:
             cur.execute("""
-            INSERT OR REPLACE INTO moz_cookies 
-            (originAttributes, name, value, host, path, expiry, lastAccessed, creationTime, isSecure, isHttpOnly, sameSite, schemeMap, isPartitionedAttributeSet, updateTime)
-            VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
-            """, (name, value, domain, path, expiry, now_micros, now_micros, secure, httponly, samesite, scheme_map, now_micros))
-        except sqlite3.Error:
+            INSERT OR REPLACE INTO moz_cookies
+            (originAttributes, name, value, host, path, expiry, lastAccessed, creationTime,
+             isSecure, isHttpOnly, sameSite, rawSameSite, schemeMap)
+            VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (name, value, domain, path, expiry, now_micros, now_micros,
+                  secure, httponly, samesite, raw_samesite, scheme_map))
+            written += 1
+        except sqlite3.Error as e:
+            log.warning("Failed to insert cookie %r for host %r: %s", name, domain, e)
             continue
 
     con.commit()
     con.close()
+    return written

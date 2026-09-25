@@ -14,7 +14,7 @@
 - **Repository Layout**:
   - `bridge/`: Unified Python 3.10+ Native Messaging Host (serves both Firefox and Chromium).
   - `firefox-extension/`: Firefox WebExtension (Manifest V2, Gecko source).
-  - `chrome-extension/`: Chromium WebExtension (Manifest V3, Chromium source).
+  - `chrome-extension/`: Chromium WebExtension (Manifest V3, Chromium source — runs in Chrome, Edge, Brave, Vivaldi, Opera).
   - `chromium-extension/`: Chromium Companion Extension (Manifest V3, dynamically loaded helper into Chromium target).
   - `scripts/build_releases.py`: Automated release packager for all components.
   - `releases/`: Bundled release zip archives (`bridge/`, `firefox-extension/`, `chrome-extension/`).
@@ -41,6 +41,7 @@
 │  • Dual-Family Detection: Chromium targets (Brave, Edge...) & Gecko (Firefox, Zen...)  │
 │  • Profile Lifecycle: Ephemeral temp profiles & persistent user data paths             │
 │  • Subprocess Execution: Dispatches to Chromium launcher or Gecko launcher            │
+│  • Debug Logging: bridge_debug.log (next to bridge.py) for all handoff events         │
 └───────────────────────┬────────────────────────────────────────┬───────────────────────┘
                         │ Target: Chromium                       │ Target: Gecko
                         ▼                                        ▼
@@ -61,18 +62,19 @@
 
 | File Path | Role & Summary | Key Functions / Exports |
 |-----------|----------------|-------------------------|
-| `bridge/bridge.py` | Unified native messaging loop & dispatcher | `read_message()`, `send_message()`, `handle_launch()`, `handle_ping()`, `handle_detect()`, `main()` |
+| `bridge/bridge.py` | Unified native messaging loop & dispatcher. Writes debug log to `bridge_debug.log`. | `read_message()`, `send_message()`, `handle_launch()`, `handle_ping()`, `handle_detect()`, `main()` |
 | `bridge/detect.py` | OS-agnostic browser & profile detection | `detect_all()`, `resolve_browser()`, `detect_profiles()`, `get_browser_family()`, `BROWSER_DEFS` |
 | `bridge/launcher.py` | Flag assembly, staging, subprocess runner | `build_flags()`, `build_gecko_flags()`, `prepare_companion()`, `launch()`, `wait_and_cleanup()` |
 | `bridge/cookies.py` | In-place code injection into companion | `stage_cookies(cookies, target_url, companion_dir)` |
-| `bridge/cookies_gecko.py` | Direct SQLite writer for Firefox targets | `stage_gecko_profile()`, `inject_gecko_cookies()` |
+| `bridge/cookies_gecko.py` | Direct SQLite writer for Firefox targets. Uses Firefox 104+ schema with `rawSameSite`. | `stage_gecko_profile()`, `inject_gecko_cookies()`, `_normalize_host()` |
 | `bridge/cookie_server.py` | Transient HTTP server (`127.0.0.1:47831`) | `start_cookie_server()`, `stop_cookie_server()`, `_CookieHandler` |
 | `bridge/profile.py` | Ephemeral & persistent profile lifecycle | `create_ephemeral()`, `resolve_persistent()`, `validate_profile()`, `cleanup()` |
 | `bridge/config.py` | Config reader/writer (`bridge/config.json`) | `load_config()`, `save_config()`, `get_config_value()`, `set_config_value()` |
-| `bridge/install.py` | Multi-browser host manifest installer | `install()`, `uninstall()`, `reinstall_from_config()`, `generate_mozilla_manifest()`, `generate_chromium_manifest()` |
+| `bridge/install.py` | Multi-browser host manifest installer. Auto-detects installed extension IDs. | `install()`, `uninstall()`, `reinstall_from_config()`, `generate_mozilla_manifest()`, `generate_chromium_manifest()`, `find_installed_chrome_extension_ids()` |
 | `bridge/logger.py` | JSON-lines session telemetry | `log_session()`, `log_launch_time()`, `get_recent()` |
+| `bridge/bridge_debug.log` | Runtime debug log (auto-created). Captures cookie counts, profile paths, errors per handoff. | N/A — tail this file to diagnose handoff failures |
 | `firefox-extension/` | Source extension for Firefox (MV2) | `manifest.json`, `background/`, `content/`, `popup/`, `options/` |
-| `chrome-extension/` | Source extension for Chromium (MV3) | `manifest.json`, `background/main.js`, `content/storage-extractor.js`, `popup/`, `options/` |
+| `chrome-extension/` | Source extension for Chromium (MV3). Works in Chrome, Edge, Brave, Vivaldi, Opera. | `manifest.json`, `background/main.js`, `content/storage-extractor.js`, `popup/`, `options/` |
 | `chromium-extension/` | Injected companion for Chromium targets (MV3) | `manifest.json`, `background/receiver.js`, `content/return-button.js` |
 | `scripts/build_releases.py` | Automated release zip packager | Builds `releases/bridge/`, `releases/firefox-extension/`, `releases/chrome-extension/` |
 
@@ -92,11 +94,17 @@
 
 ### B. Chromium → Gecko/Firefox Flow
 1. User clicks "Open in Firefox" (or rule match) in `chrome-extension/`.
-2. Service worker `main.js` collects cookies (`chrome.cookies.getAll`) and storage, sends `{ action: "launch", browser: "firefox", ... }`.
+2. Service worker `main.js` collects cookies:
+   - Calls `chrome.cookies.getAll({ url })` for the exact URL.
+   - Also calls `chrome.cookies.getAll({ domain: hostname })` to catch subdomain cookies.
+   - De-duplicates by `name||domain||path` key.
+   - Extracts `localStorage`/`sessionStorage` via content script with a 3-second timeout.
+   - Sends `{ action: "launch", browser: "firefox", cookies: [...], storage: {...}, ... }`.
 3. Bridge detects target family is `"gecko"`:
    - Creates ephemeral profile directory (`tempfile.mkdtemp(prefix="fx-gecko-")`).
    - Writes `user.js` (suppressing first-run, telemetry, and default browser prompts).
-   - Writes cookies directly into `cookies.sqlite` using Python's built-in `sqlite3` (`moz_cookies` table).
+   - Writes cookies directly into `cookies.sqlite` using Python's built-in `sqlite3` (`moz_cookies` table, Firefox 104+ schema with `rawSameSite`).
+   - Starts cookie server on `127.0.0.1:47831` for localStorage delivery.
    - Launches Firefox with flags (`-profile <dir> -no-remote -new-instance <url>`).
    - Firefox starts up fully authenticated instantly—zero extension dependency in target!
 4. User closes Firefox window -> bridge detects process termination, removes temp profile directory, refocuses original Chromium tab.
@@ -124,6 +132,7 @@
     - `HKCU\Software\Opera Software\NativeMessagingHosts\chromiumbridge`
   - Linux: `~/.config/{google-chrome,chromium,BraveSoftware/Brave-Browser,microsoft-edge}/NativeMessagingHosts/chromiumbridge.json`
   - macOS: `~/Library/Application Support/{Google/Chrome,Chromium,BraveSoftware/Brave-Browser,Microsoft Edge}/NativeMessagingHosts/chromiumbridge.json`
+- **`allowed_origins` constraint**: Chromium strictly rejects wildcard origins in manifest. `install.py` auto-detects installed extension IDs and injects each as `chrome-extension://<id>/`. Wildcards (`*/*`) cause silent connection refusal.
 
 ---
 
@@ -181,6 +190,29 @@
 }
 ```
 
+### `bridge/cookies.sqlite` — `moz_cookies` table (Firefox 104+ canonical schema)
+```sql
+CREATE TABLE moz_cookies (
+    id INTEGER PRIMARY KEY,
+    originAttributes TEXT NOT NULL DEFAULT '',
+    name TEXT,
+    value TEXT,
+    host TEXT,          -- Leading dot = domain cookie (.example.com), no dot = host-only
+    path TEXT,
+    expiry INTEGER,     -- Unix seconds (NOT microseconds)
+    lastAccessed INTEGER, -- Microseconds since epoch
+    creationTime INTEGER, -- Microseconds since epoch
+    isSecure INTEGER,
+    isHttpOnly INTEGER,
+    inBrowserElement INTEGER DEFAULT 0,
+    sameSite INTEGER DEFAULT 0,   -- 0=None, 1=Lax, 2=Strict
+    rawSameSite INTEGER DEFAULT 0, -- REQUIRED in Firefox 104+; mirrors sameSite
+    schemeMap INTEGER DEFAULT 0,   -- 1=HTTP-only, 2=HTTPS-only, 3=both
+    CONSTRAINT moz_uniqueid UNIQUE (name, host, path, originAttributes)
+);
+```
+> **Critical**: `rawSameSite` is mandatory in Firefox 104+. Missing it causes cookie rejection. `isPartitionedAttributeSet` and `updateTime` do NOT exist in the real schema—do not insert them.
+
 ---
 
 ## 8. Critical Architectural Invariants & Edge Cases
@@ -191,11 +223,25 @@
 2. **Companion Staging to Real Local Filesystem**:
    - `--load-extension` fails on mapped virtual drives. `launcher.py` stages companion into `%TEMP%\cb-sessions\<id>\companion_ext`.
 3. **Gecko Direct SQLite Injection**:
-   - Firefox target uses direct SQLite writing into `cookies.sqlite` before launch (`moz_cookies` table). No unpacked extension signing issues.
+   - Firefox target uses direct SQLite writing into `cookies.sqlite` before launch (`moz_cookies` table).
+   - Schema must match Firefox 104+ exactly: includes `rawSameSite`, excludes `isPartitionedAttributeSet`/`updateTime`.
+   - `ALTER TABLE moz_cookies ADD COLUMN rawSameSite INTEGER DEFAULT 0` is issued defensively for pre-existing DBs.
 4. **Gecko Process Isolation**:
    - Always pass `-no-remote -new-instance` when launching Firefox targets, preventing Firefox from silently handing the URL to an existing open browser process and ignoring the custom profile.
 5. **Native Messaging Buffer Flush**:
    - `sys.stdout.buffer.flush()` must follow every write in Python.
+6. **Chromium `allowed_origins` Strict Matching**:
+   - `chromiumbridge_chrome.json` must list each extension's origin as `chrome-extension://<exact-id>/`.
+   - Wildcards are silently rejected by Chromium. `install.py::find_installed_chrome_extension_ids()` auto-detects installed extension IDs from registry/filesystem during `install()`.
+7. **Cookie Collection — Dual Query Strategy**:
+   - `chrome.cookies.getAll({ url })` only returns cookies matching the exact URL's scope.
+   - A second call `chrome.cookies.getAll({ domain: hostname })` is required to catch cookies set on the parent domain (e.g., `.example.com`) that the URL query misses.
+   - Results are de-duplicated by `name||domain||path` before sending to bridge.
+8. **Storage Extraction Timeout**:
+   - Content script `extractStorage` message has a 3-second `Promise.race` timeout. Failure is non-fatal; handoff continues without localStorage/sessionStorage.
+9. **Bridge Debug Logging**:
+   - `bridge/bridge_debug.log` is written by `bridge.py` via Python `logging`. Captures every handoff: URL, browser, cookie count, profile path, launch flags, errors.
+   - To diagnose cookie failures: `type bridge\bridge_debug.log` and check `cookies=0` entries.
 
 ---
 
@@ -209,3 +255,28 @@ Outputs:
 - `releases/bridge/bridge-v1.0.0.zip`: Python bridge + companion extension + installer.
 - `releases/firefox-extension/firefox-extension-v1.0.0.zip`: Ready for Mozilla Add-ons (AMO).
 - `releases/chrome-extension/chrome-extension-v1.0.0.zip`: Ready for Chrome Web Store / Edge Add-ons.
+
+---
+
+## 10. Debugging & Diagnostics
+
+### Bridge connectivity failure (popup says "Bridge not detected")
+1. Run `python bridge/install.py` to re-register native host manifests.
+2. Verify the extension ID in `bridge/chromiumbridge_chrome.json` matches the installed extension.
+3. Check that `allowed_origins` contains `chrome-extension://<id>/` — no wildcards.
+4. `install.py::find_installed_chrome_extension_ids()` auto-injects IDs for Chrome, Edge, Brave, etc.
+
+### Cookies / auth state not transferred to Firefox
+1. Check `bridge/bridge_debug.log` — look for `cookies=0` or `stage_gecko_profile complete: 0 cookies injected`.
+2. If `cookies=0`, the issue is upstream in the extension:
+   - Open DevTools for the service worker (`edge://extensions` → service worker link).
+   - Look for `[ChromiumBridge] Collected N cookies for <url>` in the console.
+   - If `N=0`: site may block third-party cookie access, or Edge Privacy settings restrict `chrome.cookies` API access.
+3. If cookies > 0 but not working in Firefox:
+   - Confirm `rawSameSite` column exists in written `cookies.sqlite` (verify via `verify_cookies.py` in scratch dir).
+   - Confirm `host` field has correct leading-dot format for domain cookies.
+   - Confirm Firefox was not already running with the same profile (SQLite lock contention).
+
+### localStorage not transferred
+- The cookie server (`127.0.0.1:47831`) serves storage at `/storage`. Firefox must request it after launch.
+- Storage extraction has a 3-second timeout; if content script isn't injected (e.g., `chrome://` pages), it silently skips.

@@ -24,9 +24,12 @@
     <!-- Bridge Not Ready State -->
     <div class="state-offline" id="state-offline" hidden>
       <div class="offline-icon">⚠️</div>
-      <p class="offline-title">Bridge not connected</p>
-      <p class="offline-desc">Run <code>python install.py</code> in the bridge folder to connect.</p>
-      <button class="btn btn-primary" id="btn-setup">Open Settings</button>
+      <p class="offline-title" id="offline-title">Bridge not connected</p>
+      <p class="offline-desc" id="offline-desc">Run <code>python install.py</code> in the bridge folder to connect.</p>
+      <div class="offline-actions" style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+        <button class="btn btn-outline" id="btn-retry" style="padding:6px 14px;font-size:12px">↻ Retry</button>
+        <button class="btn btn-primary" id="btn-setup" style="padding:6px 14px;font-size:12px">Settings</button>
+      </div>
     </div>
 
     <!-- Main Content (shown when bridge is ready) -->

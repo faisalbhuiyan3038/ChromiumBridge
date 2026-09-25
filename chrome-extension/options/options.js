@@ -204,7 +204,7 @@
         healthText.textContent = "Connected to Python Bridge";
       } else {
         healthDot.className = "health-dot offline";
-        healthText.textContent = "Bridge Offline";
+        healthText.textContent = res?.lastError ? `Bridge Offline (${res.lastError})` : "Bridge Offline";
       }
     });
   }

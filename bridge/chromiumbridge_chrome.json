@@ -4,6 +4,6 @@
   "path": "E:\\Programming\\ChromiumBridge\\bridge\\chromiumbridge.bat",
   "type": "stdio",
   "allowed_origins": [
-    "chrome-extension://*/*"
+    "chrome-extension://hhkcmembniihpafebbbhhbnmodppdfca/"
   ]
 }

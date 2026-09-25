@@ -6,6 +6,7 @@
 const HOST_NAME = "chromiumbridge";
 
 let _bridgeReady = false;
+let _lastBridgeError = null;
 let _detectedGeckoBrowsers = [];
 let _activeHandoffs = new Map();
 
@@ -31,10 +32,12 @@ async function checkBridgeHealth() {
   const response = await sendNativeMessage({ action: "ping", target_type: "gecko" });
   if (response && response.status === "ok") {
     _bridgeReady = true;
+    _lastBridgeError = null;
     _detectedGeckoBrowsers = response.gecko_browsers || response.browsers || [];
     console.log("[ChromiumBridge] Bridge is ready. Detected Gecko browsers:", _detectedGeckoBrowsers);
   } else {
     _bridgeReady = false;
+    _lastBridgeError = response?.error || "Unable to connect to bridge host";
     _detectedGeckoBrowsers = [];
     console.warn("[ChromiumBridge] Bridge not available:", response?.error || response);
   }
@@ -144,28 +147,55 @@ async function performHandoff(tabId, url, overrides = {}) {
   const mode = overrides.mode || rule.mode || settings.window_mode || "normal";
   const profile = overrides.profile || rule.profile || settings.profile_mode || "ephemeral";
 
-  // 1. Collect cookies for target URL
+  // 1. Collect cookies for target URL and domain
   let cookies = [];
   if (settings.port_cookies !== false) {
     try {
-      cookies = await chrome.cookies.getAll({ url });
+      // Collect cookies for exact URL
+      const urlCookies = await chrome.cookies.getAll({ url });
+      const seen = new Set();
+      for (const c of urlCookies) {
+        const key = `${c.name}||${c.domain}||${c.path}`;
+        if (!seen.has(key)) { seen.add(key); cookies.push(c); }
+      }
+
+      // Also collect for the naked domain (catches subdomain cookies)
+      try {
+        const parsed = new URL(url);
+        const domainCookies = await chrome.cookies.getAll({ domain: parsed.hostname });
+        for (const c of domainCookies) {
+          const key = `${c.name}||${c.domain}||${c.path}`;
+          if (!seen.has(key)) { seen.add(key); cookies.push(c); }
+        }
+      } catch (_) {}
+
+      console.log(`[ChromiumBridge] Collected ${cookies.length} cookies for ${url}`);
+      if (cookies.length === 0) {
+        console.warn("[ChromiumBridge] No cookies found. The site may not be logged in, or Edge privacy settings block cookie access.");
+      }
     } catch (err) {
       console.warn("[ChromiumBridge] Could not read cookies:", err);
     }
   }
 
-  // 2. Collect localStorage & sessionStorage from content script
+  // 2. Collect localStorage & sessionStorage from content script with timeout
   let storageData = { localStorage: null, sessionStorage: null, origin: null };
   if (settings.port_localstorage !== false && tabId) {
     try {
-      const response = await chrome.tabs.sendMessage(tabId, { action: "extractStorage" });
-      if (response) {
-        storageData.origin = response.origin || null;
-        storageData.localStorage = response.localStorage || null;
-        storageData.sessionStorage = response.sessionStorage || null;
+      const storageResponse = await Promise.race([
+        chrome.tabs.sendMessage(tabId, { action: "extractStorage" }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Storage extraction timed out")), 3000)),
+      ]);
+      if (storageResponse) {
+        storageData.origin = storageResponse.origin || null;
+        storageData.localStorage = storageResponse.localStorage || null;
+        storageData.sessionStorage = storageResponse.sessionStorage || null;
+        const lsKeys = storageData.localStorage ? Object.keys(storageData.localStorage).length : 0;
+        const ssKeys = storageData.sessionStorage ? Object.keys(storageData.sessionStorage).length : 0;
+        console.log(`[ChromiumBridge] Storage extracted: localStorage=${lsKeys} keys, sessionStorage=${ssKeys} keys`);
       }
     } catch (err) {
-      console.warn("[ChromiumBridge] Could not extract storage data:", err);
+      console.warn("[ChromiumBridge] Could not extract storage data:", err.message);
     }
   }
 
@@ -191,7 +221,7 @@ async function performHandoff(tabId, url, overrides = {}) {
 
   _activeHandoffs.set(tabId, { url, domain, startTime: Date.now() });
 
-  console.log("[ChromiumBridge] Dispatching handoff to bridge:", payload);
+  console.log(`[ChromiumBridge] Dispatching handoff to bridge. Cookies: ${cookies.length}, localStorage: ${storageData.localStorage ? Object.keys(storageData.localStorage).length : 0} keys`);
   const response = await sendNativeMessage(payload);
 
   _activeHandoffs.delete(tabId);
@@ -226,6 +256,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         return {
           tabInfo: tab ? { tabId: tab.id, url: tab.url, domain: extractDomain(tab.url) } : null,
           bridgeReady: _bridgeReady,
+          lastError: _lastBridgeError,
           browsers: _detectedGeckoBrowsers,
           currentRule: ruleMatch?.rule || null,
           settings,
@@ -239,9 +270,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       case "detectBrowsers": {
         const result = await sendNativeMessage({ action: "detect", target_type: "gecko" });
         if (result && (result.gecko_browsers || result.browsers)) {
+          _bridgeReady = true;
+          _lastBridgeError = null;
           _detectedGeckoBrowsers = result.gecko_browsers || result.browsers;
-          return { browsers: _detectedGeckoBrowsers };
+          return { browsers: _detectedGeckoBrowsers, bridgeReady: true };
         }
+        _bridgeReady = false;
+        _lastBridgeError = result?.error || "Detection failed";
         return result;
       }
 

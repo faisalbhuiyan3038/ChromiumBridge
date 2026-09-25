@@ -2,7 +2,7 @@
   "version": 2,
   "default_browser": "brave",
   "default_gecko_browser": "firefox",
-  "chrome_extension_id": "",
+  "chrome_extension_id": "hhkcmembniihpafebbbhhbnmodppdfca",
   "python_path": "C:\\Users\\islam\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
   "bridge_dir": "E:\\Programming\\ChromiumBridge\\bridge",
   "browser_overrides": {
