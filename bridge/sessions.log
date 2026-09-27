@@ -266,3 +266,11 @@
 {"type":"launch_time","timestamp":1790346256.32395,"browser":"firefox","seconds":0.5}
 {"type":"session","timestamp":1790346430.5058181,"domain":"chatgpt.com","browser":"edge","duration_ms":28184,"outcome":"closed"}
 {"type":"launch_time","timestamp":1790346430.5065324,"browser":"edge","seconds":28.58}
+{"type":"session","timestamp":1790505631.6990464,"domain":"chatgpt.com","browser":"firefox","duration_ms":66,"outcome":"closed"}
+{"type":"launch_time","timestamp":1790505631.6995475,"browser":"firefox","seconds":0.07}
+{"type":"session","timestamp":1790505912.3274534,"domain":"chatgpt.com","browser":"firefox","duration_ms":55,"outcome":"closed"}
+{"type":"launch_time","timestamp":1790505912.3274534,"browser":"firefox","seconds":0.06}
+{"type":"session","timestamp":1790506190.7319212,"domain":"chatgpt.com","browser":"firefox","duration_ms":98,"outcome":"closed"}
+{"type":"launch_time","timestamp":1790506190.732425,"browser":"firefox","seconds":0.1}
+{"type":"session","timestamp":1790506213.180774,"domain":"chatgpt.com","browser":"firefox","duration_ms":92,"outcome":"closed"}
+{"type":"launch_time","timestamp":1790506213.180774,"browser":"firefox","seconds":0.09}

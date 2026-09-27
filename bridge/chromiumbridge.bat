@@ -1,2 +1,2 @@
 @echo off
-"C:\Users\islam\AppData\Local\Programs\Python\Python313\python.exe" -u "E:\Programming\ChromiumBridge\bridge\bridge.py" %*
+"C:\Users\User\AppData\Local\Programs\Python\Python312\python.exe" -u "M:\.systemfile\ChromiumBridge\bridge\bridge.py" %*

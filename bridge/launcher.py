@@ -131,16 +131,33 @@ def build_flags(config, url, mode, profile_dir, companion_dir, incognito=False):
 
 
 # ── Gecko / Firefox Flag Builder ───────────────────────
-def build_gecko_flags(config, url, mode, profile_dir, incognito=False):
+def build_gecko_flags(config, url, mode, profile_dir, incognito=False, companion_mode=False):
     """
     Build CLI arguments for launching Firefox / Gecko browsers.
-    Uses -profile, -no-remote, and -new-instance for total isolation.
+
+    Args:
+        config: Bridge configuration dict.
+        url: The URL to open (target URL or handoff URL).
+        mode: Window mode ("popup", "normal", etc.).
+        profile_dir: Profile directory path. Ignored when companion_mode=True.
+        incognito: Whether to use private browsing.
+        companion_mode: When True, omit -profile/-no-remote/-new-instance so
+                        Firefox uses its default profile (where gecko-extension
+                        is installed) and can attach to an already-running instance.
     """
-    flags = [
-        "-profile", profile_dir,
-        "-no-remote",
-        "-new-instance",
-    ]
+    flags = []
+
+    if companion_mode:
+        # Companion mode: let Firefox use its default profile.
+        # No isolation flags — allows attaching to a running Firefox instance.
+        pass
+    else:
+        # Legacy mode: total isolation with a specific profile directory.
+        flags.extend([
+            "-profile", profile_dir,
+            "-no-remote",
+            "-new-instance",
+        ])
 
     if mode == "popup":
         flags.extend(["-width", "960", "-height", "640"])

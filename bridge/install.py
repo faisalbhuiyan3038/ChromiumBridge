@@ -20,6 +20,10 @@ import argparse
 HOST_NAME = "chromiumbridge"
 FIREFOX_EXTENSION_ID = "chromiumbridges@faisalbhuiyan.com"
 
+# Chrome / Edge / Chromium extension ID.
+# Change this in one place here when loading an unpacked or store extension.
+CHROME_EXTENSION_ID = "gkmimgmenjencipgjlojgdkfcomioeah"
+
 # Known Chromium registry paths on Windows
 WINDOWS_CHROMIUM_REG_PATHS = [
     r"Software\Google\Chrome\NativeMessagingHosts",
@@ -191,8 +195,8 @@ def generate_chromium_manifest(bridge_dir, python_path=None, chrome_ids=None):
     
     # Chromium strictly disallows wildcards (*/*) in allowed_origins.
     # Every entry must be a valid chrome-extension://<id>/ URI.
-    if not origins:
-        origins = ["chrome-extension://hhkcmembniihpafebbbhhbnmodppdfca/"]
+    if not origins and CHROME_EXTENSION_ID and CHROME_EXTENSION_ID.strip():
+        origins = [f"chrome-extension://{CHROME_EXTENSION_ID.strip()}/"]
 
     return {
         "name": HOST_NAME,
@@ -228,30 +232,16 @@ def install(python_path=None, bridge_dir=None, chrome_id=None):
 
     # Gather Chrome extension IDs
     chrome_ids = []
-    if chrome_id:
-        chrome_ids.append(chrome_id)
+    primary_id = (chrome_id or CHROME_EXTENSION_ID or "").strip()
+    if primary_id:
+        chrome_ids.append(primary_id)
 
-    # 1. Stored ID in config.json
-    try:
-        from config import load_config
-        cfg = load_config()
-        stored_id = cfg.get("chrome_extension_id")
-        if stored_id and stored_id not in chrome_ids:
-            chrome_ids.append(stored_id)
-    except Exception:
-        pass
-
-    # 2. Auto-detect from installed Chromium browser profiles
+    # Auto-detect from installed Chromium browser profiles
     detected_ids = find_installed_chrome_extension_ids()
     for did in detected_ids:
         if did not in chrome_ids:
             chrome_ids.append(did)
             print(f"  Auto-detected Chromium extension ID: {did}")
-
-    # 3. Fallback known ID (e.g. Edge unpacked)
-    fallback_id = "hhkcmembniihpafebbbhhbnmodppdfca"
-    if fallback_id not in chrome_ids:
-        chrome_ids.append(fallback_id)
 
     # 1. Mozilla Manifest
     moz_manifest = generate_mozilla_manifest(bridge_dir, python_path)
@@ -324,8 +314,8 @@ def install(python_path=None, bridge_dir=None, chrome_id=None):
         config = load_config()
         config["python_path"] = python_path
         config["bridge_dir"] = bridge_dir
-        if chrome_id:
-            config["chrome_extension_id"] = chrome_id
+        if primary_id:
+            config["chrome_extension_id"] = primary_id
         save_config(config)
     except Exception:
         pass
@@ -343,7 +333,7 @@ def reinstall_from_config():
         config = load_config()
         python_path = config.get("python_path") or get_python_path()
         bridge_dir = config.get("bridge_dir") or get_bridge_dir()
-        chrome_id = config.get("chrome_extension_id") or None
+        chrome_id = config.get("chrome_extension_id") or CHROME_EXTENSION_ID
         success = install(python_path=python_path, bridge_dir=bridge_dir, chrome_id=chrome_id)
         return {"status": "ok" if success else "error"}
     except Exception as e:

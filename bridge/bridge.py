@@ -40,7 +40,10 @@ from launcher import (
 )
 from config import load_config, save_config, get_config_value, set_config_value
 from logger import log_session, log_launch_time
-from cookie_server import start_cookie_server, stop_cookie_server, COOKIE_PORT
+from cookie_server import (
+    start_cookie_server, start_handoff_server, stop_cookie_server,
+    COOKIE_PORT, _CookieHandler,
+)
 from install import reinstall_from_config
 
 
@@ -130,57 +133,121 @@ def handle_launch(message):
 
         # ── Branch A: Gecko Target (Firefox, LibreWolf, Floorp, Zen) ──
         if family == "gecko":
-            if profile_mode == "persistent":
-                session_cfg = config.get("session", {})
-                per_browser = session_cfg.get("persistent_profiles", {})
-                persistent_path = per_browser.get(browser_id, "")
-                if not persistent_path:
-                    persistent_path = session_cfg.get("persistent_profile_path", "")
-                profile_dir = resolve_persistent(persistent_path)
-            else:
-                profile_dir = create_ephemeral()
+            session_cfg = config.get("session", {})
+            gecko_mode = session_cfg.get("gecko_injection_mode", "companion")
+            log.info("Gecko injection mode: %s", gecko_mode)
 
-            log.info("Gecko profile dir: %s", profile_dir)
-
-            # Direct SQLite cookie & pref injection
-            stage_gecko_profile(profile_dir, cookies=cookies, target_url=url)
-            log.info("stage_gecko_profile complete: %d cookies injected", len(cookies))
-
-            # Optional local storage server
-            cookie_server = None
-            if cookies or storage_data:
-                cookie_server = start_cookie_server(
+            # ── Companion mode: route through gecko-extension ──
+            if gecko_mode == "companion":
+                # Start handoff server with tokenized endpoint
+                handoff_server, handoff_token = start_handoff_server(
                     cookies, target_url=url, storage_data=storage_data
                 )
-                log.info("Cookie server started" if cookie_server else "Cookie server FAILED to start")
+                if not handoff_server:
+                    log.error("Failed to start handoff server")
+                    return {"error": "Failed to start handoff server on port %d" % COOKIE_PORT}
 
-            flags = build_gecko_flags(
-                config=config,
-                url=url,
-                mode=mode,
-                profile_dir=profile_dir,
-                incognito=incognito,
-            )
-            log.info("Launching Firefox with flags: %s", flags)
+                launch_url = f"http://127.0.0.1:{COOKIE_PORT}/handoff?token={handoff_token}"
+                log.info("Handoff URL: %s", launch_url)
 
-            start_time = time.time()
-            process = launch(browser_path, flags)
+                flags = build_gecko_flags(
+                    config=config,
+                    url=launch_url,
+                    mode=mode,
+                    profile_dir=None,
+                    incognito=incognito,
+                    companion_mode=True,
+                )
+                log.info("Launching Firefox (companion mode) with flags: %s", flags)
 
-            # Wait for Gecko browser to exit
-            process.wait()
-            duration_ms = int((time.time() - start_time) * 1000)
-            log.info("Firefox exited after %d ms", duration_ms)
+                start_time = time.time()
+                process = launch(browser_path, flags)
 
-            stop_cookie_server(cookie_server)
-            log_session(domain, browser_id, duration_ms, "closed")
-            log_launch_time(browser_id, time.time() - start_time)
-            wait_and_cleanup(profile_dir, profile_mode)
+                # In companion mode, Firefox may already be running. When it is,
+                # the launched process exits almost immediately after handing the
+                # URL to the existing instance. We must keep the bridge alive
+                # until the handoff server's payload is consumed or times out.
+                process.wait()
+                elapsed_ms = int((time.time() - start_time) * 1000)
 
-            return {
-                "event": "closed",
-                "domain": domain,
-                "duration": duration_ms,
-            }
+                if elapsed_ms < 2000:
+                    # Warm start: Firefox was already running and exited the
+                    # launcher immediately. Wait for the handoff server's
+                    # watchdog to signal completion (payload consumed or timeout).
+                    log.info("Firefox exited in %d ms (warm start detected). "
+                             "Waiting for handoff payload consumption...", elapsed_ms)
+                    # The handoff server's watchdog thread handles shutdown.
+                    # We block here until payload is consumed or timeout fires.
+                    consumed_event = _CookieHandler._payload_consumed_event
+                    if consumed_event:
+                        consumed_event.wait(timeout=35)
+
+                duration_ms = int((time.time() - start_time) * 1000)
+                log.info("Firefox session ended after %d ms", duration_ms)
+
+                stop_cookie_server(handoff_server)
+                log_session(domain, browser_id, duration_ms, "closed")
+                log_launch_time(browser_id, time.time() - start_time)
+
+                return {
+                    "event": "closed",
+                    "domain": domain,
+                    "duration": duration_ms,
+                }
+
+            # ── Legacy mode: direct SQLite injection (original flow) ──
+            else:
+                if profile_mode == "persistent":
+                    per_browser = session_cfg.get("persistent_profiles", {})
+                    persistent_path = per_browser.get(browser_id, "")
+                    if not persistent_path:
+                        persistent_path = session_cfg.get("persistent_profile_path", "")
+                    profile_dir = resolve_persistent(persistent_path)
+                else:
+                    profile_dir = create_ephemeral()
+
+                log.info("Gecko profile dir (legacy): %s", profile_dir)
+
+                # Direct SQLite cookie & pref injection
+                stage_gecko_profile(profile_dir, cookies=cookies, target_url=url)
+                log.info("stage_gecko_profile complete: %d cookies injected", len(cookies))
+
+                # Optional local storage server
+                cookie_server = None
+                if cookies or storage_data:
+                    cookie_server = start_cookie_server(
+                        cookies, target_url=url, storage_data=storage_data
+                    )
+                    log.info("Cookie server started" if cookie_server else "Cookie server FAILED to start")
+
+                flags = build_gecko_flags(
+                    config=config,
+                    url=url,
+                    mode=mode,
+                    profile_dir=profile_dir,
+                    incognito=incognito,
+                    companion_mode=False,
+                )
+                log.info("Launching Firefox (legacy mode) with flags: %s", flags)
+
+                start_time = time.time()
+                process = launch(browser_path, flags)
+
+                # Wait for Gecko browser to exit
+                process.wait()
+                duration_ms = int((time.time() - start_time) * 1000)
+                log.info("Firefox exited after %d ms", duration_ms)
+
+                stop_cookie_server(cookie_server)
+                log_session(domain, browser_id, duration_ms, "closed")
+                log_launch_time(browser_id, time.time() - start_time)
+                wait_and_cleanup(profile_dir, profile_mode)
+
+                return {
+                    "event": "closed",
+                    "domain": domain,
+                    "duration": duration_ms,
+                }
 
         # ── Branch B: Chromium Target (Brave, Edge, Vivaldi, Opera) ──
         else:

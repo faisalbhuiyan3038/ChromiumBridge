@@ -1,218 +1,243 @@
-# Approach A Implementation Plan: Persistent Profile + Extension Companion
+# Approach A — Revised Implementation Plan
+# Separate Gecko Companion Extension + Tokenized Handoff Server
 
-> Rework the Chromium → Firefox handoff to stop using broken direct SQLite injection and instead route state restoration through the existing Firefox extension via a tokenized localhost handoff page.
+> **Key change from v1**: The existing `firefox-extension/` is **NOT modified**. A brand-new `gecko-extension/` companion is created, mirroring the architecture of `chromium-extension/`.
 
 ---
 
-## Problem Summary
+## Architecture — Extension Roles
 
-The current Chromium → Firefox flow fails because:
-1. **Cookies**: Direct `cookies.sqlite` injection is silently rejected by modern Firefox (schema drift, WAL, integrity checks).
-2. **Web Storage**: `localStorage`/`sessionStorage` are served on `127.0.0.1:47831/storage` but **nothing in the target Firefox instance ever fetches them**.
-3. **Already-running Firefox**: `-no-remote -new-instance` + ephemeral profiles cause SQLite lock contention with an existing Firefox process.
-
-## Solution Overview
-
-Replace the broken direct-injection path with an **extension-mediated handoff**:
+| Directory | Role | Direction | Modified? |
+|-----------|------|-----------|-----------|
+| [`firefox-extension/`](file:///m:/.systemfile/ChromiumBridge/firefox-extension) | **Sender** — extracts state from Firefox, sends to Chromium | Firefox → Chromium | ❌ Untouched |
+| [`chrome-extension/`](file:///m:/.systemfile/ChromiumBridge/chrome-extension) | **Sender** — extracts state from Chromium, sends to Firefox | Chromium → Firefox | ❌ Untouched |
+| [`chromium-extension/`](file:///m:/.systemfile/ChromiumBridge/chromium-extension) | **Receiver** — companion injected into Chromium targets | Firefox → Chromium | ❌ Untouched |
+| **`gecko-extension/`** *(NEW)* | **Receiver** — companion installed in Firefox, receives handoffs from Chromium | Chromium → Firefox | ✅ Created |
 
 ```
-Chrome Extension → Bridge (Python) → Localhost Server (/handoff?token=UUID)
-                                          ↓
-                                   Firefox opens URL
-                                          ↓
-                              Firefox Extension intercepts
-                                          ↓
-                          Fetches payload → Sets cookies via API
-                                          ↓
-                          Navigates to target URL → Injects storage
+Chrome/Edge/Brave                                    Firefox (user's default profile)
+┌──────────────────────┐                             ┌─────────────────────────────────┐
+│  chrome-extension/   │                             │  gecko-extension/ (NEW)         │
+│  (Sender MV3)        │                             │  (Receiver MV2)                 │
+│                      │                             │                                 │
+│  Extracts cookies,   │    Native Messaging          │  Detects handoff URL            │
+│  localStorage,       │──────────────────────┐      │  Fetches payload from server    │
+│  sessionStorage      │                      │      │  Sets cookies via API           │
+│                      │                      ▼      │  Injects storage via script     │
+│                      │            ┌─────────────┐  │  Shows "Back to Chrome" button  │
+│                      │            │  Bridge.py   │  │                                 │
+│                      │            │  (Python)    │──│  127.0.0.1:47831/handoff?token= │
+│                      │            └─────────────┘  │                                 │
+└──────────────────────┘                             └─────────────────────────────────┘
 ```
 
 ---
 
 ## File Impact Matrix
 
+### New Files (all in `gecko-extension/`)
+
+| File | Purpose |
+|------|---------|
+| `gecko-extension/manifest.json` | MV2 manifest with `cookies`, `storage`, `tabs`, `webNavigation`, `<all_urls>` permissions |
+| `gecko-extension/background/receiver.js` | Detects handoff URL navigation, fetches payload, restores cookies via `browser.cookies.set()`, navigates to target, triggers storage injection |
+| `gecko-extension/content/storage-injector.js` | Injects `localStorage`/`sessionStorage` into target origin after navigation |
+| `gecko-extension/content/return-button.js` | Floating "Back to Chrome/Edge" button (mirrors `chromium-extension/content/return-button.js`) |
+| `gecko-extension/icons/icon-48.png` | Extension icon (can reuse existing icons initially) |
+| `gecko-extension/icons/icon-96.png` | Extension icon (can reuse existing icons initially) |
+
+### Modified Files
+
 | File | Change Type | Summary |
 |------|-------------|---------|
-| [`cookie_server.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookie_server.py) | **Major rewrite** | Add `/handoff?token=` endpoint serving full payload (cookies + storage + target URL). Add single-use token validation. Add auto-shutdown after fetch. Add fallback HTML page. |
-| [`bridge.py`](file:///m:/.systemfile/ChromiumBridge/bridge/bridge.py) | **Modify** | Gecko branch: remove `stage_gecko_profile()` call (or gate behind legacy toggle), launch Firefox pointing at `http://127.0.0.1:47831/handoff?token=UUID` instead of target URL. Remove `-no-remote -new-instance` from gecko launch when not ephemeral. |
-| [`launcher.py`](file:///m:/.systemfile/ChromiumBridge/bridge/launcher.py) | **Modify** | `build_gecko_flags()`: make `-no-remote -new-instance` conditional (only for ephemeral/legacy mode). Add new flag builder variant for companion mode. |
-| [`firefox-extension/manifest.json`](file:///m:/.systemfile/ChromiumBridge/firefox-extension/manifest.json) | **Modify** | Add `"scripting"` permission (or use `tabs.executeScript` since MV2). Ensure `cookies` permission has `<all_urls>` host scope. Add `127.0.0.1` to content script matches. |
-| [`firefox-extension/background/main.js`](file:///m:/.systemfile/ChromiumBridge/firefox-extension/background/main.js) | **Major addition** | Add handoff receiver logic: detect `127.0.0.1:47831/handoff` navigation, fetch payload, restore cookies via `browser.cookies.set()`, navigate to target, inject storage via content script. |
-| [`firefox-extension/content/storage-injector.js`](file:///m:/.systemfile/ChromiumBridge/firefox-extension/content/storage-injector.js) | **New file** | Content script that receives `localStorage`/`sessionStorage` data from the background script and writes it into the page's storage objects. |
-| [`bridge/config.json`](file:///m:/.systemfile/ChromiumBridge/bridge/config.json) | **Modify** | Add `"gecko_injection_mode": "companion"` (vs `"legacy"`) to `session` block. |
-| [`cookies_gecko.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookies_gecko.py) | **No deletion** | Preserved as legacy fallback behind config toggle. No new code changes needed. |
-| [`profile.py`](file:///m:/.systemfile/ChromiumBridge/bridge/profile.py) | **Minor** | No structural changes. Ephemeral creation still used for legacy mode only. |
+| [`bridge/cookie_server.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookie_server.py) | **Major rework** | Add `/handoff?token=` endpoint, single-use token validation, auto-shutdown timer, fallback HTML page |
+| [`bridge/bridge.py`](file:///m:/.systemfile/ChromiumBridge/bridge/bridge.py) | **Modify** | Gecko branch: gate `stage_gecko_profile()` behind legacy toggle, launch Firefox at handoff URL instead of target URL |
+| [`bridge/launcher.py`](file:///m:/.systemfile/ChromiumBridge/bridge/launcher.py) | **Modify** | `build_gecko_flags()`: make `-no-remote -new-instance -profile` conditional on companion mode |
+| [`bridge/config.json`](file:///m:/.systemfile/ChromiumBridge/bridge/config.json) | **Minor** | Add `"gecko_injection_mode": "companion"` to `session` block |
+
+### Untouched Files
+
+| File | Reason |
+|------|--------|
+| [`firefox-extension/*`](file:///m:/.systemfile/ChromiumBridge/firefox-extension) | Sender extension — completely untouched |
+| [`chrome-extension/*`](file:///m:/.systemfile/ChromiumBridge/chrome-extension) | Sender extension — completely untouched |
+| [`chromium-extension/*`](file:///m:/.systemfile/ChromiumBridge/chromium-extension) | Chromium receiver — completely untouched |
+| [`bridge/cookies_gecko.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookies_gecko.py) | Preserved as legacy fallback, no changes |
+| [`bridge/cookies.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookies.py) | Chromium companion injection — unchanged |
+| [`bridge/profile.py`](file:///m:/.systemfile/ChromiumBridge/bridge/profile.py) | Still used for legacy ephemeral mode only |
 
 ---
 
 ## Task Breakdown
 
 ### Phase 1: Bridge-side — Tokenized Handoff Server
-> **Goal**: The Python bridge serves a single-use `/handoff?token=UUID` endpoint that delivers the full state payload and then shuts down.
+> Rework `cookie_server.py` to serve a single-use `/handoff?token=UUID` endpoint.
 
-- [ ] **Task 1.1**: Rework [`cookie_server.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookie_server.py) — Add `/handoff` endpoint
-  - Generate a `uuid.uuid4()` token per handoff session.
-  - `GET /handoff?token=<UUID>` returns JSON: `{ "url": "...", "cookies": [...], "storage": {...}, "token": "..." }`.
-  - Requests with a missing or wrong token get `403 Forbidden`.
-  - After one successful fetch of `/handoff`, set a flag so the server auto-shuts down (via a threading event or by calling `server.shutdown()` from the handler thread).
-  - `GET /handoff` (no token / wrong token) returns a **fallback HTML page** with:
-    - Message: "ChromiumBridge extension is not installed or not active."
-    - Link to install the Firefox extension.
-    - Auto-retry JavaScript that polls `/handoff?token=...` every 2 seconds (in case the extension loads late).
-  - Keep the existing `/cookies` and `/storage` endpoints intact for the Chromium companion flow.
-  - Export a new `start_handoff_server(cookies, target_url, storage_data)` function that returns `(server, token)`.
+- [ ] **Task 1.1**: Add `/handoff` endpoint to [`cookie_server.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookie_server.py)
+  - Generate a `secrets.token_urlsafe(32)` token per handoff session.
+  - `GET /handoff?token=<TOKEN>` → JSON: `{ "url": "...", "cookies": [...], "storage": {...} }`.
+  - Missing/wrong token → `403 Forbidden`.
+  - After one successful fetch, mark token as consumed → reject subsequent requests.
+  - Keep existing `/cookies`, `/storage`, `/` endpoints intact for the Chromium companion flow.
+  - Export new function: `start_handoff_server(cookies, target_url, storage_data)` → returns `(server, token)`.
 
-- [ ] **Task 1.2**: Add auto-shutdown timeout to the server
-  - Start a 30-second watchdog timer when the server starts.
-  - If no successful `/handoff` fetch occurs within 30 seconds, shut down the server gracefully.
-  - Cancel the watchdog if the payload is successfully fetched.
+- [ ] **Task 1.2**: Add fallback HTML page
+  - When `GET /handoff` is hit without the correct token (i.e. the extension hasn't intercepted):
+    - Serve a dark-themed HTML page:
+      - "Waiting for ChromiumBridge Companion extension..."
+      - Spinner animation.
+      - JavaScript that re-checks `/handoff?token=<TOKEN>` every 2 seconds.
+      - After 15 seconds without success, show: "Extension not detected. Please install the ChromiumBridge Gecko Companion."
+      - Include a direct download/install link.
+
+- [ ] **Task 1.3**: Add auto-shutdown timeout
+  - 30-second watchdog timer after server start.
+  - Shuts down server if no payload fetch occurs.
+  - Cancelled on successful fetch.
 
 ### Phase 2: Bridge-side — Launch Flow Changes
-> **Goal**: The bridge launches Firefox pointing at the handoff URL instead of the target URL, and conditionally removes isolation flags.
+> Modify `bridge.py` and `launcher.py` so the Gecko branch launches Firefox at the handoff URL.
 
-- [ ] **Task 2.1**: Modify [`bridge.py`](file:///m:/.systemfile/ChromiumBridge/bridge/bridge.py) `handle_launch()` Gecko branch
-  - Read `config.session.gecko_injection_mode` (default: `"companion"`).
+- [ ] **Task 2.1**: Modify [`bridge.py`](file:///m:/.systemfile/ChromiumBridge/bridge/bridge.py) Gecko branch in `handle_launch()`
+  - Read `config["session"]["gecko_injection_mode"]` (default: `"companion"`).
   - **Companion mode** (new default):
-    - Do NOT call `stage_gecko_profile()` (no SQLite injection).
-    - Call `start_handoff_server(cookies, url, storage_data)` → get `(server, token)`.
+    - Skip `stage_gecko_profile()` call.
+    - Call `start_handoff_server(cookies, url, storage_data)` → `(server, token)`.
     - Set `launch_url = f"http://127.0.0.1:{COOKIE_PORT}/handoff?token={token}"`.
-    - Call `build_gecko_flags()` with a new `companion_mode=True` parameter.
+    - Pass `companion_mode=True` to `build_gecko_flags()`.
   - **Legacy mode** (`"legacy"`):
-    - Keep the existing flow exactly as-is (SQLite injection + direct URL launch).
-  - Log the chosen mode in `bridge_debug.log`.
+    - Existing flow unchanged (SQLite injection + direct URL).
+  - Log chosen mode in `bridge_debug.log`.
 
 - [ ] **Task 2.2**: Modify [`launcher.py`](file:///m:/.systemfile/ChromiumBridge/bridge/launcher.py) `build_gecko_flags()`
   - Add `companion_mode=False` parameter.
   - When `companion_mode=True`:
-    - Omit `-no-remote` and `-new-instance` (allow attaching to running Firefox).
-    - Still include `-profile <dir>` only if the user explicitly specified a profile in config. Otherwise, omit it entirely so Firefox uses its default profile.
-  - When `companion_mode=False` (legacy):
+    - Omit `-profile <dir>`, `-no-remote`, `-new-instance`.
+    - Firefox uses its default profile (where `gecko-extension/` is installed).
+    - Still include window size flags for popup mode.
+  - When `companion_mode=False`:
     - Keep existing behavior: `-profile <dir> -no-remote -new-instance`.
 
-- [ ] **Task 2.3**: Update [`config.json`](file:///m:/.systemfile/ChromiumBridge/bridge/config.json) schema
-  - Add `"gecko_injection_mode": "companion"` inside the `"session"` block.
-  - Document the two values: `"companion"` (default, uses extension) and `"legacy"` (direct SQLite).
+- [ ] **Task 2.3**: Update [`config.json`](file:///m:/.systemfile/ChromiumBridge/bridge/config.json)
+  - Add `"gecko_injection_mode": "companion"` to the `"session"` block.
 
-### Phase 3: Firefox Extension — Handoff Receiver
-> **Goal**: The Firefox extension detects navigations to the handoff URL, fetches the payload, restores cookies, navigates to the target, and injects web storage.
+### Phase 3: Gecko Companion Extension — Scaffold & Cookie Receiver
+> Create `gecko-extension/` with manifest, background receiver, and cookie restoration logic.
 
-- [ ] **Task 3.1**: Update [`firefox-extension/manifest.json`](file:///m:/.systemfile/ChromiumBridge/firefox-extension/manifest.json)
-  - Ensure `"cookies"` permission is present (already is ✓).
-  - Ensure `<all_urls>` host permission is present (already is, via `permissions` array ✓).
-  - Add `http://127.0.0.1/*` to content script `matches` array (to allow detection on the handoff page).
-  - No need for `"scripting"` — MV2 uses `browser.tabs.executeScript()`.
+- [ ] **Task 3.1**: Create `gecko-extension/manifest.json`
+  - Manifest V2 (for Firefox compatibility, mirroring `firefox-extension/`).
+  - Permissions: `"cookies"`, `"storage"`, `"tabs"`, `"webNavigation"`, `"<all_urls>"`.
+  - `browser_specific_settings.gecko.id`: new unique ID (e.g. `"chromiumbridge-companion@faisalbhuiyan.com"`).
+  - Background script: `"background/receiver.js"`.
+  - Content scripts: `"content/return-button.js"` at `document_idle`.
+  - No static content script for storage injection (dynamically injected only during handoff).
+  - Reuse icons from `firefox-extension/icons/`.
 
-- [ ] **Task 3.2**: Add handoff receiver to [`firefox-extension/background/main.js`](file:///m:/.systemfile/ChromiumBridge/firefox-extension/background/main.js)
-  - **Detection**: Use `browser.webNavigation.onCompleted` (or `browser.webRequest.onBeforeRequest`) to detect when a tab navigates to `http://127.0.0.1:47831/handoff*`.
-  - Add `"webNavigation"` permission to manifest if using `onCompleted`.
+- [ ] **Task 3.2**: Create `gecko-extension/background/receiver.js`
+  - **Handoff Detection**: Listen on `browser.webNavigation.onCompleted` for URLs matching `http://127.0.0.1:47831/handoff*`.
   - **Payload Fetch**:
-    - Extract the `token` query parameter from the URL.
-    - `fetch("http://127.0.0.1:47831/handoff?token=<TOKEN>")` → parse JSON response.
-    - On fetch failure or non-200, log warning and bail (user sees the fallback page).
+    - Extract `token` from query string.
+    - `fetch("http://127.0.0.1:47831/handoff?token=<TOKEN>")` → parse JSON.
+    - On failure: log warning, bail (user sees fallback HTML page).
   - **Cookie Restoration**:
-    - Loop through `payload.cookies[]` and call `browser.cookies.set()` for each.
-    - Map Chrome cookie format to the Firefox `cookies.set()` API:
-      - `url`: Reconstruct from `cookie.secure ? "https://" : "http://"` + `cookie.domain.replace(/^\./, "")` + `cookie.path`.
-      - `name`, `value`, `path`: direct passthrough.
-      - `domain`: passthrough (Firefox handles leading dot correctly).
-      - `secure`, `httpOnly`: direct passthrough.
-      - `sameSite`: Map Chrome string (`"no_restriction"`, `"lax"`, `"strict"`, `"unspecified"`) to Firefox string (`"no_restriction"`, `"lax"`, `"strict"`, `"none"`).
+    - Loop through `payload.cookies[]`, call `browser.cookies.set()` for each.
+    - Cookie format mapping (Chrome → Firefox `cookies.set()` API):
+      - `url`: reconstruct from `(cookie.secure ? "https://" : "http://") + cookie.domain.replace(/^\./, "") + cookie.path`.
+      - `name`, `value`, `path`, `domain`: passthrough.
+      - `secure`, `httpOnly`: passthrough.
+      - `sameSite`: map Chrome strings → Firefox: `"no_restriction"` → `"no_restriction"`, `"lax"` → `"lax"`, `"strict"` → `"strict"`, `"unspecified"` / missing → `"no_restriction"`.
       - `expirationDate`: passthrough (seconds since epoch).
-      - `storeId`: Use `"firefox-default"` (or detect the current container).
-    - Log the count of successfully set vs. failed cookies.
-  - **Navigation**:
-    - After cookies are set, redirect the tab to `payload.url` using `browser.tabs.update(tabId, { url: payload.url })`.
-  - **Storage Injection**:
-    - After the target page loads (listen for `browser.webNavigation.onCompleted` on the tab), inject storage.
-    - Use `browser.tabs.executeScript(tabId, { code: "..." })` to write `localStorage` and `sessionStorage` into the page.
-    - Alternatively, send a message to the content script `storage-injector.js` (see Task 3.3).
+      - `storeId`: `"firefox-default"`.
+    - Log: `"Set X of Y cookies. Z failed."`.
+  - **Navigation to Target**:
+    - `browser.tabs.update(tabId, { url: payload.url })`.
+  - **Storage Injection** (after target page loads):
+    - Listen for `browser.webNavigation.onCompleted` on the same tab for the target URL.
+    - Use `browser.tabs.executeScript(tabId, { code: <storage injection code> })` to write `localStorage` and `sessionStorage`.
+    - The injected code receives the storage data via a closure or `JSON.stringify()` embedding.
+    - Validate origin matches `payload.storage.origin` before writing.
 
-- [ ] **Task 3.3**: Create [`firefox-extension/content/storage-injector.js`](file:///m:/.systemfile/ChromiumBridge/firefox-extension/content/storage-injector.js) *(New file)*
-  - Listen for `{ action: "injectStorage", localStorage: {...}, sessionStorage: {...} }` messages.
-  - Write each key-value pair into `window.localStorage` and `window.sessionStorage`.
-  - Send a response with the count of keys written.
-  - Guard against `SecurityError` (e.g., opaque origins, `file://` pages).
+- [ ] **Task 3.3**: Create `gecko-extension/content/return-button.js`
+  - Port from [`chromium-extension/content/return-button.js`](file:///m:/.systemfile/ChromiumBridge/chromium-extension/content/return-button.js).
+  - Change label: "Back to Chrome" / "Back to Edge" (or generic "Back to Chromium").
+  - Change emoji: from 🦊 to the source browser's icon (or generic 🌐).
+  - Use `browser.runtime` instead of `chrome.runtime`.
+  - Use `browser.storage.local` instead of `chrome.storage.local`.
+  - Shadow DOM isolation (same pattern as original).
+  - Dismiss per-domain using `browser.storage.local`.
 
-- [ ] **Task 3.4**: Update the Firefox manifest to register the new content script
-  - Add `"content/storage-injector.js"` to the content scripts array.
-  - Or: load it dynamically via `browser.tabs.executeScript()` (avoids loading it on every page).
-  - **Decision**: Use dynamic injection via `executeScript()` to avoid unnecessary overhead — only inject when a handoff is active.
+- [ ] **Task 3.4**: Copy icons
+  - Copy `firefox-extension/icons/icon-48.png` and `icon-96.png` into `gecko-extension/icons/`.
+  - (Or create distinct icons later to differentiate sender vs. receiver).
 
-### Phase 4: Error Handling, Security & Fallback UI
-> **Goal**: Robust error handling, secure token validation, and a helpful fallback page for users without the extension.
+### Phase 4: Error Handling, Security & Edge Cases
+> Hardening pass across all new code.
 
-- [ ] **Task 4.1**: Implement fallback HTML in [`cookie_server.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookie_server.py)
-  - When `GET /handoff` is hit without the extension intercepting:
-    - Serve an HTML page with:
-      - Dark-themed styling consistent with the existing `"/"` page.
-      - Message: "Waiting for ChromiumBridge extension..."
-      - Spinner/animation.
-      - JavaScript that polls `GET /handoff?token=<TOKEN>` every 2 seconds. On success, redirect to the target URL.
-      - If the extension doesn't pick it up within 15 seconds, show a message: "Extension not detected. Please install ChromiumBridge for Firefox."
-      - Link to the extension install page (AMO or local `.xpi`).
+- [ ] **Task 4.1**: Secure the token in [`cookie_server.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookie_server.py)
+  - Use `secrets.token_urlsafe(32)` (not `uuid.uuid4()`).
+  - Set `_token_consumed = True` after first successful read.
+  - Reject all subsequent `/handoff` requests with that token.
 
-- [ ] **Task 4.2**: Secure the token
-  - Use `secrets.token_urlsafe(32)` instead of `uuid.uuid4()` for stronger randomness.
-  - Invalidate the token after first successful read (set `_token_consumed = True`).
-  - Reject all subsequent requests to `/handoff` with that token.
-
-- [ ] **Task 4.3**: Add `SameSite` cookie mapping edge cases
-  - Chrome `"unspecified"` → Firefox `"no_restriction"` (not `"none"` — Firefox uses `"no_restriction"` as the equivalent).
+- [ ] **Task 4.2**: Handle cookie `sameSite` edge cases in `receiver.js`
+  - Chrome `"unspecified"` → Firefox `"no_restriction"`.
   - Chrome `"no_restriction"` → Firefox `"no_restriction"`.
-  - Handle missing `sameSite` field gracefully (default to `"no_restriction"`).
+  - Missing `sameSite` field → default to `"no_restriction"`.
+  - Handle cookies without `expirationDate` as session cookies (omit the field from `browser.cookies.set()`).
 
-- [ ] **Task 4.4**: Handle cookie restoration errors gracefully
-  - If `browser.cookies.set()` throws for a specific cookie (e.g., invalid domain), log the error and continue.
-  - After all cookies, report: `"Set X of Y cookies successfully. Z failed."`.
-  - If all cookies fail, show a notification to the user.
+- [ ] **Task 4.3**: Handle cookie restoration errors gracefully
+  - If `browser.cookies.set()` throws for a specific cookie, log and continue.
+  - After all cookies, log summary: `"Set X of Y cookies. Z failed."`.
+  - If ALL cookies fail, show console warning.
+
+- [ ] **Task 4.4**: Handle storage injection errors
+  - Guard against `SecurityError` for opaque origins.
+  - Guard against `QuotaExceededError` for large storage payloads.
+  - Validate origin before writing.
+
+- [ ] **Task 4.5**: Handle warm-start (Firefox already running)
+  - In companion mode, `-no-remote` is omitted.
+  - Firefox will open a new tab in the existing window instead of spawning a new instance.
+  - The `gecko-extension/` is already loaded in the running profile, so `webNavigation.onCompleted` fires immediately.
+  - The bridge's `process.wait()` will return immediately since it didn't spawn a new process (Firefox exits the launcher immediately when attaching to existing instance).
+  - **Bridge-side fix**: In companion mode, after launching, if process exits within < 2 seconds, assume warm-start. Do NOT clean up immediately — the handoff server must stay alive for the extension to fetch the payload. Wait for the server's auto-shutdown (payload consumed or 30s timeout) before returning the response.
 
 ### Phase 5: Config Toggle & Legacy Preservation
-> **Goal**: Allow users to fall back to the old SQLite injection if needed.
+> Allow fallback to the old SQLite injection path.
 
-- [ ] **Task 5.1**: Add config toggle in [`bridge/config.json`](file:///m:/.systemfile/ChromiumBridge/bridge/config.json)
-  - Add `"gecko_injection_mode": "companion"` to `session` block.
-  - Values: `"companion"` (new, default) | `"legacy"` (old SQLite path).
-
-- [ ] **Task 5.2**: Gate legacy code in [`bridge.py`](file:///m:/.systemfile/ChromiumBridge/bridge/bridge.py)
-  - Read `gecko_injection_mode` from config at the top of the Gecko branch in `handle_launch()`.
-  - If `"legacy"`: run existing `stage_gecko_profile()` + direct URL launch.
-  - If `"companion"`: run new handoff server + handoff URL launch.
+- [ ] **Task 5.1**: Gate legacy code in [`bridge.py`](file:///m:/.systemfile/ChromiumBridge/bridge/bridge.py)
+  - Read `gecko_injection_mode` from `config["session"]` at the top of the Gecko branch.
+  - `"legacy"` → existing `stage_gecko_profile()` + direct URL + `-no-remote -new-instance`.
+  - `"companion"` (default) → new handoff server + handoff URL + no isolation flags.
   - Log which mode was selected.
 
-- [ ] **Task 5.3**: Preserve [`cookies_gecko.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookies_gecko.py) unchanged
-  - Do NOT delete or modify this file. It remains the legacy fallback.
-  - Only change: it stops being called by default (gated behind `"legacy"` mode).
+- [ ] **Task 5.2**: Preserve [`cookies_gecko.py`](file:///m:/.systemfile/ChromiumBridge/bridge/cookies_gecko.py) unchanged
+  - No deletions or modifications. Called only when `gecko_injection_mode == "legacy"`.
 
 ### Phase 6: Testing & Validation
-> **Goal**: End-to-end verification across cold start, warm start, and edge cases.
 
 - [ ] **Task 6.1**: Manual test — Cold start (Firefox not running)
-  - From Edge/Chrome/Brave, hand off a logged-in site to Firefox.
-  - Verify Firefox launches, extension intercepts handoff URL, cookies are set, target page loads authenticated.
-  - Verify `localStorage`/`sessionStorage` are present in the target page.
+  - Hand off a logged-in site from Edge/Chrome/Brave.
+  - Verify: Firefox launches → `gecko-extension/` intercepts → cookies set → target loads authenticated → storage injected → "Back to Chrome" button appears.
 
 - [ ] **Task 6.2**: Manual test — Warm start (Firefox already running)
-  - With Firefox already open, hand off from Chromium.
-  - Verify a new tab opens in the existing Firefox window (no new instance).
-  - Verify cookies and storage are restored correctly.
+  - With Firefox open, hand off from Chromium.
+  - Verify: new tab opens in existing Firefox → cookies/storage restored → authenticated.
 
 - [ ] **Task 6.3**: Manual test — Extension not installed
-  - Launch Firefox without the extension installed.
-  - Verify the fallback HTML page is shown with install instructions.
-  - Verify the server auto-shuts down after 30 seconds.
+  - Hand off without `gecko-extension/` installed in Firefox.
+  - Verify: fallback HTML page shows with install instructions → server auto-shuts down after 30s.
 
 - [ ] **Task 6.4**: Manual test — Legacy mode
   - Set `"gecko_injection_mode": "legacy"` in config.
-  - Verify the old SQLite injection path is used.
-  - Verify cookies are injected (even if they may not work on all Firefox versions).
+  - Verify: old SQLite path is used.
 
-- [ ] **Task 6.5**: Security test — Token reuse
-  - After a successful handoff, try fetching `/handoff?token=<same-token>` again.
-  - Verify it returns `403` (token consumed).
+- [ ] **Task 6.5**: Security — Token consumed after first use
+  - After successful handoff, re-fetch `/handoff?token=<same-token>`.
+  - Verify: `403 Forbidden`.
 
-- [ ] **Task 6.6**: Security test — No token
-  - Try accessing `http://127.0.0.1:47831/handoff` without a token.
-  - Verify it returns the fallback page, not the payload.
+- [ ] **Task 6.6**: Security — No token
+  - Access `http://127.0.0.1:47831/handoff` without token.
+  - Verify: fallback page, not payload.
 
 ---
 
@@ -220,28 +245,57 @@ Chrome Extension → Bridge (Python) → Localhost Server (/handoff?token=UUID)
 
 ```mermaid
 graph TD
-    A["Phase 1: Handoff Server<br/>(cookie_server.py)"] --> B["Phase 2: Bridge Launch Flow<br/>(bridge.py, launcher.py)"]
-    B --> C["Phase 3: Firefox Extension Receiver<br/>(manifest.json, main.js, storage-injector.js)"]
-    C --> D["Phase 4: Error Handling & Fallback UI"]
+    A["Phase 1: Handoff Server<br/>(cookie_server.py)"] --> B["Phase 2: Bridge Launch Flow<br/>(bridge.py, launcher.py, config.json)"]
+    B --> C["Phase 3: Gecko Companion Extension<br/>(NEW gecko-extension/)"]
+    C --> D["Phase 4: Error Handling & Security"]
     D --> E["Phase 5: Config Toggle & Legacy Gate"]
     E --> F["Phase 6: Testing"]
+
+    style C fill:#2e7d32,color:#fff
 ```
 
 > [!IMPORTANT]
-> Phases 1 & 2 can be developed and tested independently of Phase 3 by manually opening the handoff URL in a browser and inspecting the JSON payload. Phase 3 is where the actual cookie/storage restoration logic lives and requires the Firefox extension to be loaded.
+> **Phase 3 is the biggest chunk** — it creates 4 new files from scratch. However, `receiver.js` and `return-button.js` are heavily based on the existing `chromium-extension/` equivalents, adapted for Firefox's MV2 APIs (`browser.*` instead of `chrome.*`).
 
 ---
 
 ## Key Design Decisions
 
-1. **Dynamic script injection over static content script**: `storage-injector.js` will be injected via `browser.tabs.executeScript()` only during active handoffs, not registered as a static content script. This avoids loading unnecessary code on every page.
+1. **Separate companion extension** (`gecko-extension/`) instead of modifying `firefox-extension/`.
+   - Clean separation: sender ≠ receiver.
+   - Mirrors the existing pattern: `firefox-extension/` (sender) + `chromium-extension/` (receiver) for the Firefox→Chromium direction.
+   - Users who only want Firefox→Chromium don't need the receiver. Users who only want Chromium→Firefox don't need the sender.
 
-2. **`webNavigation.onCompleted` for detection**: More reliable than `webRequest` for detecting when the handoff page has loaded. The extension listens for completions matching `http://127.0.0.1:47831/handoff*`.
+2. **MV2 for `gecko-extension/`** — Firefox's MV3 support is still evolving. MV2 with `browser.*` APIs is the stable, reliable choice and matches `firefox-extension/`.
 
-3. **Token = `secrets.token_urlsafe(32)`**: Cryptographically secure, URL-safe, and harder to guess than UUIDv4.
+3. **Dynamic storage injection** via `browser.tabs.executeScript()` — no static content script for storage. Only injected during active handoffs to avoid loading code on every page.
 
-4. **No profile flag in companion mode**: When `companion_mode=True`, we omit `-profile` entirely so Firefox uses its default profile (where the extension is installed). The user's real profile gets the cookies.
+4. **Warm-start handling** — When Firefox is already running, the bridge process exits immediately. The server must stay alive independently until the payload is consumed or the 30s timeout fires.
 
-5. **Server auto-shutdown**: The handoff server shuts down after the first successful payload fetch OR after a 30-second timeout. This prevents the port from being held indefinitely.
+5. **No profile flags in companion mode** — Firefox uses its default profile where `gecko-extension/` is installed. The user's real profile gets the cookies.
 
-6. **Legacy preservation**: The SQLite injection code in `cookies_gecko.py` is untouched and gated behind a config flag, providing a rollback path.
+6. **`gecko-extension/` is NOT loaded via `--load-extension`** — Unlike `chromium-extension/` which is staged and loaded via CLI flags, `gecko-extension/` must be **manually installed** by the user into their Firefox profile (or loaded temporarily via `about:debugging`). This is because Firefox does not support `--load-extension` CLI flags.
+
+---
+
+## New Repository Layout (after implementation)
+
+```
+ChromiumBridge/
+├── bridge/                    # Python native messaging host
+├── firefox-extension/         # Firefox SENDER (Firefox → Chromium) — UNCHANGED
+├── chrome-extension/          # Chromium SENDER (Chromium → Firefox) — UNCHANGED  
+├── chromium-extension/        # Chromium RECEIVER (companion) — UNCHANGED
+├── gecko-extension/           # Firefox RECEIVER (companion) — NEW ✨
+│   ├── manifest.json
+│   ├── background/
+│   │   └── receiver.js
+│   ├── content/
+│   │   └── return-button.js
+│   └── icons/
+│       ├── icon-48.png
+│       └── icon-96.png
+├── scripts/
+├── releases/
+└── docs/
+```
