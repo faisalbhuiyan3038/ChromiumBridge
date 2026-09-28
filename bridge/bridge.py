@@ -51,6 +51,27 @@ from cookie_server import (
 )
 from install import reinstall_from_config
 
+import urllib.request
+import urllib.parse
+
+
+def _signal_return(domain):
+    """
+    Fire http://127.0.0.1:<PORT>/return?domain=<domain> to signal
+    the Chromium extension that Firefox has exited. Called from
+    background watcher threads when proc.wait() completes.
+    Best-effort — silently ignores errors (server may already be gone).
+    """
+    try:
+        encoded_domain = urllib.parse.quote(domain or "", safe="")
+        url = f"http://127.0.0.1:{COOKIE_PORT}/return?domain={encoded_domain}"
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            resp.read()
+        log.info("Signaled /return for domain=%s", domain)
+    except Exception as e:
+        log.debug("Could not signal /return (server may already be closed): %s", e)
+
 
 def read_message():
     """Read a native messaging message from stdin."""
@@ -232,17 +253,18 @@ def handle_launch(message):
                         stop_cookie_server(handoff_server)
                         # Do NOT delete the profile — Firefox may still be starting.
                         # The background watcher thread will handle cleanup on process exit.
-                        def _cleanup_if_no_consume(proc, prof):
+                        def _cleanup_if_no_consume(proc, prof, dom):
                             try:
                                 proc.wait()
                                 wait_profile_free(prof, timeout=30)
                             except Exception:
                                 pass
                             finally:
+                                _signal_return(dom)
                                 _rmtree_with_backoff(prof)
                         threading.Thread(
                             target=_cleanup_if_no_consume,
-                            args=(process, profile_dir),
+                            args=(process, profile_dir, domain),
                             daemon=True,
                         ).start()
                         return {
@@ -258,19 +280,24 @@ def handle_launch(message):
 
                     # Spawn background watcher: wait for Firefox to fully release the
                     # profile directory, then delete it. Handles Firefox self-restarts.
-                    def _ephemeral_watcher(proc, prof):
+                    # When Firefox exits (for any reason), signal /return so the
+                    # Chromium background's waitForReturn() poll unblocks and shows
+                    # the return banner.
+                    def _ephemeral_watcher(proc, prof, dom):
                         try:
                             proc.wait()                          # initial PID exits
                             wait_profile_free(prof, timeout=60)  # catch self-restart
                         except Exception:
                             pass
                         finally:
+                            log.info("Firefox exited — signaling return for domain: %s", dom)
+                            _signal_return(dom)
                             log.info("Cleaning up ephemeral gecko profile: %s", prof)
                             _rmtree_with_backoff(prof)
 
                     threading.Thread(
                         target=_ephemeral_watcher,
-                        args=(process, profile_dir),
+                        args=(process, profile_dir, domain),
                         daemon=True,
                     ).start()
 

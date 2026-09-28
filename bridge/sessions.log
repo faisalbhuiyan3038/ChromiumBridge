@@ -326,3 +326,9 @@
 {"type":"launch_time","timestamp":1790584567.3614335,"browser":"firefox_nightly","seconds":1.0}
 {"type":"session","timestamp":1790596978.3435764,"domain":"scratchpad.cc","browser":"firefox","duration_ms":1476,"outcome":"launched"}
 {"type":"launch_time","timestamp":1790596978.3435764,"browser":"firefox","seconds":1.48}
+{"type":"session","timestamp":1790597148.8755095,"domain":"chatgpt.com","browser":"firefox","duration_ms":1576,"outcome":"launched"}
+{"type":"launch_time","timestamp":1790597148.8755095,"browser":"firefox","seconds":1.58}
+{"type":"session","timestamp":1790598468.150396,"domain":"google.com","browser":"firefox","duration_ms":1530,"outcome":"launched"}
+{"type":"launch_time","timestamp":1790598468.1513984,"browser":"firefox","seconds":1.53}
+{"type":"session","timestamp":1790598560.2428665,"domain":"google.com","browser":"firefox","duration_ms":1563,"outcome":"launched"}
+{"type":"launch_time","timestamp":1790598560.2428665,"browser":"firefox","seconds":1.56}

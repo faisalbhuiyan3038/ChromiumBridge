@@ -47,18 +47,23 @@ def _write_session_pid(profile_dir):
 
 # ── Orphan Sweep ────────────────────────────────────────
 
+def _pid_alive(pid):
+    """Check if a PID is alive using os.kill(pid, 0). Works cross-platform, no psutil needed."""
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
 def sweep_orphaned_profiles():
     """
     Scan %TEMP% (or /tmp on Unix) for leftover cb-gecko-* profile directories
     whose bridge PID is no longer alive. Deletes them with best-effort cleanup.
     Called once on bridge startup.
     """
-    try:
-        import psutil
-    except ImportError:
-        log.debug("psutil not available; skipping orphan sweep")
-        return
-
     tmp = tempfile.gettempdir()
     pattern = os.path.join(tmp, "cb-gecko-*")
     removed = 0
@@ -74,7 +79,7 @@ def sweep_orphaned_profiles():
             try:
                 with open(pid_file, "r", encoding="utf-8") as f:
                     pid = int(f.read().strip())
-                should_delete = not psutil.pid_exists(pid)
+                should_delete = not _pid_alive(pid)
             except Exception:
                 should_delete = True
 
@@ -299,6 +304,45 @@ def validate_profile(path):
 
 # ── Process Release Check ───────────────────────────────
 
+def _profile_in_use(profile_dir):
+    """
+    Check if any running process references profile_dir in its command line.
+    Uses WMIC on Windows, /proc on Linux. No psutil dependency.
+    Returns True if the profile is still in use.
+    """
+    import subprocess as _sp
+    import platform
+
+    norm = os.path.normpath(profile_dir)
+
+    try:
+        if platform.system() == "Windows":
+            # WMIC lists all process command lines — look for our profile path
+            result = _sp.run(
+                ["wmic", "process", "get", "CommandLine"],
+                capture_output=True, text=True, timeout=10,
+                creationflags=_sp.CREATE_NO_WINDOW,
+            )
+            # Case-insensitive match for Windows paths
+            for line in result.stdout.splitlines():
+                if norm.lower() in line.lower():
+                    return True
+        else:
+            # On Linux/macOS, scan /proc/*/cmdline
+            for pid_dir in glob.glob("/proc/[0-9]*/cmdline"):
+                try:
+                    with open(pid_dir, "rb") as f:
+                        cmdline = f.read().decode("utf-8", errors="replace")
+                    if norm in cmdline:
+                        return True
+                except (OSError, PermissionError):
+                    continue
+    except Exception as e:
+        log.debug("_profile_in_use check failed: %s", e)
+
+    return False
+
+
 def wait_profile_free(profile_dir, timeout=60):
     """
     Wait until no running process references profile_dir in its command line.
@@ -307,24 +351,11 @@ def wait_profile_free(profile_dir, timeout=60):
 
     Returns True if the profile is free before timeout, False otherwise.
     """
-    try:
-        import psutil
-    except ImportError:
-        log.debug("psutil not available; skipping wait_profile_free")
-        return True
-
     end = time.monotonic() + timeout
     while time.monotonic() < end:
-        try:
-            in_use = any(
-                profile_dir in " ".join(p.info.get("cmdline") or [])
-                for p in psutil.process_iter(["cmdline"])
-            )
-        except Exception:
-            in_use = False
-        if not in_use:
+        if not _profile_in_use(profile_dir):
             return True
-        time.sleep(0.5)
+        time.sleep(1.0)
 
     log.warning("Profile still in use after %ds: %s", timeout, profile_dir)
     return False
