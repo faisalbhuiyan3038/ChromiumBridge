@@ -24,30 +24,57 @@
 
   // ── Handoff Detection ─────────────────────────────────
 
-  browser.webNavigation.onCompleted.addListener(
-    async (details) => {
-      // Only handle top-level frame navigations
-      if (details.frameId !== 0) return;
+  function safeTriggerHandoff(tabId, url) {
+    if (!url || !url.startsWith(HANDOFF_ORIGIN + HANDOFF_PATH)) return;
+    if (_activeHandoffs.has(tabId)) return;
+    _activeHandoffs.add(tabId);
 
-      const url = details.url;
-      if (!url.startsWith(HANDOFF_ORIGIN + HANDOFF_PATH)) return;
-
-      const tabId = details.tabId;
-
-      // Prevent duplicate processing for the same tab
-      if (_activeHandoffs.has(tabId)) return;
-      _activeHandoffs.add(tabId);
-
-      try {
-        await processHandoff(tabId, url);
-      } catch (err) {
+    processHandoff(tabId, url)
+      .catch((err) => {
         console.error("[ChromiumBridge Gecko Companion] Handoff failed:", err);
-      } finally {
+      })
+      .finally(() => {
         _activeHandoffs.delete(tabId);
-      }
+      });
+  }
+
+  // 1. Navigation event listener (normal runtime handoff)
+  browser.webNavigation.onCompleted.addListener(
+    (details) => {
+      if (details.frameId !== 0) return;
+      safeTriggerHandoff(details.tabId, details.url);
     },
     { url: [{ hostEquals: "127.0.0.1", pathPrefix: "/handoff" }] }
   );
+
+  // 2. Tab update listener (catches status complete or URL changes)
+  browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    const url = changeInfo.url || tab.url;
+    if (url && url.startsWith(HANDOFF_ORIGIN + HANDOFF_PATH)) {
+      if (changeInfo.status === "complete" || tab.status === "complete") {
+        safeTriggerHandoff(tabId, url);
+      }
+    }
+  });
+
+  // 3. Startup tab scan (critical for cold starts where Firefox opened with CLI URL)
+  async function checkExistingTabs() {
+    try {
+      const tabs = await browser.tabs.query({});
+      for (const tab of tabs) {
+        if (tab.url && tab.url.startsWith(HANDOFF_ORIGIN + HANDOFF_PATH)) {
+          safeTriggerHandoff(tab.id, tab.url);
+        }
+      }
+    } catch (err) {
+      console.warn("[ChromiumBridge Gecko Companion] Startup tab check error:", err);
+    }
+  }
+
+  // Run on startup and retry shortly after to catch late-attaching startup tabs
+  checkExistingTabs();
+  setTimeout(checkExistingTabs, 400);
+  setTimeout(checkExistingTabs, 1200);
 
   // ── Core Handoff Processing ───────────────────────────
 
@@ -317,7 +344,9 @@
   // ── Message Handler ───────────────────────────────────
 
   browser.runtime.onMessage.addListener((message, sender) => {
-    if (message.action === "closeTab" && sender.tab) {
+    if (message.action === "handoffTrigger" && sender.tab) {
+      safeTriggerHandoff(sender.tab.id, message.url || sender.tab.url);
+    } else if (message.action === "closeTab" && sender.tab) {
       // Clear the handoff marker before closing
       clearHandoffActive().then(() => {
         browser.tabs.remove(sender.tab.id).catch(() => {});

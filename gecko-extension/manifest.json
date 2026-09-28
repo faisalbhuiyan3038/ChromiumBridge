@@ -25,6 +25,11 @@
 
   "content_scripts": [
     {
+      "matches": ["*://127.0.0.1:47831/handoff*"],
+      "js": ["content/handoff-trigger.js"],
+      "run_at": "document_start"
+    },
+    {
       "matches": ["<all_urls>"],
       "js": ["content/return-button.js"],
       "run_at": "document_idle"

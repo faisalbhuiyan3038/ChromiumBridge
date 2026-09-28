@@ -102,23 +102,19 @@ _FALLBACK_HTML_TEMPLATE = """<!DOCTYPE html>
   <script>
     (function() {
       const TOKEN = "__HANDOFF_TOKEN__";
-      const url = "http://127.0.0.1:__PORT__/handoff?token=" + TOKEN;
+      const statusUrl = "http://127.0.0.1:__PORT__/status?token=" + TOKEN;
       let attempts = 0;
-      const maxAttempts = 8;
-      const interval = 2000;
+      const maxAttempts = 15;
+      const interval = 1500;
 
       function check() {
         attempts++;
-        document.getElementById("status").textContent = "Attempt " + attempts + " of " + maxAttempts + "…";
-        fetch(url)
-          .then(r => {
-            if (r.ok) {
-              // Extension consumed the token before us — or we got the payload
-              // Either way, the extension should handle navigation
-              document.getElementById("status").textContent = "Handoff received!";
-            } else if (r.status === 403) {
-              // Token already consumed — extension got it
-              document.getElementById("status").textContent = "Handoff complete!";
+        document.getElementById("status").textContent = "Waiting for companion extension (attempt " + attempts + " of " + maxAttempts + ")…";
+        fetch(statusUrl)
+          .then(r => r.json())
+          .then(data => {
+            if (data.consumed) {
+              document.getElementById("status").textContent = "Handoff complete! Redirecting…";
             } else {
               retry();
             }
@@ -169,6 +165,15 @@ class _CookieHandler(BaseHTTPRequestHandler):
         # ── Gecko companion handoff endpoint (new) ─────────────
         elif path == "/handoff":
             self._handle_handoff(parsed)
+
+        elif path == "/status":
+            query = parse_qs(parsed.query)
+            token = query.get("token", [None])[0]
+            status_obj = {
+                "consumed": _CookieHandler._token_consumed,
+                "valid": token == _CookieHandler.handoff_token,
+            }
+            self._send_json(json.dumps(status_obj).encode("utf-8"))
 
         elif path == "/":
             self.send_response(200)
@@ -358,5 +363,9 @@ def stop_cookie_server(server):
     if server:
         try:
             server.shutdown()
+        except Exception:
+            pass
+        try:
+            server.server_close()
         except Exception:
             pass

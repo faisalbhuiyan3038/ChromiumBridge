@@ -166,7 +166,7 @@ def build_gecko_flags(config, url, mode, profile_dir, incognito=False, companion
         flags.append("-private-window")
 
     # Extra Gecko flags from config if present
-    extra = config.get("extra_gecko_flags", config.get("extra_flags", []))
+    extra = config.get("extra_gecko_flags", [])
     if isinstance(extra, list):
         flags.extend(extra)
     elif isinstance(extra, str):
