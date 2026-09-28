@@ -226,8 +226,22 @@ async function performHandoff(tabId, url, overrides = {}) {
 
   _activeHandoffs.delete(tabId);
 
-  if (response && response.event === "closed") {
-    // Refocus original Chromium window/tab
+  if (response && (response.event === "launched" || response.event === "closed" || response.status === "ok")) {
+    if (response.event === "launched") {
+      // In companion mode: do NOT refocus Chromium window now!
+      // Let Firefox keep the OS window focus.
+      // Launch background listener waiting for "Back to Chromium" button click.
+      let windowId = null;
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        windowId = tab?.windowId || null;
+      } catch {}
+
+      waitForReturn(domain, tabId, windowId);
+      return { success: true, duration: response.duration };
+    }
+
+    // Legacy mode: Firefox process has fully exited
     try {
       const tab = await chrome.tabs.get(tabId);
       if (tab) {
@@ -240,6 +254,109 @@ async function performHandoff(tabId, url, overrides = {}) {
   } else {
     console.error("[ChromiumBridge] Handoff failed:", response);
     return { error: response?.error || "Handoff failed" };
+  }
+}
+
+/**
+ * Polls the bridge cookie server waiting for the user to click "Back to Chromium" in Firefox.
+ * When triggered, refocuses the Chromium window/tab and displays the feedback/welcome banner.
+ */
+async function waitForReturn(domain, tabId, windowId) {
+  console.log(`[ChromiumBridge] Starting return listener for domain=${domain}, tabId=${tabId}, windowId=${windowId}`);
+  const maxAttempts = 75; // 75 * 4s = 300 seconds (5 min)
+
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const res = await fetch(`http://127.0.0.1:47831/wait-return?domain=${encodeURIComponent(domain || "")}&timeout=4`, {
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        console.log("[ChromiumBridge] /wait-return returned HTTP", res.status);
+        break;
+      }
+      const data = await res.json();
+      if (data && data.returned) {
+        console.log(`[ChromiumBridge] User returned from Firefox for domain: ${domain}`, data);
+
+        // 1. Refocus window
+        try {
+          if (windowId) {
+            await chrome.windows.update(windowId, { focused: true });
+          }
+        } catch (wErr) {
+          console.warn("[ChromiumBridge] Could not refocus windowId:", wErr.message);
+        }
+
+        // 2. Refocus tab if still alive, otherwise pick active tab in window
+        let targetTabId = tabId;
+        try {
+          const tab = await chrome.tabs.get(tabId);
+          if (tab) {
+            await chrome.tabs.update(tabId, { active: true });
+          } else {
+            throw new Error("Tab not found");
+          }
+        } catch {
+          try {
+            const queryOpts = windowId ? { active: true, windowId } : { active: true, currentWindow: true };
+            const [activeTab] = await chrome.tabs.query(queryOpts);
+            targetTabId = activeTab?.id || null;
+          } catch {}
+        }
+
+        // 3. Display the feedback banner on the target tab
+        if (targetTabId) {
+          await triggerFeedbackBanner(targetTabId, data.domain || domain, data.duration);
+        }
+        break;
+      }
+    } catch (err) {
+      // Normal when cookie server terminates or user closes Firefox window
+      console.log("[ChromiumBridge] Return listener finished:", err.message);
+      break;
+    }
+  }
+}
+
+/**
+ * Triggers the welcome/feedback banner in the specified tab.
+ * Attempts tabs.sendMessage first; if content script is missing or inactive,
+ * injects banner.js and invokes the display function directly via scripting.
+ */
+async function triggerFeedbackBanner(tabId, domain, duration) {
+  console.log(`[ChromiumBridge] Triggering feedback banner on tab ${tabId} for domain ${domain}`);
+
+  try {
+    const res = await chrome.tabs.sendMessage(tabId, {
+      action: "showFeedbackPrompt",
+      domain,
+      duration,
+    });
+    if (res?.received) return;
+  } catch (err) {
+    console.log("[ChromiumBridge] tabs.sendMessage did not receive response, injecting banner.js...", err.message);
+  }
+
+  // Fallback: inject content/banner.js dynamically and invoke directly
+  try {
+    if (chrome.scripting) {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ["content/banner.js"],
+      });
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (dom, dur) => {
+          if (typeof window.showChromiumBridgeFeedback === "function") {
+            window.showChromiumBridgeFeedback(dom, dur);
+          }
+        },
+        args: [domain, duration],
+      });
+      console.log("[ChromiumBridge] Feedback banner successfully injected via scripting API");
+    }
+  } catch (injectErr) {
+    console.warn("[ChromiumBridge] Could not inject banner script into tab:", injectErr.message);
   }
 }
 

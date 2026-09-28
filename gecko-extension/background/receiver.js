@@ -99,8 +99,9 @@
       `sessionStorage=${storage.sessionStorage ? Object.keys(storage.sessionStorage).length : 0} keys`
     );
 
-    // 2. Restore cookies
+    // 2. Clear existing cookies and restore new cookies
     if (cookies.length > 0) {
+      await clearExistingCookies(targetUrl, cookies);
       await restoreCookies(cookies);
     }
 
@@ -154,7 +155,45 @@
     return null;
   }
 
-  // ── Cookie Restoration ────────────────────────────────
+  // ── Cookie Clearing & Restoration ────────────────────
+
+  async function clearExistingCookies(targetUrl, cookies) {
+    const domains = new Set();
+    try {
+      const parsed = new URL(targetUrl);
+      domains.add(parsed.hostname);
+    } catch {}
+
+    for (const c of cookies) {
+      if (c.domain) {
+        const clean = c.domain.startsWith(".") ? c.domain.slice(1) : c.domain;
+        domains.add(clean);
+      }
+    }
+
+    let removed = 0;
+    for (const dom of domains) {
+      try {
+        const existing = await browser.cookies.getAll({ domain: dom });
+        for (const ec of existing) {
+          const protocol = ec.secure ? "https" : "http";
+          const host = ec.domain.startsWith(".") ? ec.domain.slice(1) : ec.domain;
+          const cookieUrl = `${protocol}://${host}${ec.path || "/"}`;
+          try {
+            await browser.cookies.remove({
+              url: cookieUrl,
+              name: ec.name,
+              storeId: ec.storeId || "firefox-default",
+            });
+            removed++;
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.warn("[ChromiumBridge Gecko Companion] Failed to query existing cookies for domain:", dom, err.message);
+      }
+    }
+    console.log(`[ChromiumBridge Gecko Companion] Cleared ${removed} existing cookies across ${domains.size} domain(s).`);
+  }
 
   async function restoreCookies(cookies) {
     let success = 0;
@@ -272,6 +311,19 @@
 
         var lsCount = 0, ssCount = 0;
 
+        // Clear existing storage before injecting new keys
+        try {
+          window.localStorage.clear();
+        } catch(e) {
+          console.warn("[ChromiumBridge] localStorage.clear() failed:", e.message);
+        }
+
+        try {
+          window.sessionStorage.clear();
+        } catch(e) {
+          console.warn("[ChromiumBridge] sessionStorage.clear() failed:", e.message);
+        }
+
         // Inject localStorage
         try {
           var lsKeys = Object.keys(lsData);
@@ -346,11 +398,28 @@
   browser.runtime.onMessage.addListener((message, sender) => {
     if (message.action === "handoffTrigger" && sender.tab) {
       safeTriggerHandoff(sender.tab.id, message.url || sender.tab.url);
-    } else if (message.action === "closeTab" && sender.tab) {
-      // Clear the handoff marker before closing
-      clearHandoffActive().then(() => {
-        browser.tabs.remove(sender.tab.id).catch(() => {});
-      });
+    } else if ((message.action === "returnToChromium" || message.action === "closeTab") && sender.tab) {
+      const tabId = sender.tab.id;
+      const domain = message.domain || "";
+      (async () => {
+        if (message.action === "returnToChromium" || domain) {
+          try {
+            console.log("[ChromiumBridge Gecko Companion] Pinging bridge /return for domain:", domain);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const returnUrl = `http://127.0.0.1:47831/return?domain=${encodeURIComponent(domain)}`;
+            await fetch(returnUrl, { cache: "no-store", signal: controller.signal });
+            clearTimeout(timeoutId);
+            console.log("[ChromiumBridge Gecko Companion] Return ping completed successfully.");
+          } catch (err) {
+            console.warn("[ChromiumBridge Gecko Companion] Failed to ping /return:", err.message);
+          }
+        }
+        await clearHandoffActive();
+        try {
+          await browser.tabs.remove(tabId);
+        } catch (_) {}
+      })();
     }
   });
 })();

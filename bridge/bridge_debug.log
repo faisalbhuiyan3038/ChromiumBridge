@@ -144,3 +144,90 @@
 2026-09-28 13:27:18,578 [INFO] cookie_server: Handoff payload consumed by extension (token: eim3p3dH...)
 2026-09-28 13:27:18,578 [INFO] cookie_server: Handoff payload consumed — shutting down server.
 2026-09-28 13:27:18,578 [INFO] bridge: Firefox session ended after 854 ms
+2026-09-28 14:17:32,071 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:17:32,089 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:17:32,089 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:17:41,574 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:17:41,592 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:17:41,592 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:17:44,450 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:17:44,468 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:17:44,468 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:24:08,163 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:24:08,180 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:24:08,180 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:24:08,186 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=isJjZ9OiJviuZLJDu7QdLV918qkr4u-hEUjhbSPHSos
+2026-09-28 14:24:08,186 [INFO] bridge: Launching Firefox (companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=isJjZ9OiJviuZLJDu7QdLV918qkr4u-hEUjhbSPHSos']
+2026-09-28 14:24:09,030 [INFO] cookie_server: Handoff payload consumed by extension (token: isJjZ9Oi...)
+2026-09-28 14:24:09,030 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:24:09,030 [INFO] bridge: Firefox handoff successfully consumed after 844 ms
+2026-09-28 14:25:06,845 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:25:06,862 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:25:06,862 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:25:06,867 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=0oUjOqDD3ohcC82qzMOVsVWluB8OjDDR2cDnpebwUII
+2026-09-28 14:25:06,867 [INFO] bridge: Launching Firefox (companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=0oUjOqDD3ohcC82qzMOVsVWluB8OjDDR2cDnpebwUII']
+2026-09-28 14:25:07,699 [INFO] cookie_server: Handoff payload consumed by extension (token: 0oUjOqDD...)
+2026-09-28 14:25:07,699 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:25:07,699 [INFO] bridge: Firefox handoff successfully consumed after 831 ms
+2026-09-28 14:25:20,607 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:25:20,625 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:25:20,625 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:25:20,630 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=cxPoXhY28NfNrNycTPO8bZk5enXnukMXxPkxQov9v6U
+2026-09-28 14:25:20,630 [INFO] bridge: Launching Firefox (companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=cxPoXhY28NfNrNycTPO8bZk5enXnukMXxPkxQov9v6U']
+2026-09-28 14:25:21,436 [INFO] cookie_server: Handoff payload consumed by extension (token: cxPoXhY2...)
+2026-09-28 14:25:21,437 [INFO] bridge: Firefox handoff successfully consumed after 807 ms
+2026-09-28 14:25:21,437 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:25:29,678 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:25:29,696 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:25:29,696 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:25:29,701 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=_MH1vf8GAD26BrognCdLPwl33q_U9cUUAmsW0R5pHEk
+2026-09-28 14:25:29,701 [INFO] bridge: Launching Firefox (companion mode) with flags: ['-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=_MH1vf8GAD26BrognCdLPwl33q_U9cUUAmsW0R5pHEk']
+2026-09-28 14:25:30,554 [INFO] cookie_server: Handoff payload consumed by extension (token: _MH1vf8G...)
+2026-09-28 14:25:30,554 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:25:30,554 [INFO] bridge: Firefox handoff successfully consumed after 852 ms
+2026-09-28 14:25:38,370 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:25:38,387 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:25:38,387 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:25:38,392 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=YDb27aSkBk407pzf1ECXfDjhm5mzDJPN9KfPyeGQqqM
+2026-09-28 14:25:38,392 [INFO] bridge: Launching Firefox (companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=YDb27aSkBk407pzf1ECXfDjhm5mzDJPN9KfPyeGQqqM']
+2026-09-28 14:25:39,178 [INFO] cookie_server: Handoff payload consumed by extension (token: YDb27aSk...)
+2026-09-28 14:25:39,178 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:25:39,179 [INFO] bridge: Firefox handoff successfully consumed after 785 ms
+2026-09-28 14:25:49,505 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:25:49,522 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:25:49,522 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:25:49,527 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=i_tmlUbQp3OyQkJFemPHSqPPLL86URKupKoEAWJ3iv8
+2026-09-28 14:25:49,527 [INFO] bridge: Launching Firefox (companion mode) with flags: ['-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=i_tmlUbQp3OyQkJFemPHSqPPLL86URKupKoEAWJ3iv8']
+2026-09-28 14:25:50,373 [INFO] cookie_server: Handoff payload consumed by extension (token: i_tmlUbQ...)
+2026-09-28 14:25:50,373 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:25:50,373 [INFO] bridge: Firefox handoff successfully consumed after 845 ms
+2026-09-28 14:25:58,708 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:25:58,725 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:25:58,725 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:25:58,730 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=_bLLXtSLEphbpAXGJekFDJsLOEdahW0e-4WKdb2-Uvc
+2026-09-28 14:25:58,731 [INFO] bridge: Launching Firefox (companion mode) with flags: ['-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=_bLLXtSLEphbpAXGJekFDJsLOEdahW0e-4WKdb2-Uvc']
+2026-09-28 14:25:59,591 [INFO] cookie_server: Handoff payload consumed by extension (token: _bLLXtSL...)
+2026-09-28 14:25:59,591 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:25:59,591 [INFO] bridge: Firefox handoff successfully consumed after 860 ms
+2026-09-28 14:26:07,340 [INFO] bridge: handle_launch: url=https://chat.qwen.ai/ browser=firefox_nightly cookies=17 storage_keys=['APLUS_LS_KEY', '__ETAG__CNA__ID__', 'theme', 'isg__', 'qwen_access_token_state', 'guidance_card_type', 'auyst', 'syfhs', 'ETLCD', 'feedback_widget_phase', 'token', '__00b204e9800998__', 'at_expire_time', 'tfstk__', 'userRole', 'qwen_token_session_marker', 'qwen_chat_device_id', 'lswusea', 'APLUS_CORE_1.0.22_20260728193427_5f7f465c', 'transTargetLanguageKey', 'adjust-sdk.p', 'locale', 'qwen-thinking_mode']
+2026-09-28 14:26:07,358 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:26:07,358 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:26:07,363 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=LYd-GBpDaUy7aIu50VrB_aR85YAtc2ju5-eFdAYQ0ho
+2026-09-28 14:26:07,363 [INFO] bridge: Launching Firefox (companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=LYd-GBpDaUy7aIu50VrB_aR85YAtc2ju5-eFdAYQ0ho']
+2026-09-28 14:26:08,165 [INFO] cookie_server: Handoff payload consumed by extension (token: LYd-GBpD...)
+2026-09-28 14:26:08,165 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:26:08,165 [INFO] bridge: Firefox handoff successfully consumed after 801 ms
+2026-09-28 14:27:09,051 [INFO] bridge: handle_launch: url=https://www.reddit.com/r/ChatGPT/ browser=vivaldi cookies=15 storage_keys=['media-codec-cookie-recalc-version', 'good-visit-feeds-search', 'recent-searches-store', 'login-time', 'time-before-unfocus', 'comment-draft-items-t2_h1xjbkcow', 'good-visit-inbox', 'achievements-store', 'kwf_search_history', 'loglevel:ai-chat-exporter', '_grecaptcha', 'good-visit-pdp-listing-below', 'chat:access-token', 'events-buffer-v3']
+2026-09-28 14:27:09,072 [INFO] bridge: Browser family: chromium, path: M:\Vivaldi\Application\vivaldi.exe
+2026-09-28 14:28:08,094 [INFO] bridge: handle_launch: url=https://www.reddit.com/r/ChatGPT/ browser=brave cookies=15 storage_keys=['media-codec-cookie-recalc-version', 'good-visit-feeds-search', 'recent-searches-store', 'login-time', 'comment-draft-items-t2_h1xjbkcow', 'good-visit-inbox', 'achievements-store', 'kwf_search_history', 'loglevel:ai-chat-exporter', '_grecaptcha', 'good-visit-pdp-listing-below', 'chat:access-token', 'events-buffer-v3']
+2026-09-28 14:28:08,116 [INFO] bridge: Browser family: chromium, path: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe
+2026-09-28 14:28:39,294 [INFO] bridge: handle_launch: url=https://chatgpt.com/ browser=brave cookies=27 storage_keys=['cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history-without-projects', 'statsig.stable_id.1792610830', 'oai/apps/appDirectoryVisited', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/recentsOrganizationAutomaticDefault/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/loggedInUserMessageCount', 'oai/apps/ownerDomainBackfillLastRunAt/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/lastPageLoadDate', 'oai/apps/connectorInContextUpsellBannerV1', 'oai/apps/chatTheme/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/lastUtmCampaign', 'client-correlated-secret', 'oai/apps/hasAnyProjects', 'oai/apps/subscriptionFailedBanner', 'oai/apps/tpp/default-tab-last-applied-recommendation/user-YXWN19HVpkOEQtA6EDKECF2H', 'statsig.session_id.1792610830', 'oai/apps/lastKnownPinnedSidebarItemsCount', 'oai/apps/tatertotInContextUpsellBannerV2', 'oai/apps/debugSettings', 'oai/apps/lastPersistedSignupAttribution', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/snorlax-history', 'oai/apps/accountSwitchSessions', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history', 'oai/apps/recentsOrganization/user-hLixZUpYkHdEoaVatL7wjEMI', 'RESUME_TOKEN_STORE_KEY', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/pinned-items', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/models', 'oai/apps/hasSeenNoAuthImagegenNux', 'oai/apps/lastSignupAttribution', '6949817d13611e21', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-hLixZUpYkHdEoaVatL7wjEMI', 'search.attributions-settings', 'loglevel:ai-chat-exporter', 'oai-did', 'oai/apps/ownerDomainBackfillLastRunAt/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/chatTheme/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/conversationDrafts', '_account', 'oai/apps/capExpiresAt', 'oai/apps/pendingSurveySpec']
+2026-09-28 14:28:39,317 [INFO] bridge: Browser family: chromium, path: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe
+2026-09-28 14:36:06,335 [INFO] bridge: handle_launch: url=https://gemini.google.com/app/9bf27c48cd81dd85 browser=firefox_nightly cookies=22 storage_keys=[]
+2026-09-28 14:36:06,353 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Firefox Nightly\firefox.exe
+2026-09-28 14:36:06,353 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 14:36:06,357 [INFO] bridge: Handoff URL: http://127.0.0.1:47831/handoff?token=J5eVzJvLn-RARlEb9AyXHPQwZ5lPpRlFF5_lfmVJfog
+2026-09-28 14:36:06,357 [INFO] bridge: Launching Firefox (companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=J5eVzJvLn-RARlEb9AyXHPQwZ5lPpRlFF5_lfmVJfog']
+2026-09-28 14:36:07,361 [INFO] cookie_server: Handoff payload consumed by extension (token: J5eVzJvL...)
+2026-09-28 14:36:07,361 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 14:36:07,361 [INFO] bridge: Firefox handoff successfully consumed after 1003 ms

@@ -136,8 +136,11 @@
     document.documentElement.appendChild(host);
 
     shadow.getElementById("return-btn").addEventListener("click", () => {
-      // Close this tab — the bridge process will detect the close and refocus Chromium
-      browser.runtime.sendMessage({ action: "closeTab" });
+      // Ask background script to ping bridge /return and close tab
+      browser.runtime.sendMessage({
+        action: "returnToChromium",
+        domain: domain,
+      });
     });
 
     shadow.getElementById("dismiss-btn").addEventListener("click", () => {

@@ -10,7 +10,8 @@
     "storage",
     "contextMenus",
     "activeTab",
-    "history"
+    "history",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -33,7 +34,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content/storage-extractor.js"],
+      "js": ["content/storage-extractor.js", "content/banner.js"],
       "run_at": "document_idle"
     }
   ],

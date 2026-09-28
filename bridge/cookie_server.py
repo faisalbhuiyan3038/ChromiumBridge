@@ -17,6 +17,7 @@ Response format for /handoff:  { "url": "<target>", "cookies": [...], "storage":
 """
 
 import json
+import time
 import secrets
 import uuid
 import threading
@@ -150,6 +151,9 @@ class _CookieHandler(BaseHTTPRequestHandler):
     handoff_payload = None        # bytes: JSON payload for /handoff
     _token_consumed = False       # Set True after first successful read
     _payload_consumed_event = None  # threading.Event signalled on consumption
+    _return_event = None          # threading.Event signalled when user clicks Back to Chromium
+    _return_domain = None         # Domain returned from
+    _start_time = None            # Epoch start time
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -174,6 +178,39 @@ class _CookieHandler(BaseHTTPRequestHandler):
                 "valid": token == _CookieHandler.handoff_token,
             }
             self._send_json(json.dumps(status_obj).encode("utf-8"))
+
+        elif path == "/return":
+            query = parse_qs(parsed.query)
+            domain = query.get("domain", [""])[0]
+            _CookieHandler._return_domain = domain
+            log.info("Return to Chromium triggered for domain: %s", domain)
+            if _CookieHandler._return_event:
+                _CookieHandler._return_event.set()
+            self._send_json(b'{"status":"ok"}')
+
+        elif path == "/wait-return":
+            query = parse_qs(parsed.query)
+            evt = _CookieHandler._return_event
+            timeout_param = query.get("timeout", [None])[0]
+            if timeout_param is not None:
+                try:
+                    timeout_val = min(max(float(timeout_param), 0.5), 30.0)
+                except ValueError:
+                    timeout_val = 5.0
+            else:
+                timeout_val = 5.0
+
+            returned = evt.wait(timeout=timeout_val) if evt else False
+            start = _CookieHandler._start_time or time.time()
+            duration_ms = int((time.time() - start) * 1000)
+            res = {
+                "returned": bool(returned),
+                "domain": _CookieHandler._return_domain or query.get("domain", [""])[0],
+                "duration": duration_ms,
+            }
+            if returned:
+                log.info("wait-return returning RETURNED: domain=%s, duration=%d ms", res["domain"], duration_ms)
+            self._send_json(json.dumps(res).encode("utf-8"))
 
         elif path == "/":
             self.send_response(200)
@@ -321,7 +358,11 @@ def start_handoff_server(cookies, target_url="", storage_data=None):
     _CookieHandler._token_consumed = False
 
     consumed_event = threading.Event()
+    return_event = threading.Event()
     _CookieHandler._payload_consumed_event = consumed_event
+    _CookieHandler._return_event = return_event
+    _CookieHandler._return_domain = None
+    _CookieHandler._start_time = time.time()
 
     # Also stage the Chromium companion endpoints (in case they're needed)
     chromium_payload = {
@@ -337,15 +378,22 @@ def start_handoff_server(cookies, target_url="", storage_data=None):
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
 
-        # Start watchdog: auto-shutdown after timeout or payload consumption
+        # Start watchdog: auto-shutdown after timeout or return event
         def _watchdog():
-            consumed = consumed_event.wait(timeout=_HANDOFF_TIMEOUT_SECONDS)
-            if consumed:
-                log.info("Handoff payload consumed — shutting down server.")
+            consumed = consumed_event.wait(timeout=15)
+            if not consumed:
+                log.warning("Handoff unclaimed after 15s — shutting down server.")
             else:
-                log.warning("Handoff timeout (%ds) — shutting down server.", _HANDOFF_TIMEOUT_SECONDS)
+                log.info("Handoff payload consumed — keeping server alive for return event.")
+                # Wait for return button click in Firefox (up to 30 min)
+                return_event.wait(timeout=1800)
+                # Allow 5 seconds for pending return HTTP requests to finish and flush
+                time.sleep(5.0)
+                log.info("Closing handoff server after session.")
+
             try:
                 server.shutdown()
+                server.server_close()
             except Exception:
                 pass
 

@@ -163,34 +163,34 @@ def handle_launch(message):
                 start_time = time.time()
                 process = launch(browser_path, flags)
 
-                # In companion mode, Firefox may already be running. When it is,
-                # the launched process exits almost immediately after handing the
-                # URL to the existing instance. We must keep the bridge alive
-                # until the handoff server's payload is consumed or times out.
-                process.wait()
-                elapsed_ms = int((time.time() - start_time) * 1000)
-
-                if elapsed_ms < 2000:
-                    # Warm start: Firefox was already running and exited the
-                    # launcher immediately. Wait for the handoff server's
-                    # watchdog to signal completion (payload consumed or timeout).
-                    log.info("Firefox exited in %d ms (warm start detected). "
-                             "Waiting for handoff payload consumption...", elapsed_ms)
-                    # The handoff server's watchdog thread handles shutdown.
-                    # We block here until payload is consumed or timeout fires.
-                    consumed_event = _CookieHandler._payload_consumed_event
-                    if consumed_event:
-                        consumed_event.wait(timeout=35)
+                # Wait for the companion extension to consume the payload.
+                # In normal conditions, the extension consumes the payload within ~50ms.
+                # If after 6 seconds the payload is still unclaimed, the companion extension
+                # is not installed or active in this Firefox profile.
+                consumed_event = _CookieHandler._payload_consumed_event
+                consumed = consumed_event.wait(timeout=6.0) if consumed_event else False
 
                 duration_ms = int((time.time() - start_time) * 1000)
-                log.info("Firefox session ended after %d ms", duration_ms)
 
-                stop_cookie_server(handoff_server)
-                log_session(domain, browser_id, duration_ms, "closed")
+                if not consumed:
+                    log.warning("Companion extension did not claim payload within 6s (likely not installed)")
+                    stop_cookie_server(handoff_server)
+                    return {
+                        "status": "error",
+                        "event": "unclaimed",
+                        "error": "Gecko companion extension not detected in this Firefox profile. Install the companion extension to enable automatic tab handoffs.",
+                    }
+
+                log.info("Firefox handoff successfully consumed after %d ms", duration_ms)
+                log_session(domain, browser_id, duration_ms, "launched")
                 log_launch_time(browser_id, time.time() - start_time)
 
+                # Return immediately to Chromium so the popup closes cleanly
+                # and Firefox retains window focus. The handoff server stays alive
+                # in the background for the /wait-return and /return endpoints.
                 return {
-                    "event": "closed",
+                    "status": "ok",
+                    "event": "launched",
                     "domain": domain,
                     "duration": duration_ms,
                 }
