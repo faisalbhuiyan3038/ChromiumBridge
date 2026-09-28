@@ -231,3 +231,49 @@
 2026-09-28 14:36:07,361 [INFO] cookie_server: Handoff payload consumed by extension (token: J5eVzJvL...)
 2026-09-28 14:36:07,361 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
 2026-09-28 14:36:07,361 [INFO] bridge: Firefox handoff successfully consumed after 1003 ms
+2026-09-28 17:51:49,896 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:51:49,896 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:51:54,929 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:51:56,894 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:51:56,894 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:51:57,009 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:52:43,141 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:52:43,141 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:52:45,681 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:52:51,572 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:52:53,663 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:52:55,097 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:53:03,672 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 17:53:04,447 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:03,719 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:03,719 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:05,210 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:06,577 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:06,577 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:06,577 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:06,693 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:15,836 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:18,518 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:18,615 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:20,534 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:24,346 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:24,439 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:26,347 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:35,528 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:52,973 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:56,686 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:56,836 [DEBUG] profile: psutil not available; skipping orphan sweep
+2026-09-28 18:02:56,836 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-28 18:02:56,854 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-28 18:02:56,854 [INFO] bridge: Gecko injection mode: companion
+2026-09-28 18:02:56,859 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-717ah84m
+2026-09-28 18:02:56,860 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-717ah84m\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-28 18:02:56,860 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-717ah84m\user.js (UUID: f3250625-4a8f-4f9a-8261-7f7812d977b9)
+2026-09-28 18:02:56,865 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=tlgKnTI3ikW1bcz5fo9eOUG2T5ffscUdLTrg2cU9n64
+2026-09-28 18:02:56,865 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-717ah84m', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=tlgKnTI3ikW1bcz5fo9eOUG2T5ffscUdLTrg2cU9n64']
+2026-09-28 18:02:58,342 [INFO] cookie_server: Handoff payload consumed by extension (token: tlgKnTI3...)
+2026-09-28 18:02:58,342 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-28 18:02:58,342 [INFO] bridge: Ephemeral Firefox handoff consumed after 1476 ms
+2026-09-28 18:02:58,343 [DEBUG] profile: psutil not available; skipping wait_profile_free
+2026-09-28 18:02:58,343 [INFO] bridge: Cleaning up ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-717ah84m
+2026-09-28 18:02:58,343 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-717ah84m\\1bf1d6a2.sqlite'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-717ah84m

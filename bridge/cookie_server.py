@@ -156,6 +156,16 @@ class _CookieHandler(BaseHTTPRequestHandler):
     _start_time = None            # Epoch start time
 
     def do_GET(self):
+        # Reject requests not targeting localhost — guards against SSRF/port-scan
+        host_header = self.headers.get("Host", "")
+        if not host_header.startswith("127.0.0.1"):
+            log.warning("Rejected request with unexpected Host header: %r", host_header)
+            self.send_response(403)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"error":"Forbidden"}')
+            return
+
         parsed = urlparse(self.path)
         path = parsed.path
 

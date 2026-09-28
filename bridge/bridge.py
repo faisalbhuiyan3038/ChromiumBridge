@@ -28,7 +28,12 @@ from detect import (
     detect_profiles,
     get_browser_family,
 )
-from profile import create_ephemeral, resolve_persistent, cleanup
+import threading
+from profile import (
+    create_ephemeral, resolve_persistent, cleanup,
+    sweep_orphaned_profiles, is_xpi_signed, locate_companion_xpi,
+    inspect_xpi, stage_gecko_ephemeral_profile, wait_profile_free, _rmtree_with_backoff,
+)
 from cookies import stage_cookies
 from cookies_gecko import stage_gecko_profile
 from launcher import (
@@ -139,61 +144,197 @@ def handle_launch(message):
 
             # ── Companion mode: route through gecko-extension ──
             if gecko_mode == "companion":
-                # Start handoff server with tokenized endpoint
-                handoff_server, handoff_token = start_handoff_server(
-                    cookies, target_url=url, storage_data=storage_data
-                )
-                if not handoff_server:
-                    log.error("Failed to start handoff server")
-                    return {"error": "Failed to start handoff server on port %d" % COOKIE_PORT}
 
-                launch_url = f"http://127.0.0.1:{COOKIE_PORT}/handoff?token={handoff_token}"
-                log.info("Handoff URL: %s", launch_url)
+                # ── Ephemeral profile: cold-start Firefox with sideloaded companion ──
+                if profile_mode == "ephemeral":
+                    companion_xpi = locate_companion_xpi(config)
+                    if not companion_xpi:
+                        configured_xpi = (
+                            config.get("gecko_companion_xpi")
+                            or session_cfg.get("gecko_companion_xpi", "")
+                        )
+                        if configured_xpi:
+                            msg = (
+                                f"Companion XPI not found at configured path: '{configured_xpi}'. "
+                                "Please verify the path in extension Settings (Options -> Session -> Companion XPI)."
+                            )
+                        else:
+                            msg = (
+                                "Gecko Companion XPI not found. Please configure the XPI file path in "
+                                "extension Settings (Options -> Session -> Companion XPI) or place it in "
+                                "releases/gecko-extension/."
+                            )
+                        return {
+                            "status": "error",
+                            "event": "no_xpi",
+                            "error": msg,
+                        }
 
-                flags = build_gecko_flags(
-                    config=config,
-                    url=launch_url,
-                    mode=mode,
-                    profile_dir=None,
-                    incognito=incognito,
-                    companion_mode=True,
-                )
-                log.info("Launching Firefox (companion mode) with flags: %s", flags)
+                    if not is_xpi_signed(companion_xpi):
+                        return {
+                            "status": "error",
+                            "event": "unsigned_xpi",
+                            "path": companion_xpi,
+                            "error": (
+                                f"Companion XPI at '{companion_xpi}' is not signed by AMO yet. "
+                                "Submit it to AMO (unlisted channel), download the signed copy, "
+                                "and update the path in Settings."
+                            ),
+                        }
 
-                start_time = time.time()
-                process = launch(browser_path, flags)
+                    profile_dir = create_ephemeral()
+                    log.info("Created ephemeral gecko profile: %s", profile_dir)
 
-                # Wait for the companion extension to consume the payload.
-                # In normal conditions, the extension consumes the payload within ~50ms.
-                # If after 6 seconds the payload is still unclaimed, the companion extension
-                # is not installed or active in this Firefox profile.
-                consumed_event = _CookieHandler._payload_consumed_event
-                consumed = consumed_event.wait(timeout=6.0) if consumed_event else False
+                    try:
+                        stage_gecko_ephemeral_profile(profile_dir, companion_xpi)
+                    except Exception as e:
+                        log.error("Failed to stage ephemeral gecko profile: %s", e)
+                        _rmtree_with_backoff(profile_dir)
+                        return {"error": f"Failed to prepare ephemeral Firefox profile: {e}"}
 
-                duration_ms = int((time.time() - start_time) * 1000)
+                    # Start handoff server with tokenized payload
+                    handoff_server, handoff_token = start_handoff_server(
+                        cookies, target_url=url, storage_data=storage_data
+                    )
+                    if not handoff_server:
+                        _rmtree_with_backoff(profile_dir)
+                        return {"error": "Failed to start handoff server on port %d" % COOKIE_PORT}
 
-                if not consumed:
-                    log.warning("Companion extension did not claim payload within 6s (likely not installed)")
-                    stop_cookie_server(handoff_server)
+                    launch_url = f"http://127.0.0.1:{COOKIE_PORT}/handoff?token={handoff_token}"
+                    log.info("Handoff URL (ephemeral): %s", launch_url)
+
+                    flags = build_gecko_flags(
+                        config=config,
+                        url=launch_url,
+                        mode=mode,
+                        profile_dir=profile_dir,   # isolated profile with sideloaded XPI
+                        incognito=incognito,
+                        companion_mode=False,       # use -profile/-no-remote/-new-instance
+                    )
+                    log.info("Launching Firefox (ephemeral companion mode) with flags: %s", flags)
+
+                    start_time = time.time()
+                    process = launch(browser_path, flags)
+
+                    # Wait for the sideloaded companion to consume the payload.
+                    # Cold-start with AV scanning can take up to ~15s on the first run;
+                    # 30s ensures we don't falsely timeout on slow machines.
+                    consumed_event = _CookieHandler._payload_consumed_event
+                    consumed = consumed_event.wait(timeout=30.0) if consumed_event else False
+
+                    duration_ms = int((time.time() - start_time) * 1000)
+
+                    if not consumed:
+                        log.warning(
+                            "Ephemeral companion did not claim payload within 30s. "
+                            "XPI may be unsigned or invalid on this Firefox build."
+                        )
+                        stop_cookie_server(handoff_server)
+                        # Do NOT delete the profile — Firefox may still be starting.
+                        # The background watcher thread will handle cleanup on process exit.
+                        def _cleanup_if_no_consume(proc, prof):
+                            try:
+                                proc.wait()
+                                wait_profile_free(prof, timeout=30)
+                            except Exception:
+                                pass
+                            finally:
+                                _rmtree_with_backoff(prof)
+                        threading.Thread(
+                            target=_cleanup_if_no_consume,
+                            args=(process, profile_dir),
+                            daemon=True,
+                        ).start()
+                        return {
+                            "status": "error",
+                            "event": "unclaimed",
+                            "error": "The companion extension did not start within 30s. "
+                                     "If using release Firefox, ensure the companion XPI is AMO-signed.",
+                        }
+
+                    log.info("Ephemeral Firefox handoff consumed after %d ms", duration_ms)
+                    log_session(domain, browser_id, duration_ms, "launched")
+                    log_launch_time(browser_id, time.time() - start_time)
+
+                    # Spawn background watcher: wait for Firefox to fully release the
+                    # profile directory, then delete it. Handles Firefox self-restarts.
+                    def _ephemeral_watcher(proc, prof):
+                        try:
+                            proc.wait()                          # initial PID exits
+                            wait_profile_free(prof, timeout=60)  # catch self-restart
+                        except Exception:
+                            pass
+                        finally:
+                            log.info("Cleaning up ephemeral gecko profile: %s", prof)
+                            _rmtree_with_backoff(prof)
+
+                    threading.Thread(
+                        target=_ephemeral_watcher,
+                        args=(process, profile_dir),
+                        daemon=True,
+                    ).start()
+
+                    # Return immediately — Firefox retains focus, popup closes cleanly.
+                    # Handoff server stays alive for /wait-return and /return endpoints.
                     return {
-                        "status": "error",
-                        "event": "unclaimed",
-                        "error": "Gecko companion extension not detected in this Firefox profile. Install the companion extension to enable automatic tab handoffs.",
+                        "status": "ok",
+                        "event": "launched",
+                        "domain": domain,
+                        "duration": duration_ms,
                     }
 
-                log.info("Firefox handoff successfully consumed after %d ms", duration_ms)
-                log_session(domain, browser_id, duration_ms, "launched")
-                log_launch_time(browser_id, time.time() - start_time)
+                # ── Persistent profile: attach to existing Firefox instance ──
+                else:
+                    # Start handoff server with tokenized endpoint
+                    handoff_server, handoff_token = start_handoff_server(
+                        cookies, target_url=url, storage_data=storage_data
+                    )
+                    if not handoff_server:
+                        log.error("Failed to start handoff server")
+                        return {"error": "Failed to start handoff server on port %d" % COOKIE_PORT}
 
-                # Return immediately to Chromium so the popup closes cleanly
-                # and Firefox retains window focus. The handoff server stays alive
-                # in the background for the /wait-return and /return endpoints.
-                return {
-                    "status": "ok",
-                    "event": "launched",
-                    "domain": domain,
-                    "duration": duration_ms,
-                }
+                    launch_url = f"http://127.0.0.1:{COOKIE_PORT}/handoff?token={handoff_token}"
+                    log.info("Handoff URL (persistent): %s", launch_url)
+
+                    flags = build_gecko_flags(
+                        config=config,
+                        url=launch_url,
+                        mode=mode,
+                        profile_dir=None,    # no isolation — attach to default profile
+                        incognito=incognito,
+                        companion_mode=True,
+                    )
+                    log.info("Launching Firefox (persistent companion mode) with flags: %s", flags)
+
+                    start_time = time.time()
+                    process = launch(browser_path, flags)
+
+                    # In persistent mode, expect the companion to respond within 6s
+                    # (it should already be installed in the user's main profile).
+                    consumed_event = _CookieHandler._payload_consumed_event
+                    consumed = consumed_event.wait(timeout=6.0) if consumed_event else False
+
+                    duration_ms = int((time.time() - start_time) * 1000)
+
+                    if not consumed:
+                        log.warning("Companion extension did not claim payload within 6s (likely not installed)")
+                        stop_cookie_server(handoff_server)
+                        return {
+                            "status": "error",
+                            "event": "unclaimed",
+                            "error": "Gecko companion extension not detected in this Firefox profile. Install the companion extension to enable automatic tab handoffs.",
+                        }
+
+                    log.info("Firefox handoff successfully consumed after %d ms", duration_ms)
+                    log_session(domain, browser_id, duration_ms, "launched")
+                    log_launch_time(browser_id, time.time() - start_time)
+
+                    return {
+                        "status": "ok",
+                        "event": "launched",
+                        "domain": domain,
+                        "duration": duration_ms,
+                    }
 
             # ── Legacy mode: direct SQLite injection (original flow) ──
             else:
@@ -367,6 +508,56 @@ def handle_detect_profiles(message):
         return {"error": str(e)}
 
 
+def handle_check_xpi(message):
+    """Check companion XPI path and AMO signature status."""
+    try:
+        config = load_config()
+        path = message.get("path")
+        return inspect_xpi(path, config)
+    except Exception as e:
+        return {"found": False, "error": str(e)}
+
+
+def handle_browse_file(message):
+    """
+    Open native OS file picker to select the signed XPI.
+    Returns the exact absolute filesystem path chosen by the user.
+    """
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+
+        initial_dir = None
+        current = message.get("current_path")
+        if current and os.path.exists(os.path.dirname(current)):
+            initial_dir = os.path.dirname(current)
+
+        chosen = filedialog.askopenfilename(
+            title="Select Gecko Companion Extension (.xpi)",
+            filetypes=[("Firefox Extension (*.xpi)", "*.xpi"), ("All Files (*.*)", "*.*")],
+            initialdir=initial_dir,
+        )
+        root.destroy()
+
+        if chosen:
+            exact_path = os.path.normpath(os.path.abspath(chosen))
+            inspection = inspect_xpi(exact_path)
+            return {
+                "status": "ok",
+                "selected": True,
+                "path": exact_path,
+                "signed": inspection.get("signed", False),
+            }
+        return {"status": "ok", "selected": False}
+    except Exception as e:
+        log.error("Failed to open native file dialog: %s", e)
+        return {"status": "error", "error": str(e)}
+
+
 def main():
     """Main message loop."""
     while True:
@@ -390,6 +581,10 @@ def main():
             response = handle_reinstall(message)
         elif action == "detect_profiles":
             response = handle_detect_profiles(message)
+        elif action == "check_xpi":
+            response = handle_check_xpi(message)
+        elif action == "browse_file":
+            response = handle_browse_file(message)
         elif action == "health":
             response = {"status": "ok", "timestamp": time.time()}
         else:
@@ -399,4 +594,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # Sweep any leftover cb-gecko-* profiles from previous crashed sessions
+    # before entering the message loop, so stale cookies don't sit on disk.
+    sweep_orphaned_profiles()
     main()

@@ -324,3 +324,5 @@
 {"type":"launch_time","timestamp":1790584125.058609,"browser":"brave","seconds":5.73}
 {"type":"session","timestamp":1790584567.3614335,"domain":"google.com","browser":"firefox_nightly","duration_ms":1003,"outcome":"launched"}
 {"type":"launch_time","timestamp":1790584567.3614335,"browser":"firefox_nightly","seconds":1.0}
+{"type":"session","timestamp":1790596978.3435764,"domain":"scratchpad.cc","browser":"firefox","duration_ms":1476,"outcome":"launched"}
+{"type":"launch_time","timestamp":1790596978.3435764,"browser":"firefox","seconds":1.48}

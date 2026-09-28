@@ -447,6 +447,29 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         return sendNativeMessage({ action: "config_set", config: message.config });
       }
 
+      case "checkXpi": {
+        return sendNativeMessage({ action: "check_xpi", path: message.path });
+      }
+
+      case "browseXpiFile": {
+        return sendNativeMessage({ action: "browse_file", current_path: message.currentPath });
+      }
+
+      case "saveGeckoXpiPath": {
+        const xpiPath = message.path ? message.path.trim() : "";
+        const bridgeRes = await sendNativeMessage({
+          action: "config_set",
+          config: {
+            gecko_companion_xpi: xpiPath,
+            session: { gecko_companion_xpi: xpiPath },
+          },
+        });
+        const settings = await getSessionSettings();
+        settings.gecko_companion_xpi = xpiPath;
+        await chrome.storage.sync.set({ sessionSettings: settings });
+        return bridgeRes;
+      }
+
       case "reinstall": {
         return sendNativeMessage({
           action: "reinstall",

@@ -194,7 +194,13 @@
           btnLaunch.disabled = false;
 
           if (response?.error) {
-            alert(`Handoff failed: ${response.error}`);
+            if (response.event === "no_xpi" || response.event === "unsigned_xpi") {
+              if (confirm(`Handoff failed: ${response.error}\n\nOpen Settings to configure the Companion XPI path?`)) {
+                chrome.runtime.openOptionsPage();
+              }
+            } else {
+              alert(`Handoff failed: ${response.error}`);
+            }
           } else {
             window.close();
           }

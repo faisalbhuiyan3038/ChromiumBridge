@@ -41,6 +41,12 @@
   const sessionLocalStorage = document.getElementById("session-localstorage");
   const sessionIncognito = document.getElementById("session-incognito");
   const btnSaveSession = document.getElementById("btn-save-session");
+  const geckoXpiPath = document.getElementById("gecko-xpi-path");
+  const btnBrowseXpi = document.getElementById("btn-browse-xpi");
+  const xpiStatusBadge = document.getElementById("xpi-status-badge");
+  const xpiStatusText = document.getElementById("xpi-status-text");
+  const btnSaveXpi = document.getElementById("btn-save-xpi");
+  const btnCheckXpi = document.getElementById("btn-check-xpi");
 
   // Advanced elements
   const healthDot = document.getElementById("health-dot");
@@ -79,6 +85,9 @@
       if (_settings.port_cookies !== undefined) sessionCookies.checked = _settings.port_cookies;
       if (_settings.port_localstorage !== undefined) sessionLocalStorage.checked = _settings.port_localstorage;
       if (_settings.incognito_passthrough !== undefined) sessionIncognito.checked = _settings.incognito_passthrough;
+      if (_settings.gecko_companion_xpi && geckoXpiPath) {
+        geckoXpiPath.value = _settings.gecko_companion_xpi;
+      }
     });
 
     await rescanBrowsers();
@@ -215,6 +224,52 @@
         advancedConfig.value = JSON.stringify(cfg, null, 2);
         if (cfg.python_path) advancedPythonPath.value = cfg.python_path;
         if (cfg.bridge_dir) advancedBridgeDir.value = cfg.bridge_dir;
+        const configuredXpi = cfg.gecko_companion_xpi || cfg.session?.gecko_companion_xpi || "";
+        if (geckoXpiPath && configuredXpi) {
+          geckoXpiPath.value = configuredXpi;
+        }
+        checkXpiStatus(configuredXpi || undefined);
+      } else {
+        checkXpiStatus();
+      }
+    });
+  }
+
+  function setXpiBadge(type, text, description) {
+    if (!xpiStatusBadge) return;
+    xpiStatusBadge.className = `badge badge-${type}`;
+    xpiStatusBadge.textContent = text;
+    if (xpiStatusText && description) {
+      xpiStatusText.textContent = description;
+    }
+  }
+
+  async function checkXpiStatus(pathToCheck) {
+    if (xpiStatusBadge) {
+      xpiStatusBadge.className = "badge badge-neutral";
+      xpiStatusBadge.textContent = "Checking…";
+    }
+    if (xpiStatusText) {
+      xpiStatusText.textContent = "Validating XPI file…";
+    }
+
+    chrome.runtime.sendMessage({ action: "checkXpi", path: pathToCheck || undefined }, (res) => {
+      if (!res) {
+        setXpiBadge("error", "Error", "Failed to communicate with bridge.");
+        return;
+      }
+
+      if (res.found) {
+        if (geckoXpiPath && res.path) {
+          geckoXpiPath.value = res.path;
+        }
+        if (res.signed) {
+          setXpiBadge("success", "✓ Signed XPI", `Valid AMO-signed companion ready at: ${res.path}`);
+        } else {
+          setXpiBadge("warning", "⚠️ Unsigned XPI", `XPI found at '${res.path}', but it is not signed by AMO. Release Firefox requires an AMO-signed XPI for ephemeral profile sideloading.`);
+        }
+      } else {
+        setXpiBadge("error", "Not Found", res.error || "Companion XPI not found. Please specify the path.");
       }
     });
   }
@@ -327,10 +382,50 @@
       _settings.port_localstorage = sessionLocalStorage.checked;
       _settings.incognito_passthrough = sessionIncognito.checked;
       _settings.default_browser = _defaultBrowser;
+      if (geckoXpiPath) {
+        _settings.gecko_companion_xpi = geckoXpiPath.value.trim();
+        chrome.runtime.sendMessage({ action: "saveGeckoXpiPath", path: geckoXpiPath.value.trim() });
+      }
 
       chrome.runtime.sendMessage({ action: "saveSessionSettings", settings: _settings }, () => {
         alert("Session settings saved!");
       });
+    });
+
+    // Companion XPI controls — uses native OS file picker
+    btnBrowseXpi?.addEventListener("click", () => {
+      btnBrowseXpi.disabled = true;
+      btnBrowseXpi.textContent = "Selecting…";
+      const currentPath = geckoXpiPath ? geckoXpiPath.value.trim() : "";
+      chrome.runtime.sendMessage({ action: "browseXpiFile", currentPath }, (res) => {
+        btnBrowseXpi.disabled = false;
+        btnBrowseXpi.textContent = "Select File…";
+        if (res && res.selected && res.path) {
+          geckoXpiPath.value = res.path;
+          // Auto-save the exact chosen path
+          chrome.runtime.sendMessage({ action: "saveGeckoXpiPath", path: res.path }, () => {
+            checkXpiStatus(res.path);
+          });
+        } else if (res?.error) {
+          alert("File picker error: " + res.error);
+        }
+      });
+    });
+
+    btnSaveXpi?.addEventListener("click", () => {
+      const path = geckoXpiPath.value.trim();
+      chrome.runtime.sendMessage({ action: "saveGeckoXpiPath", path }, (res) => {
+        if (res?.error) {
+          alert("Failed to save XPI path: " + res.error);
+        } else {
+          alert("Companion XPI path saved successfully!");
+          checkXpiStatus(path);
+        }
+      });
+    });
+
+    btnCheckXpi?.addEventListener("click", () => {
+      checkXpiStatus(geckoXpiPath.value.trim() || undefined);
     });
 
     // Advanced tab

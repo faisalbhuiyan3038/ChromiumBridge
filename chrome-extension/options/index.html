@@ -203,6 +203,26 @@
           </div>
         </div>
 
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Gecko Companion Extension (Signed XPI)</h2>
+            <span class="badge badge-neutral" id="xpi-status-badge">Checking…</span>
+          </div>
+          <p class="card-desc">Required for Ephemeral Firefox profiles. Provide the absolute path to your signed <code>.xpi</code> file.</p>
+          <div class="form-group">
+            <label class="form-label">Companion .xpi Path</label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-input" id="gecko-xpi-path" placeholder="e.g. C:\path\to\chromiumbridge-companion@faisalbhuiyan.com.xpi" style="flex:1">
+              <button class="btn btn-outline btn-sm" id="btn-browse-xpi" type="button">Select File…</button>
+            </div>
+            <span class="field-hint" id="xpi-status-text" style="display:block;margin-top:8px;font-size:12px;color:var(--text-secondary)"></span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-primary btn-sm" id="btn-save-xpi" type="button">Save XPI Path</button>
+            <button class="btn btn-outline btn-sm" id="btn-check-xpi" type="button">Validate XPI</button>
+          </div>
+        </div>
+
         <button class="btn btn-primary" id="btn-save-session">Save Session Settings</button>
       </section>
 

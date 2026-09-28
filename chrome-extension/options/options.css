@@ -224,3 +224,32 @@ body {
   margin-bottom: 4px;
   color: #664200;
 }
+
+/* ── Badges ────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-success {
+  background: var(--primary-lighter);
+  color: var(--primary-darker);
+}
+.badge-warning {
+  background: rgba(255, 171, 0, 0.16);
+  color: #8C5B00;
+}
+.badge-error {
+  background: rgba(255, 86, 48, 0.16);
+  color: #B71D18;
+}
+.badge-neutral {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
