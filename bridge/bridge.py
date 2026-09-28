@@ -128,7 +128,7 @@ def handle_launch(message):
             log.error("Browser '%s' not found on this system", browser_id)
             return {"error": f"Browser '{browser_id}' not found on this system."}
 
-        family = get_browser_family(browser_id)
+        family = get_browser_family(browser_id, config=config, path=browser_path)
         log.info("Browser family: %s, path: %s", family, browser_path)
 
         # ── Branch A: Gecko Target (Firefox, LibreWolf, Floorp, Zen) ──

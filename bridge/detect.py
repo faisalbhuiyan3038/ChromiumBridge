@@ -139,11 +139,39 @@ GECKO_BROWSER_DEFS = {
 BROWSER_DEFS = {**CHROMIUM_BROWSER_DEFS, **GECKO_BROWSER_DEFS}
 
 
-def get_browser_family(browser_id):
+def get_browser_family(browser_id, config=None, path=None):
     """Return 'gecko' or 'chromium' for a browser ID."""
     if browser_id in GECKO_BROWSER_DEFS or str(browser_id).startswith("gecko_"):
         return "gecko"
-    return "chromium"
+    if browser_id in CHROMIUM_BROWSER_DEFS or str(browser_id).startswith("chromium_"):
+        return "chromium"
+
+    bid_lower = str(browser_id).lower()
+    gecko_keywords = [
+        "firefox", "nightly", "zen", "floorp", "librewolf", "waterfox",
+        "mullvad", "tor", "gecko", "icecat", "mercury", "palemoon",
+    ]
+    if any(k in bid_lower for k in gecko_keywords):
+        return "gecko"
+
+    chromium_keywords = [
+        "chrome", "chromium", "brave", "edge", "vivaldi", "opera", "arc", "yandex",
+    ]
+    if any(k in bid_lower for k in chromium_keywords):
+        return "chromium"
+
+    # Check executable path if available or in config
+    if not path and config:
+        path = config.get("browser_overrides", {}).get(browser_id)
+    if path:
+        p_lower = path.lower()
+        if any(k in p_lower for k in ["firefox.exe", "zen.exe", "floorp.exe", "librewolf.exe", "waterfox.exe", "mullvadbrowser.exe", "mozilla firefox", "zen browser"]):
+            return "gecko"
+        if any(k in p_lower for k in ["chrome.exe", "msedge.exe", "brave.exe", "vivaldi.exe", "opera.exe"]):
+            return "chromium"
+
+    # Default to gecko in ChromiumBridge (Chromium to Gecko context)
+    return "gecko"
 
 
 def _get_known_paths(browser_id, system):
@@ -340,8 +368,8 @@ def _find_single_browser(browser_id, config=None):
                 break
 
     if path:
-        name = bdef["name"] if bdef else browser_id.capitalize()
-        family = bdef.get("family", get_browser_family(browser_id))
+        name = bdef["name"] if bdef else browser_id.replace("_", " ").replace("-", " ").title()
+        family = bdef["family"] if bdef else get_browser_family(browser_id, config=config, path=path)
         return {"id": browser_id, "name": name, "family": family, "path": path}
 
     return None
@@ -451,10 +479,26 @@ _GECKO_BASE_DIRS = {
 }
 
 
-def _detect_gecko_profiles(browser_id):
+def _detect_gecko_profiles(browser_id, config=None):
     """Parse profiles.ini or scan directories for Gecko browsers."""
     system = platform.system()
     base_dirs = _GECKO_BASE_DIRS.get(browser_id, {}).get(system, [])
+    if not base_dirs:
+        # Fallback for custom Firefox-based forks
+        bid_lower = browser_id.lower()
+        if "firefox" in bid_lower:
+            base_dirs = _GECKO_BASE_DIRS.get("firefox", {}).get(system, [])
+        elif "zen" in bid_lower:
+            base_dirs = _GECKO_BASE_DIRS.get("zen", {}).get(system, [])
+        elif "floorp" in bid_lower:
+            base_dirs = _GECKO_BASE_DIRS.get("floorp", {}).get(system, [])
+        elif "librewolf" in bid_lower:
+            base_dirs = _GECKO_BASE_DIRS.get("librewolf", {}).get(system, [])
+        elif "waterfox" in bid_lower:
+            base_dirs = _GECKO_BASE_DIRS.get("waterfox", {}).get(system, [])
+        else:
+            base_dirs = _GECKO_BASE_DIRS.get("firefox", {}).get(system, [])
+
     profiles = []
 
     for base_dir in base_dirs:
@@ -561,8 +605,8 @@ def detect_profiles(browser_id, config=None):
     """
     Detect profiles for any supported browser (Chromium or Gecko).
     """
-    family = get_browser_family(browser_id)
+    family = get_browser_family(browser_id, config=config)
     if family == "gecko":
-        return _detect_gecko_profiles(browser_id)
+        return _detect_gecko_profiles(browser_id, config=config)
     else:
         return _detect_chromium_profiles(browser_id)

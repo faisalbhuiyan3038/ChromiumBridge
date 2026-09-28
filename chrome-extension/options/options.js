@@ -224,7 +224,7 @@
 
     // Save custom browser override
     btnSaveCustomBrowser.addEventListener("click", () => {
-      const id = customBrowserId.value.trim();
+      const id = customBrowserId.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_");
       const path = customBrowserPath.value.trim();
       if (!id || !path) {
         alert("Please enter both a Browser ID and Path.");
@@ -232,12 +232,16 @@
       }
 
       chrome.runtime.sendMessage({ action: "getBridgeConfig" }, (cfg) => {
-        if (!cfg) cfg = {};
+        if (!cfg || cfg.error) cfg = {};
         if (!cfg.browser_overrides) cfg.browser_overrides = {};
         cfg.browser_overrides[id] = path;
 
-        chrome.runtime.sendMessage({ action: "setBridgeConfig", config: cfg }, () => {
-          alert(`Saved custom browser ${id}`);
+        chrome.runtime.sendMessage({ action: "setBridgeConfig", config: cfg }, (res) => {
+          if (res?.error) {
+            alert(`Failed to save custom browser: ${res.error}`);
+            return;
+          }
+          alert(`Saved custom browser: ${id}`);
           customBrowserId.value = "";
           customBrowserPath.value = "";
           rescanBrowsers();

@@ -39,6 +39,8 @@
 }
 
 body {
+  min-width: 340px;
+  min-height: 220px;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 13px;
   line-height: 1.5;
@@ -52,6 +54,7 @@ body {
 
 .popup-container {
   width: 340px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   overflow: hidden;

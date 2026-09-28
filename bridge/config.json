@@ -5,7 +5,9 @@
   "chrome_extension_id": "gkmimgmenjencipgjlojgdkfcomioeah",
   "python_path": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
   "bridge_dir": "M:\\.systemfile\\ChromiumBridge\\bridge",
-  "browser_overrides": {},
+  "browser_overrides": {
+    "firefox_nightly": "C:\\Program Files\\Firefox Nightly\\firefox.exe"
+  },
   "window_modes": {
     "default": "popup",
     "app_domains": [

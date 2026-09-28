@@ -26,11 +26,16 @@
   const linkOptions = document.getElementById("link-options");
   const linkHelp = document.getElementById("link-help");
   const btnRetry = document.getElementById("btn-retry");
+  const btnSetup = document.getElementById("btn-setup");
   const offlineTitle = document.getElementById("offline-title");
   const offlineDesc = document.getElementById("offline-desc");
 
   async function init() {
-    setupEventListeners();
+    try {
+      setupEventListeners();
+    } catch (err) {
+      console.error("[ChromiumBridge] Error setting up event listeners:", err);
+    }
     await loadData();
   }
 
