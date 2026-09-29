@@ -278,6 +278,30 @@ async function waitForReturn(domain, tabId, windowId) {
       if (data && data.returned) {
         console.log(`[ChromiumBridge] User returned from Firefox for domain: ${domain}`, data);
 
+        // The daemon signals return BEFORE rmtree finishes, so `cleaned`
+        // may still be null. Settle it with short follow-up polls (daemon
+        // keeps the server alive ~5s post-cleanup) so the banner can state
+        // the true outcome instead of a stale "pending".
+        let cleaned = data.cleaned ?? null;
+        if (cleaned === null || cleaned === undefined) {
+          for (let j = 0; j < 30; j++) {
+            try {
+              const r2 = await fetch(`http://127.0.0.1:47831/wait-return?domain=${encodeURIComponent(domain || "")}&timeout=2`, {
+                cache: "no-store",
+              });
+              if (!r2.ok) break;
+              const d2 = await r2.json();
+              if (d2 && d2.cleaned !== null && d2.cleaned !== undefined) {
+                cleaned = d2.cleaned;
+                data.duration = d2.duration ?? data.duration;
+                break;
+              }
+            } catch {
+              break;
+            }
+          }
+        }
+
         // 1. Refocus window
         try {
           if (windowId) {
@@ -306,15 +330,42 @@ async function waitForReturn(domain, tabId, windowId) {
 
         // 3. Display the feedback banner on the target tab
         if (targetTabId) {
-          await triggerFeedbackBanner(targetTabId, data.domain || domain, data.duration);
+          await triggerFeedbackBanner(targetTabId, data.domain || domain, data.duration, cleaned);
+        } else {
+          await showReturnNotification(data.domain || domain, cleaned);
         }
         break;
       }
     } catch (err) {
-      // Normal when cookie server terminates or user closes Firefox window
-      console.log("[ChromiumBridge] Return listener finished:", err.message);
-      break;
+      // Server handover gap (bridge -> detached session daemon) or daemon
+      // shutdown: keep polling instead of giving up — the daemon binds the
+      // same port within ~1s. Sleep briefly to avoid a hot loop.
+      console.log("[ChromiumBridge] Return listener poll failed, retrying:", err.message);
+      await new Promise((r) => setTimeout(r, 1000));
+      continue;
     }
+  }
+}
+
+/**
+ * Fallback notification when the original tab is gone (closed/navigated).
+ * Guarantees visible "temp data cleared" feedback even without a banner host.
+ */
+async function showReturnNotification(domain, cleaned) {
+  const cleanedText = cleaned === true
+    ? "Temp Firefox profile deleted."
+    : "Temp profile cleanup in progress — will auto-clear.";
+  try {
+    if (chrome.notifications) {
+      await chrome.notifications.create("cb-return-" + Date.now(), {
+        type: "basic",
+        iconUrl: "icons/icon-48.png",
+        title: "ChromiumBridge — Welcome back!",
+        message: `${domain}: ${cleanedText}`,
+      });
+    }
+  } catch (err) {
+    console.warn("[ChromiumBridge] Notification failed:", err.message);
   }
 }
 
@@ -323,14 +374,15 @@ async function waitForReturn(domain, tabId, windowId) {
  * Attempts tabs.sendMessage first; if content script is missing or inactive,
  * injects banner.js and invokes the display function directly via scripting.
  */
-async function triggerFeedbackBanner(tabId, domain, duration) {
-  console.log(`[ChromiumBridge] Triggering feedback banner on tab ${tabId} for domain ${domain}`);
+async function triggerFeedbackBanner(tabId, domain, duration, cleaned) {
+  console.log(`[ChromiumBridge] Triggering feedback banner on tab ${tabId} for domain ${domain} cleaned=${cleaned}`);
 
   try {
     const res = await chrome.tabs.sendMessage(tabId, {
       action: "showFeedbackPrompt",
       domain,
       duration,
+      cleaned,
     });
     if (res?.received) return;
   } catch (err) {
@@ -346,18 +398,22 @@ async function triggerFeedbackBanner(tabId, domain, duration) {
       });
       await chrome.scripting.executeScript({
         target: { tabId },
-        func: (dom, dur) => {
+        func: (dom, dur, cln) => {
           if (typeof window.showChromiumBridgeFeedback === "function") {
-            window.showChromiumBridgeFeedback(dom, dur);
+            window.showChromiumBridgeFeedback(dom, dur, cln);
           }
         },
-        args: [domain, duration],
+        args: [domain, duration, cleaned ?? null],
       });
       console.log("[ChromiumBridge] Feedback banner successfully injected via scripting API");
+      return;
     }
   } catch (injectErr) {
     console.warn("[ChromiumBridge] Could not inject banner script into tab:", injectErr.message);
   }
+
+  // Last resort: OS notification so the user still sees cleanup feedback.
+  await showReturnNotification(domain, cleaned);
 }
 
 // ── Message Router ─────────────────────────────────────

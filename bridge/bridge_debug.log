@@ -338,3 +338,445 @@
 2026-09-28 18:30:35,378 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-d80ko6ou'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-d80ko6ou
 2026-09-28 18:30:38,379 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-d80ko6ou'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-d80ko6ou
 2026-09-28 18:30:41,380 [INFO] profile: Orphan sweep removed 1 leftover profile(s).
+2026-09-29 10:14:54,966 [DEBUG] profile: _profile_in_use check failed: [WinError 2] The system cannot find the file specified
+2026-09-29 10:14:54,966 [DEBUG] profile: _profile_in_use check failed: [WinError 2] The system cannot find the file specified
+2026-09-29 10:14:54,966 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:14:54,966 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:14:54,966 [DEBUG] profile: rmtree failed ([WinError 5] Access is denied: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn\\dummy.txt'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:14:54,966 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:14:54,971 [DEBUG] profile: _profile_in_use check failed: [WinError 2] The system cannot find the file specified
+2026-09-29 10:14:54,971 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-test3-yk3me44c
+2026-09-29 10:14:54,971 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-test3-yk3me44c
+2026-09-29 10:14:54,971 [INFO] profile: Orphan sweep removed 2 leftover profile(s).
+2026-09-29 10:14:55,266 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 0.6s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:14:55,867 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 1.2s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:14:57,067 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 2.4s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:14:59,468 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:02,469 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:05,469 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:08,470 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:11,470 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:14,471 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:16,349 [INFO] bridge: handle_launch: url=https://chatgpt.com/ browser=firefox cookies=26 storage_keys=['oai/apps/tpp/default-tab-last-applied-recommendation/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history-without-projects', 'oai/apps/hasSeenNoAuthImagegenNux', 'oai/apps/lastUtmCampaign', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/pinned-items', '_account', 'oai/apps/lastKnownPinnedSidebarItemsCount', 'oai/apps/hasAnyProjects', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/snorlax-history', 'statsig.session_id.1792610830', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/models', 'oai/apps/lastPageLoadDate', 'statsig.stable_id.1792610830', 'oai/apps/conversationDrafts', 'oai/apps/tatertotInContextUpsellBannerV2', 'oai/apps/loggedInUserMessageCount', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/lastSignupAttribution', 'RESUME_TOKEN_STORE_KEY', '19c8dcded010e906', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history', 'oai/apps/subscriptionFailedBanner', 'search.attributions-settings', 'oai-did', 'oai/apps/pendingSurveySpec', 'oai/apps/chatTheme/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/ownerDomainBackfillLastRunAt/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/capExpiresAt', 'oai/apps/tpp/chat-surface-mode', 'client-correlated-secret', 'oai/apps/noAuthUserMessageCount', 'oai/apps/connectorInContextUpsellBannerV1', 'oai/apps/debugSettings', 'oai/apps/recentsOrganizationAutomaticDefault/user-YXWN19HVpkOEQtA6EDKECF2H']
+2026-09-29 10:15:16,367 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 10:15:16,367 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 10:15:16,379 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:16,381 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 10:15:16,382 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3\user.js (UUID: 5f202770-5d32-4eb9-85ae-7b43d3166d05)
+2026-09-29 10:15:16,389 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=Ej6K7KSPpSN6sYBCuwAJJt-YZbjfL7AbdsiclA-WvHg
+2026-09-29 10:15:16,389 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-xv07h0j3', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=Ej6K7KSPpSN6sYBCuwAJJt-YZbjfL7AbdsiclA-WvHg']
+2026-09-29 10:15:17,472 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:17,932 [INFO] cookie_server: Handoff payload consumed by extension (token: Ej6K7KSP...)
+2026-09-29 10:15:17,932 [INFO] bridge: Ephemeral Firefox handoff consumed after 1542 ms
+2026-09-29 10:15:17,932 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-29 10:15:17,941 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3 pid=3224 domain=chatgpt.com
+2026-09-29 10:15:18,031 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=28832 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3 firefox_pid=3224 domain=chatgpt.com
+2026-09-29 10:15:18,032 [DEBUG] session_daemon: Daemon lifetime watch error: <class 'OSError'> returned a result with an exception set
+2026-09-29 10:15:18,032 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:18,033 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-xv07h0j3\\bounce-tracking-protection.sqlite'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:18,333 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-xv07h0j3\\bounce-tracking-protection.sqlite'), retrying in 0.6s: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:18,934 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-xv07h0j3\\bounce-tracking-protection.sqlite'), retrying in 1.2s: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:18,952 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,957 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,960 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,962 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,965 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,968 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,970 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,972 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,975 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,977 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,979 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,981 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,984 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,987 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,989 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,991 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,994 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,996 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:18,998 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,000 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,004 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,006 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,008 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,011 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,013 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,015 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,017 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,018 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,022 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,023 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:19,026 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:20,135 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-xv07h0j3\\bounce-tracking-protection.sqlite'), retrying in 2.4s: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:20,473 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:22,536 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-xv07h0j3\\bounce-tracking-protection.sqlite'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:23,473 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:25,537 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-xv07h0j3\\bounce-tracking-protection.sqlite'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:25,691 [INFO] session_daemon: Daemon: /return ping for domain=chatgpt.com
+2026-09-29 10:15:26,474 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:28,589 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:28,589 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-xv07h0j3
+2026-09-29 10:15:29,474 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:32,475 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:33,828 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 10:15:35,475 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:36,878 [INFO] bridge: handle_launch: url=https://chatgpt.com/ browser=firefox cookies=26 storage_keys=['oai/apps/tpp/default-tab-last-applied-recommendation/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history-without-projects', 'oai/apps/hasSeenNoAuthImagegenNux', 'oai/apps/lastUtmCampaign', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/pinned-items', '_account', 'oai/apps/lastKnownPinnedSidebarItemsCount', 'oai/apps/hasAnyProjects', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/snorlax-history', 'statsig.session_id.1792610830', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/models', 'oai/apps/lastPageLoadDate', 'statsig.stable_id.1792610830', 'oai/apps/conversationDrafts', 'oai/apps/tatertotInContextUpsellBannerV2', 'oai/apps/loggedInUserMessageCount', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/lastSignupAttribution', 'RESUME_TOKEN_STORE_KEY', '19c8dcded010e906', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history', 'oai/apps/subscriptionFailedBanner', 'search.attributions-settings', 'oai-did', 'oai/apps/pendingSurveySpec', 'oai/apps/chatTheme/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/ownerDomainBackfillLastRunAt/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/capExpiresAt', 'oai/apps/tpp/chat-surface-mode', 'client-correlated-secret', 'oai/apps/noAuthUserMessageCount', 'oai/apps/connectorInContextUpsellBannerV1', 'oai/apps/debugSettings', 'oai/apps/recentsOrganizationAutomaticDefault/user-YXWN19HVpkOEQtA6EDKECF2H']
+2026-09-29 10:15:36,896 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 10:15:36,897 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 10:15:36,901 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:36,903 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 10:15:36,903 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8\user.js (UUID: 1286a477-1481-4960-a280-033297190c18)
+2026-09-29 10:15:36,908 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=f5bRFZRomQ41h5sd5ESls8IH1tB5z_BXur8I7HytzMg
+2026-09-29 10:15:36,908 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-5_wbbyi8', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=f5bRFZRomQ41h5sd5ESls8IH1tB5z_BXur8I7HytzMg']
+2026-09-29 10:15:38,476 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:38,774 [INFO] cookie_server: Handoff payload consumed by extension (token: f5bRFZRo...)
+2026-09-29 10:15:38,774 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-29 10:15:38,774 [INFO] bridge: Ephemeral Firefox handoff consumed after 1865 ms
+2026-09-29 10:15:38,781 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8 pid=32756 domain=chatgpt.com
+2026-09-29 10:15:38,875 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=30748 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8 firefox_pid=32756 domain=chatgpt.com
+2026-09-29 10:15:38,876 [DEBUG] session_daemon: Daemon lifetime watch error: <class 'OSError'> returned a result with an exception set
+2026-09-29 10:15:38,876 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:38,877 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-5_wbbyi8\\bounce-tracking-protection.sqlite'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:39,177 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-5_wbbyi8\\bounce-tracking-protection.sqlite'), retrying in 0.6s: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:39,778 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-5_wbbyi8\\bounce-tracking-protection.sqlite'), retrying in 1.2s: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:39,795 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,801 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,804 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,806 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,808 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,813 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,816 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,818 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,821 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,824 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,827 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,830 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,833 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,836 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,839 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,841 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,844 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,846 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,849 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,852 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,854 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,857 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,860 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,863 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,865 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,868 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,871 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,873 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,875 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,879 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:39,881 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:15:40,979 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-5_wbbyi8\\bounce-tracking-protection.sqlite'), retrying in 2.4s: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:41,477 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:43,382 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-5_wbbyi8\\bounce-tracking-protection.sqlite'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:44,477 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:46,384 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-5_wbbyi8\\bounce-tracking-protection.sqlite'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:47,111 [INFO] session_daemon: Daemon: /return ping for domain=chatgpt.com
+2026-09-29 10:15:47,478 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:49,439 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:49,439 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-5_wbbyi8
+2026-09-29 10:15:50,478 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:53,479 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-test2-logyvgrn'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-test2-logyvgrn
+2026-09-29 10:15:54,747 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 10:15:56,480 [INFO] profile: Orphan sweep removed 1 leftover profile(s).
+2026-09-29 10:17:29,802 [INFO] bridge: handle_launch: url=https://chatgpt.com/ browser=firefox cookies=25 storage_keys=['oai/apps/tpp/default-tab-last-applied-recommendation/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history-without-projects', 'oai/apps/hasSeenNoAuthImagegenNux', 'oai/apps/lastUtmCampaign', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/pinned-items', 'oai/apps/lastKnownPinnedSidebarItemsCount', 'oai/apps/hasAnyProjects', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/snorlax-history', 'statsig.session_id.1792610830', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/models', 'oai/apps/lastPageLoadDate', 'statsig.stable_id.1792610830', 'oai/apps/conversationDrafts', 'oai/apps/tatertotInContextUpsellBannerV2', 'oai/apps/loggedInUserMessageCount', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/lastSignupAttribution', 'RESUME_TOKEN_STORE_KEY', '19c8dcded010e906', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history', 'oai/apps/subscriptionFailedBanner', 'search.attributions-settings', 'oai-did', 'oai/apps/pendingSurveySpec', 'oai/apps/chatTheme/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/ownerDomainBackfillLastRunAt/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/capExpiresAt', 'oai/apps/tpp/chat-surface-mode', 'client-correlated-secret', 'oai/apps/noAuthUserMessageCount', 'oai/apps/connectorInContextUpsellBannerV1', 'oai/apps/debugSettings', 'oai/apps/recentsOrganizationAutomaticDefault/user-YXWN19HVpkOEQtA6EDKECF2H']
+2026-09-29 10:17:29,820 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 10:17:29,821 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 10:17:29,825 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:29,826 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 10:17:29,827 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan\user.js (UUID: 698feebb-be58-4904-bf88-fe1e455b84ff)
+2026-09-29 10:17:29,832 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=US_YkJPceBaaK9u3JKqES_uxyCHwakzc8g5T6HbPRHo
+2026-09-29 10:17:29,832 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0w02gtan', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=US_YkJPceBaaK9u3JKqES_uxyCHwakzc8g5T6HbPRHo']
+2026-09-29 10:17:31,346 [INFO] cookie_server: Handoff payload consumed by extension (token: US_YkJPc...)
+2026-09-29 10:17:31,346 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-29 10:17:31,346 [INFO] bridge: Ephemeral Firefox handoff consumed after 1514 ms
+2026-09-29 10:17:31,354 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan pid=9536 domain=chatgpt.com
+2026-09-29 10:17:31,437 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=22972 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan firefox_pid=9536 domain=chatgpt.com
+2026-09-29 10:17:31,438 [DEBUG] session_daemon: Daemon lifetime watch error: <class 'OSError'> returned a result with an exception set
+2026-09-29 10:17:31,439 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:31,439 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0w02gtan\\6988de48.sqlite'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:31,740 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0w02gtan\\6988de48.sqlite'), retrying in 0.6s: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:32,340 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0w02gtan\\6988de48.sqlite'), retrying in 1.2s: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:32,368 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,374 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,377 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,379 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,382 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,385 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,388 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,391 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,393 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,395 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,398 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,400 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,402 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,405 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,408 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,410 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,412 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,415 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,417 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,419 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,422 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,424 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,427 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,429 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,431 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,433 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,436 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,439 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,442 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,444 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:32,447 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:17:33,541 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0w02gtan\\6988de48.sqlite'), retrying in 2.4s: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:35,941 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0w02gtan\\6988de48.sqlite'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:38,942 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0w02gtan\\6988de48.sqlite'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:42,007 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:42,007 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-0w02gtan
+2026-09-29 10:17:47,203 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 10:21:24,876 [INFO] bridge: handle_launch: url=https://chatgpt.com/ browser=firefox cookies=25 storage_keys=['oai/apps/tpp/default-tab-last-applied-recommendation/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history-without-projects', 'oai/apps/hasSeenNoAuthImagegenNux', 'oai/apps/lastUtmCampaign', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/pinned-items', 'oai/apps/lastKnownPinnedSidebarItemsCount', 'oai/apps/hasAnyProjects', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/snorlax-history', 'statsig.session_id.1792610830', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/models', 'oai/apps/lastPageLoadDate', 'statsig.stable_id.1792610830', 'oai/apps/conversationDrafts', 'oai/apps/tatertotInContextUpsellBannerV2', 'oai/apps/loggedInUserMessageCount', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/lastSignupAttribution', 'RESUME_TOKEN_STORE_KEY', '19c8dcded010e906', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history', 'oai/apps/subscriptionFailedBanner', 'search.attributions-settings', 'oai-did', 'oai/apps/pendingSurveySpec', 'oai/apps/chatTheme/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/ownerDomainBackfillLastRunAt/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/capExpiresAt', 'oai/apps/tpp/chat-surface-mode', 'client-correlated-secret', 'oai/apps/noAuthUserMessageCount', 'oai/apps/connectorInContextUpsellBannerV1', 'oai/apps/debugSettings', 'oai/apps/recentsOrganizationAutomaticDefault/user-YXWN19HVpkOEQtA6EDKECF2H']
+2026-09-29 10:21:24,895 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 10:21:24,895 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 10:21:24,899 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:24,901 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 10:21:24,901 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84\user.js (UUID: dbc65c9e-d503-4998-847d-9aa95df0ab5a)
+2026-09-29 10:21:24,906 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=0uAYrrmh_NimdqMQmVdgqhMZbTcJv-UGNWiymeQ-0O0
+2026-09-29 10:21:24,906 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-ko87ye84', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=0uAYrrmh_NimdqMQmVdgqhMZbTcJv-UGNWiymeQ-0O0']
+2026-09-29 10:21:26,417 [INFO] cookie_server: Handoff payload consumed by extension (token: 0uAYrrmh...)
+2026-09-29 10:21:26,417 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-29 10:21:26,417 [INFO] bridge: Ephemeral Firefox handoff consumed after 1511 ms
+2026-09-29 10:21:26,424 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84 pid=27704 domain=chatgpt.com
+2026-09-29 10:21:26,512 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=8360 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84 firefox_pid=27704 domain=chatgpt.com
+2026-09-29 10:21:26,512 [DEBUG] session_daemon: Daemon lifetime watch error: <class 'OSError'> returned a result with an exception set
+2026-09-29 10:21:26,513 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:26,513 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-ko87ye84\\bff03c20.sqlite'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:26,815 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-ko87ye84\\bff03c20.sqlite'), retrying in 0.6s: C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:27,415 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-ko87ye84\\bff03c20.sqlite'), retrying in 1.2s: C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:27,441 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,446 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,448 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,451 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,453 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,455 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,457 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,459 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,461 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,463 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,464 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,466 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,468 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,470 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,471 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,473 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,475 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,476 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,478 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,479 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,481 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,483 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,485 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,487 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,489 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,490 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,492 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,494 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,496 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,498 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:27,500 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 10:21:28,616 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-ko87ye84\\bff03c20.sqlite'), retrying in 2.4s: C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:31,017 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-ko87ye84\\bff03c20.sqlite'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:34,080 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:34,080 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-ko87ye84
+2026-09-29 10:21:39,210 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 11:01:35,147 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-6twez9me
+2026-09-29 11:01:35,148 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-6twez9me
+2026-09-29 11:01:35,384 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-hfl5jsny
+2026-09-29 11:01:35,403 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-hfl5jsny
+2026-09-29 11:01:35,721 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-_hi8rcru
+2026-09-29 11:01:35,730 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-_hi8rcru
+2026-09-29 11:01:35,730 [INFO] profile: Orphan sweep removed 3 leftover profile(s).
+2026-09-29 11:01:35,731 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=0 storage_keys=[]
+2026-09-29 11:01:35,731 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 11:01:35,731 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 11:01:35,735 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-spt1ly53
+2026-09-29 11:01:35,737 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-spt1ly53\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 11:01:35,737 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-spt1ly53\user.js (UUID: 79577249-423e-4241-8508-4d1e4f1b5fc1)
+2026-09-29 11:01:35,742 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=jaGGK6V9spdASNTiTxFKgJygjsYyEocarWNqJYE3IDc
+2026-09-29 11:01:35,742 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-spt1ly53', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=jaGGK6V9spdASNTiTxFKgJygjsYyEocarWNqJYE3IDc']
+2026-09-29 11:01:37,154 [INFO] cookie_server: Handoff payload consumed by extension (token: jaGGK6V9...)
+2026-09-29 11:01:37,154 [INFO] cookie_server: Handoff payload consumed — keeping server alive for return event.
+2026-09-29 11:01:37,154 [INFO] bridge: Ephemeral Firefox handoff consumed after 1412 ms
+2026-09-29 11:01:37,161 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-spt1ly53 pid=28980 domain=example.com
+2026-09-29 11:03:55,814 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=31648 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-spt1ly53 firefox_pid=28980 domain=example.com
+2026-09-29 11:03:56,116 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 11:04:43,017 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=0 storage_keys=[]
+2026-09-29 11:04:43,017 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 11:04:43,017 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 11:04:43,021 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 11:04:43,023 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 11:04:43,023 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo\user.js (UUID: 1a6469d9-8257-42cc-a28f-73a0a07df6bd)
+2026-09-29 11:04:43,031 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=UZT7FdcMHfEkwQXS3Nh_Vp9Ncfhm9owcT8QovzpBuBs
+2026-09-29 11:04:43,031 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=UZT7FdcMHfEkwQXS3Nh_Vp9Ncfhm9owcT8QovzpBuBs']
+2026-09-29 11:04:58,034 [WARNING] cookie_server: Handoff unclaimed after 15s — shutting down server.
+2026-09-29 11:05:13,040 [WARNING] bridge: Ephemeral companion did not claim payload within 30s. XPI may be unsigned or invalid on this Firefox build.
+2026-09-29 11:05:13,044 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo pid=21752 domain=example.com
+2026-09-29 11:05:13,929 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=31252 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo firefox_pid=21752 domain=example.com
+2026-09-29 13:56:44,513 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:44,515 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:44,515 [DEBUG] profile: rmtree failed ([WinError 2] The system cannot find the file specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo\\bounce-tracking-protection.sqlite'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:44,550 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:44,553 [INFO] profile: Orphan sweep removed 1 leftover profile(s).
+2026-09-29 13:56:44,815 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 0.6s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:45,416 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 1.2s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:46,616 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 2.4s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:49,017 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:52,017 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:55,018 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:56:58,018 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:01,019 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:01,241 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-29 13:57:01,262 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 13:57:01,262 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 13:57:01,270 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-s_b5mqvn
+2026-09-29 13:57:01,273 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-s_b5mqvn\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 13:57:01,273 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-s_b5mqvn\user.js (UUID: c7d9aca5-ea15-4923-abd0-2e64c79bbc50)
+2026-09-29 13:57:01,278 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=sHN6fvEJHbHsxsBfMQIJ9M6Z3F-26NIgbRx-iB7AqjE
+2026-09-29 13:57:01,278 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-s_b5mqvn', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=sHN6fvEJHbHsxsBfMQIJ9M6Z3F-26NIgbRx-iB7AqjE']
+2026-09-29 13:57:04,019 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:07,020 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:10,020 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:13,021 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:16,021 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:16,281 [WARNING] cookie_server: Handoff unclaimed after 15s — shutting down server.
+2026-09-29 13:57:19,022 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:22,023 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:25,023 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:28,025 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:31,026 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:31,292 [WARNING] bridge: Ephemeral companion did not claim payload within 30s. XPI may be unsigned or invalid on this Firefox build.
+2026-09-29 13:57:31,296 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-s_b5mqvn pid=9636 domain=scratchpad.cc
+2026-09-29 13:57:32,174 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=31132 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-s_b5mqvn firefox_pid=9636 domain=scratchpad.cc
+2026-09-29 13:57:34,026 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:34,549 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-29 13:57:34,567 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 13:57:34,567 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 13:57:34,572 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-ban2r_qo
+2026-09-29 13:57:34,573 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-ban2r_qo\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 13:57:34,573 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-ban2r_qo\user.js (UUID: 9cc10da7-2a53-4b0e-9a01-e3f3321de7fb)
+2026-09-29 13:57:34,580 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=eb6vKqnWH_flCWnC8Sw0AAPDm3hh1H1Jn9L3Wtm3wio
+2026-09-29 13:57:34,580 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-ban2r_qo', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=eb6vKqnWH_flCWnC8Sw0AAPDm3hh1H1Jn9L3Wtm3wio']
+2026-09-29 13:57:37,027 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:40,028 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:43,028 [DEBUG] profile: rmtree failed ([WinError 3] The system cannot find the path specified: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-jrbn7weo'), retrying in 3.0s: C:\Users\User\AppData\Local\Temp\cb-gecko-jrbn7weo
+2026-09-29 13:57:46,029 [INFO] profile: Orphan sweep removed 1 leftover profile(s).
+2026-09-29 13:57:49,587 [WARNING] cookie_server: Handoff unclaimed after 15s — shutting down server.
+2026-09-29 13:58:02,475 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 13:58:04,586 [WARNING] bridge: Ephemeral companion did not claim payload within 30s. XPI may be unsigned or invalid on this Firefox build.
+2026-09-29 13:58:04,597 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-ban2r_qo pid=33480 domain=scratchpad.cc
+2026-09-29 13:58:05,466 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=29776 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-ban2r_qo firefox_pid=33480 domain=scratchpad.cc
+2026-09-29 13:58:35,795 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 13:58:35,795 [DEBUG] session_daemon: Could not write session status C:\Users\User\AppData\Local\Temp\cb-sessions\cb-gecko-ban2r_qo.json: [Errno 2] No such file or directory: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-sessions\\cb-gecko-ban2r_qo.json.tmp'
+2026-09-29 13:59:04,960 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-29 13:59:04,978 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 13:59:04,978 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 13:59:04,983 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-01nfx3sf
+2026-09-29 13:59:04,984 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-01nfx3sf\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 13:59:04,984 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-01nfx3sf\user.js (UUID: cccc1b01-1911-4aba-94a5-2af8465116a8)
+2026-09-29 13:59:04,989 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=Cs9XB81T7a_4nAdKkUOKCLGxnv-dSbr3elSeSCWWMeA
+2026-09-29 13:59:04,989 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-01nfx3sf', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=Cs9XB81T7a_4nAdKkUOKCLGxnv-dSbr3elSeSCWWMeA']
+2026-09-29 13:59:19,992 [WARNING] cookie_server: Handoff unclaimed after 15s — shutting down server.
+2026-09-29 13:59:35,007 [WARNING] bridge: Ephemeral companion did not claim payload within 30s. XPI may be unsigned or invalid on this Firefox build.
+2026-09-29 13:59:35,018 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-01nfx3sf pid=31644 domain=scratchpad.cc
+2026-09-29 13:59:35,888 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=32844 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-01nfx3sf firefox_pid=31644 domain=scratchpad.cc
+2026-09-29 14:00:06,195 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:04:34,716 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=0 storage_keys=[]
+2026-09-29 14:04:34,738 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:04:34,738 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:04:34,743 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-inrjezv6
+2026-09-29 14:04:34,745 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-inrjezv6\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:04:34,745 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-inrjezv6\user.js (UUID: 9872ff35-eae7-4a03-84ee-f47480c63731)
+2026-09-29 14:04:34,749 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=X-1XsbbdNp7gzlurGpu34QxfMVFYYDT-uP5ivSJ84DY
+2026-09-29 14:04:34,749 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-inrjezv6', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=X-1XsbbdNp7gzlurGpu34QxfMVFYYDT-uP5ivSJ84DY']
+2026-09-29 14:04:35,969 [INFO] cookie_server: Handoff payload consumed by extension (token: X-1Xsbbd...)
+2026-09-29 14:04:35,969 [INFO] bridge: Ephemeral Firefox handoff consumed after 1220 ms
+2026-09-29 14:04:35,978 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-inrjezv6 pid=34872 domain=example.com
+2026-09-29 14:04:36,868 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=26940 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-inrjezv6 firefox_pid=34872 domain=example.com
+2026-09-29 14:04:37,290 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:08:25,967 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-inrjezv6
+2026-09-29 14:08:26,007 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-inrjezv6
+2026-09-29 14:08:26,007 [INFO] profile: Orphan sweep removed 1 leftover profile(s).
+2026-09-29 14:08:26,007 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=0 storage_keys=[]
+2026-09-29 14:08:26,008 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:08:26,008 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:08:26,012 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5
+2026-09-29 14:08:26,014 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:08:26,014 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5\user.js (UUID: 6f2c24eb-1c10-48a7-8609-888deed8241a)
+2026-09-29 14:08:26,018 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=rInn-p-Qkv011-ocBPaaZl5cZBdYCHgzGxLvs6sgPR4
+2026-09-29 14:08:26,018 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-8lo0hdl5', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=rInn-p-Qkv011-ocBPaaZl5cZBdYCHgzGxLvs6sgPR4']
+2026-09-29 14:08:27,388 [INFO] cookie_server: Handoff payload consumed by extension (token: rInn-p-Q...)
+2026-09-29 14:08:27,389 [INFO] bridge: Ephemeral Firefox handoff consumed after 1371 ms
+2026-09-29 14:08:27,395 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5 pid=34548 domain=example.com
+2026-09-29 14:08:28,281 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=31360 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5 firefox_pid=34548 domain=example.com
+2026-09-29 14:08:28,694 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:08:56,506 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 14:08:56,506 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=example.com cleaned=None
+2026-09-29 14:08:56,507 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5
+2026-09-29 14:08:56,521 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=example.com cleaned=None
+2026-09-29 14:08:56,540 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5
+2026-09-29 14:08:56,540 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-8lo0hdl5
+2026-09-29 14:08:57,524 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=example.com cleaned=True
+2026-09-29 14:20:47,567 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-29 14:20:47,586 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:20:47,586 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:20:47,591 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg
+2026-09-29 14:20:47,592 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:20:47,593 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg\user.js (UUID: 6fde0b39-5059-4463-88f8-d9b97ec1fab5)
+2026-09-29 14:20:47,597 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=dNN-QxBeQm-JDfPe3Ic0uqb48WoILTpj8WP64qIBFRc
+2026-09-29 14:20:47,597 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-1dex_lqg', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=dNN-QxBeQm-JDfPe3Ic0uqb48WoILTpj8WP64qIBFRc']
+2026-09-29 14:20:49,126 [INFO] cookie_server: Handoff payload consumed by extension (token: dNN-QxBe...)
+2026-09-29 14:20:49,126 [INFO] bridge: Ephemeral Firefox handoff consumed after 1529 ms
+2026-09-29 14:20:49,132 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg pid=31984 domain=scratchpad.cc
+2026-09-29 14:20:50,013 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=25696 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg firefox_pid=31984 domain=scratchpad.cc
+2026-09-29 14:20:50,448 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:20:54,231 [INFO] session_daemon: Daemon: handoff payload consumed (token dNN-QxBe...)
+2026-09-29 14:21:11,826 [INFO] session_daemon: Daemon: explicit /return ping for domain=scratchpad.cc
+2026-09-29 14:21:11,848 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,849 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,850 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,851 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,852 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,853 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,854 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,855 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,856 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,858 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,859 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,860 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,861 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,862 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,863 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,864 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,865 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,866 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,867 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,868 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,869 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,870 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,871 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,872 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,873 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,874 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,875 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,876 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,877 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,878 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:11,879 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:21:18,584 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 14:21:18,585 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg
+2026-09-29 14:21:18,628 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg
+2026-09-29 14:21:18,628 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg
+2026-09-29 14:21:24,084 [INFO] session_daemon: Daemon exiting cleaned=True

@@ -11,7 +11,8 @@
     "contextMenus",
     "activeTab",
     "history",
-    "scripting"
+    "scripting",
+    "notifications"
   ],
   "host_permissions": [
     "<all_urls>"

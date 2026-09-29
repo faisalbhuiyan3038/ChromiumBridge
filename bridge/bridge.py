@@ -12,6 +12,8 @@ import time
 import traceback
 import logging
 import os
+import subprocess
+import tempfile
 
 # Write debug log next to the bridge script so issues can be diagnosed easily
 _log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bridge_debug.log")
@@ -71,6 +73,77 @@ def _signal_return(domain):
         log.info("Signaled /return for domain=%s", domain)
     except Exception as e:
         log.debug("Could not signal /return (server may already be closed): %s", e)
+
+
+def _spawn_session_daemon(profile_dir, firefox_pid, domain, url,
+                          cookies, storage_data, handoff_token,
+                          await_consume=False):
+    """
+    Spawn the detached per-handoff session host (bridge/session_daemon.py).
+
+    The native-messaging bridge process exits as soon as it answers Chrome's
+    one-shot sendNativeMessage call, which would kill any in-process daemon
+    threads (HTTP server + Firefox watcher). The detached daemon survives
+    that exit and owns /wait-return, /return, the Firefox lifetime watch,
+    and ephemeral profile deletion.
+
+    Returns True if the daemon was spawned, False otherwise.
+    """
+    try:
+        bridge_dir = os.path.dirname(os.path.abspath(__file__))
+        daemon_script = os.path.join(bridge_dir, "session_daemon.py")
+        if not os.path.isfile(daemon_script):
+            log.error("session_daemon.py not found at %s", daemon_script)
+            return False
+
+        sessions_dir = os.path.join(tempfile.gettempdir(), "cb-sessions")
+        os.makedirs(sessions_dir, exist_ok=True)
+        payload_path = os.path.join(
+            sessions_dir,
+            os.path.basename(profile_dir.rstrip(os.sep)) + ".payload.json",
+        )
+        with open(payload_path, "w", encoding="utf-8") as f:
+            json.dump({
+                "token": handoff_token,
+                "url": url,
+                "cookies": cookies or [],
+                "storage": storage_data or {},
+            }, f)
+
+        cmd = [
+            sys.executable, daemon_script,
+            "--profile-dir", profile_dir,
+            "--firefox-pid", str(firefox_pid),
+            "--domain", domain or "",
+            "--port", str(COOKIE_PORT),
+            "--payload-file", payload_path,
+        ]
+        if await_consume:
+            cmd.append("--await-consume")
+
+        popen_kwargs = {
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+            "stdin": subprocess.DEVNULL,
+            "close_fds": True,
+        }
+        if os.name == "nt":
+            # DETACHED_PROCESS (0x08) + CREATE_NO_WINDOW (0x08000000):
+            # survives bridge exit, no console flash.
+            popen_kwargs["creationflags"] = 0x08 | 0x08000000
+        else:
+            popen_kwargs["start_new_session"] = True
+
+        subprocess.Popen(cmd, **popen_kwargs)
+        log.info("Spawned session daemon for profile=%s pid=%s domain=%s",
+                 profile_dir, firefox_pid, domain)
+        # NOTE: the caller stops its own handoff server BEFORE spawning us,
+        # so no sleep is needed here — the daemon retries its bind loop and
+        # tolerates the release gap.
+        return True
+    except Exception as e:
+        log.error("Failed to spawn session daemon: %s", e, exc_info=True)
+        return False
 
 
 def read_message():
@@ -250,23 +323,15 @@ def handle_launch(message):
                             "Ephemeral companion did not claim payload within 30s. "
                             "XPI may be unsigned or invalid on this Firefox build."
                         )
+                        # Hand lifetime + server ownership to the detached daemon
+                        # so late-starting Firefox can still consume + cleanup runs
+                        # even after this one-shot bridge process exits.
+                        _spawn_session_daemon(
+                            profile_dir, process.pid, domain, url,
+                            cookies, storage_data, handoff_token,
+                            await_consume=True,
+                        )
                         stop_cookie_server(handoff_server)
-                        # Do NOT delete the profile — Firefox may still be starting.
-                        # The background watcher thread will handle cleanup on process exit.
-                        def _cleanup_if_no_consume(proc, prof, dom):
-                            try:
-                                proc.wait()
-                                wait_profile_free(prof, timeout=30)
-                            except Exception:
-                                pass
-                            finally:
-                                _signal_return(dom)
-                                _rmtree_with_backoff(prof)
-                        threading.Thread(
-                            target=_cleanup_if_no_consume,
-                            args=(process, profile_dir, domain),
-                            daemon=True,
-                        ).start()
                         return {
                             "status": "error",
                             "event": "unclaimed",
@@ -278,31 +343,21 @@ def handle_launch(message):
                     log_session(domain, browser_id, duration_ms, "launched")
                     log_launch_time(browser_id, time.time() - start_time)
 
-                    # Spawn background watcher: wait for Firefox to fully release the
-                    # profile directory, then delete it. Handles Firefox self-restarts.
-                    # When Firefox exits (for any reason), signal /return so the
-                    # Chromium background's waitForReturn() poll unblocks and shows
-                    # the return banner.
-                    def _ephemeral_watcher(proc, prof, dom):
-                        try:
-                            proc.wait()                          # initial PID exits
-                            wait_profile_free(prof, timeout=60)  # catch self-restart
-                        except Exception:
-                            pass
-                        finally:
-                            log.info("Firefox exited — signaling return for domain: %s", dom)
-                            _signal_return(dom)
-                            log.info("Cleaning up ephemeral gecko profile: %s", prof)
-                            _rmtree_with_backoff(prof)
-
-                    threading.Thread(
-                        target=_ephemeral_watcher,
-                        args=(process, profile_dir, domain),
-                        daemon=True,
-                    ).start()
+                    # Hand server + lifetime ownership to the detached session
+                    # daemon (survives this one-shot bridge process). It keeps
+                    # /wait-return + /return alive, signals Chromium on Firefox
+                    # exit (any close path), deletes the cb-gecko-* profile,
+                    # and reports `cleaned` for the banner. In-process daemon
+                    # threads would die with us — never use them here.
+                    _spawn_session_daemon(
+                        profile_dir, process.pid, domain, url,
+                        cookies, storage_data, handoff_token,
+                    )
+                    stop_cookie_server(handoff_server)
 
                     # Return immediately — Firefox retains focus, popup closes cleanly.
-                    # Handoff server stays alive for /wait-return and /return endpoints.
+                    # The session daemon keeps the handoff server alive for
+                    # /wait-return and /return endpoints.
                     return {
                         "status": "ok",
                         "event": "launched",

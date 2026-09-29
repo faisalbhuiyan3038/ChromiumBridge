@@ -153,6 +153,7 @@ class _CookieHandler(BaseHTTPRequestHandler):
     _payload_consumed_event = None  # threading.Event signalled on consumption
     _return_event = None          # threading.Event signalled when user clicks Back to Chromium
     _return_domain = None         # Domain returned from
+    _return_cleaned = None        # None=pending, True/False after ephemeral cleanup
     _start_time = None            # Epoch start time
 
     def do_GET(self):
@@ -217,6 +218,7 @@ class _CookieHandler(BaseHTTPRequestHandler):
                 "returned": bool(returned),
                 "domain": _CookieHandler._return_domain or query.get("domain", [""])[0],
                 "duration": duration_ms,
+                "cleaned": _CookieHandler._return_cleaned,
             }
             if returned:
                 log.info("wait-return returning RETURNED: domain=%s, duration=%d ms", res["domain"], duration_ms)
@@ -372,6 +374,7 @@ def start_handoff_server(cookies, target_url="", storage_data=None):
     _CookieHandler._payload_consumed_event = consumed_event
     _CookieHandler._return_event = return_event
     _CookieHandler._return_domain = None
+    _CookieHandler._return_cleaned = None
     _CookieHandler._start_time = time.time()
 
     # Also stage the Chromium companion endpoints (in case they're needed)
@@ -388,27 +391,11 @@ def start_handoff_server(cookies, target_url="", storage_data=None):
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
 
-        # Start watchdog: auto-shutdown after timeout or return event
-        def _watchdog():
-            consumed = consumed_event.wait(timeout=15)
-            if not consumed:
-                log.warning("Handoff unclaimed after 15s — shutting down server.")
-            else:
-                log.info("Handoff payload consumed — keeping server alive for return event.")
-                # Wait for return button click in Firefox (up to 30 min)
-                return_event.wait(timeout=1800)
-                # Allow 5 seconds for pending return HTTP requests to finish and flush
-                time.sleep(5.0)
-                log.info("Closing handoff server after session.")
-
-            try:
-                server.shutdown()
-                server.server_close()
-            except Exception:
-                pass
-
-        watchdog = threading.Thread(target=_watchdog, daemon=True)
-        watchdog.start()
+        # NOTE: No watchdog timer here. bridge.py manages the server lifecycle
+        # explicitly — it calls stop_cookie_server() after the companion
+        # consumes the payload (or after the 30s timeout). An independent
+        # watchdog was racing with the companion extension on cold starts,
+        # killing the server before the extension could fetch the payload.
 
         return server, token
     except OSError as e:

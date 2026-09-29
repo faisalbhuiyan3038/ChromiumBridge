@@ -48,12 +48,35 @@ def _write_session_pid(profile_dir):
 # ── Orphan Sweep ────────────────────────────────────────
 
 def _pid_alive(pid):
-    """Check if a PID is alive using os.kill(pid, 0). Works cross-platform, no psutil needed."""
-    if pid <= 0:
+    """
+    Check if a PID is alive. No psutil dependency.
+
+    Windows: os.kill(pid, 0) is a no-op success even for dead PIDs, and the
+    Firefox launcher stub exits ~1s after spawning the real browser — so it
+    must NOT be used here. Uses OpenProcess + GetExitCodeProcess instead.
+    POSIX: os.kill(pid, 0) works correctly.
+    """
+    if not pid or pid <= 0:
         return False
     try:
-        os.kill(pid, 0)
-        return True
+        import platform
+        if platform.system() == "Windows":
+            import ctypes
+            STILL_ACTIVE = 259
+            k32 = ctypes.windll.kernel32
+            h = k32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+            if not h:
+                return False
+            try:
+                code = ctypes.c_ulong(0)
+                if not k32.GetExitCodeProcess(h, ctypes.byref(code)):
+                    return False
+                return code.value == STILL_ACTIVE
+            finally:
+                k32.CloseHandle(h)
+        else:
+            os.kill(pid, 0)
+            return True
     except OSError:
         return False
 
@@ -84,6 +107,14 @@ def sweep_orphaned_profiles():
                 should_delete = True
 
         if should_delete:
+            # Guard: never delete a profile that a live Firefox command line
+            # still references (self-restart / slow shutdown race).
+            try:
+                if _profile_in_use(d):
+                    log.info("Skipping sweep, profile still in use: %s", d)
+                    continue
+            except Exception:
+                pass
             log.info("Sweeping orphaned gecko profile: %s", d)
             _rmtree_with_backoff(d)
             removed += 1
@@ -304,33 +335,101 @@ def validate_profile(path):
 
 # ── Process Release Check ───────────────────────────────
 
-def _profile_in_use(profile_dir):
+def _in_use_via_wmic(norm, exclude_pid=None):
+    """Fast path: WMIC lists all process command lines. Returns None if WMIC is unavailable."""
+    import subprocess as _sp
+    try:
+        result = _sp.run(
+            ["wmic", "process", "get", "ProcessId,CommandLine"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=_sp.CREATE_NO_WINDOW,
+        )
+    except (OSError, FileNotFoundError):
+        return None  # WMIC removed (Win11 23H2+) — caller falls back to CIM
+    if result.returncode != 0 or not result.stdout:
+        return None
+    needle = norm.lower()
+    exclude_str = str(exclude_pid) if exclude_pid else None
+    for line in result.stdout.splitlines():
+        if needle not in line.lower():
+            continue
+        # Each line is "CommandLine    ProcessId" — skip if PID matches exclude_pid
+        if exclude_str:
+            parts = line.strip().rsplit(None, 1)
+            if len(parts) >= 2 and parts[-1].strip() == exclude_str:
+                continue
+        return True
+    return False
+
+
+def _in_use_via_cim(norm, exclude_pid=None):
     """
-    Check if any running process references profile_dir in its command line.
-    Uses WMIC on Windows, /proc on Linux. No psutil dependency.
-    Returns True if the profile is still in use.
+    Fallback path: PowerShell Get-CimInstance Win32_Process. Slower (~1s)
+    but present on all supported Windows builds. Returns None if the query
+    itself fails so the caller can fail SAFE (assume in use).
     """
     import subprocess as _sp
+    try:
+        result = _sp.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command",
+             "Get-CimInstance Win32_Process | Select-Object ProcessId, CommandLine | "
+             "ForEach-Object { \"$($_.ProcessId)|$($_.CommandLine)\" }"],
+            capture_output=True, text=True, timeout=60,
+            encoding="utf-8", errors="replace",
+            creationflags=_sp.CREATE_NO_WINDOW,
+        )
+    except (OSError, FileNotFoundError) as e:
+        log.warning("_profile_in_use CIM query failed to start: %s", e)
+        return None
+    if result.returncode != 0:
+        log.warning("_profile_in_use CIM query rc=%s err=%s",
+                    result.returncode, (result.stderr or "")[:200])
+        return None
+    needle = norm.lower()
+    exclude_str = str(exclude_pid) if exclude_pid else None
+    for line in result.stdout.splitlines():
+        if needle not in line.lower():
+            continue
+        # Lines are "PID|CommandLine" — skip the daemon's own process
+        if exclude_str:
+            sep = line.find("|")
+            if sep > 0 and line[:sep].strip() == exclude_str:
+                continue
+        return True
+    return False
+
+
+def _profile_in_use(profile_dir, exclude_pid=None):
+    """
+    Check if any running process references profile_dir in its command line.
+    Uses WMIC on Windows (fast) with a PowerShell CIM fallback, /proc on
+    Linux. No psutil dependency.
+    If exclude_pid is provided, that PID's command line is ignored (used by
+    session_daemon.py to exclude itself from the check).
+    Returns True if the profile is still in use. On total check failure
+    returns True (fail SAFE: never report a live profile as free — the
+    daemon keeps waiting and the orphan sweep skips).
+    """
     import platform
 
     norm = os.path.normpath(profile_dir)
 
     try:
         if platform.system() == "Windows":
-            # WMIC lists all process command lines — look for our profile path
-            result = _sp.run(
-                ["wmic", "process", "get", "CommandLine"],
-                capture_output=True, text=True, timeout=10,
-                creationflags=_sp.CREATE_NO_WINDOW,
-            )
-            # Case-insensitive match for Windows paths
-            for line in result.stdout.splitlines():
-                if norm.lower() in line.lower():
-                    return True
+            hit = _in_use_via_wmic(norm, exclude_pid=exclude_pid)
+            if hit is None:
+                hit = _in_use_via_cim(norm, exclude_pid=exclude_pid)
+            if hit is None:
+                return True
+            return hit
         else:
             # On Linux/macOS, scan /proc/*/cmdline
             for pid_dir in glob.glob("/proc/[0-9]*/cmdline"):
                 try:
+                    # Extract PID from path
+                    pid_str = pid_dir.split("/")[2]
+                    if exclude_pid and pid_str == str(exclude_pid):
+                        continue
                     with open(pid_dir, "rb") as f:
                         cmdline = f.read().decode("utf-8", errors="replace")
                     if norm in cmdline:
@@ -339,21 +438,46 @@ def _profile_in_use(profile_dir):
                     continue
     except Exception as e:
         log.debug("_profile_in_use check failed: %s", e)
+        return True
 
     return False
 
 
+def _lock_files_free(profile_dir):
+    """
+    Probe well-known Firefox lock / WAL files. If any exists and cannot be
+    opened for append (exclusive lock held by Firefox or AV scanner), the
+    profile is still busy. A merely-present-but-openable file counts as free
+    (Firefox sometimes leaves parent.lock behind after a clean exit).
+    """
+    for name in (
+        "parent.lock", "lock",
+        "places.sqlite-wal", "places.sqlite-shm",
+        "cookies.sqlite-wal", "cookies.sqlite-shm",
+        "favicons.sqlite-wal", "favicons.sqlite-shm",
+    ):
+        p = os.path.join(profile_dir, name)
+        if os.path.lexists(p) and os.path.isfile(p):
+            try:
+                with open(p, "a+b"):
+                    pass
+            except OSError:
+                return False
+    return True
+
+
 def wait_profile_free(profile_dir, timeout=60):
     """
-    Wait until no running process references profile_dir in its command line.
+    Wait until no running process references profile_dir in its command line
+    AND lock/WAL files are openable.
     This catches Firefox self-restarts (e.g. after update) that cause proc.wait()
-    to return while the profile is still in use.
+    to return while the profile is still in use, plus AV-scanner holds.
 
     Returns True if the profile is free before timeout, False otherwise.
     """
     end = time.monotonic() + timeout
     while time.monotonic() < end:
-        if not _profile_in_use(profile_dir):
+        if not _profile_in_use(profile_dir) and _lock_files_free(profile_dir):
             return True
         time.sleep(1.0)
 
@@ -379,10 +503,12 @@ def cleanup(profile_path, mode, session_dir=None):
         _rmtree_with_backoff(profile_path)
 
 
-def _rmtree_with_backoff(path, max_wait=10.0):
+def _rmtree_with_backoff(path, max_wait=60.0):
     """
     Remove a directory tree with exponential backoff retry.
     Handles Windows SQLite .wal file locks and AV scanner holds.
+    Default window raised to 60s (Firefox shutdown + AV); callers with a
+    tight budget can pass a smaller max_wait explicitly.
     """
     delay = 0.3
     elapsed = 0.0

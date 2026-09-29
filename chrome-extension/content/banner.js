@@ -17,14 +17,14 @@
     window.__cb_banner_registered = true;
     chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message.action === "showFeedbackPrompt") {
-        showFeedbackBanner(message.domain, message.duration);
+        showFeedbackBanner(message.domain, message.duration, message.cleaned);
         if (sendResponse) sendResponse({ received: true });
       }
     });
   }
 
   // ── Feedback Banner ──────────────────────────────────
-  function showFeedbackBanner(domain, duration) {
+  function showFeedbackBanner(domain, duration, cleaned) {
     // Avoid duplicate banners
     const existing = document.querySelector("chromiumbridge-feedback");
     if (existing) existing.remove();
@@ -33,6 +33,7 @@
     const shadow = host.attachShadow({ mode: "closed" });
 
     const durationText = duration ? `(${Math.round(duration / 1000)}s session)` : "";
+    const cleanup = cleanupStatus(cleaned);
 
     shadow.innerHTML = `
       <style>${getBannerStyles()}</style>
@@ -41,6 +42,7 @@
         <div class="cb-content">
           <span class="cb-message">
             Welcome back! Always open <strong>${domain}</strong> in Firefox? ${durationText}
+            <span class="cb-cleanup ${cleanup.cls}">${cleanup.text}</span>
           </span>
           <div class="cb-actions">
             <button class="cb-btn cb-btn-primary" id="cb-yes">Yes, always</button>
@@ -81,9 +83,18 @@
     }, 10000);
   }
 
+  // ── Cleanup status line (ephemeral temp-profile feedback) ──
+  function cleanupStatus(cleaned) {
+    if (cleaned === true) {
+      return { cls: "cb-clean-ok", text: "✓ Temp Firefox profile deleted." };
+    }
+    // false or still-pending (null/undefined): daemon retries up to 60s,
+    // then the next-launch orphan sweep finishes the job.
+    return { cls: "cb-clean-pending", text: "⚠ Temp profile cleanup in progress — will auto-clear." };
+  }
+
   // ── Remove Banner ────────────────────────────────────
-  function removeBanner(host, shadow) {
-    const banner = shadow.getElementById("cb-banner");
+  function removeBanner(host, shadow) {    const banner = shadow.getElementById("cb-banner");
     if (banner) {
       banner.classList.remove("visible");
       banner.classList.add("hiding");
@@ -155,6 +166,20 @@
       .cb-message strong {
         font-weight: 600;
         color: #007867;
+      }
+
+      .cb-cleanup {
+        display: block;
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .cb-clean-ok {
+        color: #007867;
+      }
+
+      .cb-clean-pending {
+        color: #B76E00;
       }
 
       .cb-actions {
