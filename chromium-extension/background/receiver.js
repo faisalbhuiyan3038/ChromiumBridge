@@ -122,6 +122,17 @@ async function fetchFromServer() {
 
       if (cookies !== undefined) {
         console.log(`[ChromeBridge Companion] Got ${cookies.length || 0} cookies from server.`);
+        // Also fetch storage data from the server while it is online
+        try {
+          const storageResp = await fetch("http://127.0.0.1:47831/storage");
+          if (storageResp.ok) {
+            const storageData = await storageResp.json();
+            if (storageData && (storageData.localStorage || storageData.sessionStorage)) {
+              await chrome.storage.session.set({ _cb_storage_data: storageData });
+              console.log("[ChromeBridge Companion] Stored session storage data from server.");
+            }
+          }
+        } catch {}
         return { cookies, token, url };
       }
     } catch {

@@ -780,3 +780,384 @@
 2026-09-29 14:21:18,628 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg
 2026-09-29 14:21:18,628 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-1dex_lqg
 2026-09-29 14:21:24,084 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 14:22:33,941 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-29 14:22:33,959 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:22:33,960 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:22:33,964 [INFO] bridge: Handoff URL (persistent): http://127.0.0.1:47831/handoff?token=kaDt0WM235aOVgSYgd_7yT61EBnrSetfxP-oerr2VRQ
+2026-09-29 14:22:33,964 [INFO] bridge: Launching Firefox (persistent companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=kaDt0WM235aOVgSYgd_7yT61EBnrSetfxP-oerr2VRQ']
+2026-09-29 14:22:39,979 [WARNING] bridge: Companion extension did not claim payload within 6s (likely not installed)
+2026-09-29 14:22:53,462 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-29 14:22:53,480 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:22:53,480 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:22:53,485 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk
+2026-09-29 14:22:53,486 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:22:53,487 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk\user.js (UUID: aaa4e126-14b7-4771-988b-cbd257de918f)
+2026-09-29 14:22:53,491 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=uGJyfFDM66H1amOrYlDmH8Fc2OrImS5vkTHq_Sw0QwM
+2026-09-29 14:22:53,491 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-a70h37rk', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=uGJyfFDM66H1amOrYlDmH8Fc2OrImS5vkTHq_Sw0QwM']
+2026-09-29 14:22:54,997 [INFO] cookie_server: Handoff payload consumed by extension (token: uGJyfFDM...)
+2026-09-29 14:22:54,997 [INFO] bridge: Ephemeral Firefox handoff consumed after 1505 ms
+2026-09-29 14:22:55,004 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk pid=33316 domain=scratchpad.cc
+2026-09-29 14:22:55,885 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=9236 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk firefox_pid=33316 domain=scratchpad.cc
+2026-09-29 14:22:56,344 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:23:00,078 [INFO] session_daemon: Daemon: handoff payload consumed (token uGJyfFDM...)
+2026-09-29 14:23:08,213 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 14:23:08,213 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,214 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk
+2026-09-29 14:23:08,215 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,217 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,218 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,220 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,221 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,222 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,223 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,224 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,226 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,227 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,228 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,229 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,231 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,232 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,233 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,234 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,235 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,236 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,237 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,238 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,239 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,240 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,241 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,242 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,243 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,244 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,245 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,246 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,248 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=None
+2026-09-29 14:23:08,248 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk
+2026-09-29 14:23:08,248 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-a70h37rk
+2026-09-29 14:23:08,249 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=scratchpad.cc cleaned=True
+2026-09-29 14:23:13,332 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 14:26:04,953 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=firefox cookies=0 storage_keys=[]
+2026-09-29 14:26:04,971 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:26:04,972 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:26:04,978 [INFO] bridge: Handoff URL (persistent): http://127.0.0.1:47831/handoff?token=m4g01p_UII1gQtKTnXaDpRkoYdyKnAYM2LvG892TkdI
+2026-09-29 14:26:04,978 [INFO] bridge: Launching Firefox (persistent companion mode) with flags: ['http://127.0.0.1:47831/handoff?token=m4g01p_UII1gQtKTnXaDpRkoYdyKnAYM2LvG892TkdI']
+2026-09-29 14:26:10,992 [WARNING] bridge: Companion extension did not claim payload within 6s (likely not installed)
+2026-09-29 14:28:44,276 [INFO] bridge: handle_launch: url=https://scratchpad.cc/ browser=brave cookies=0 storage_keys=['scratchpadTabVert', 'scratches', 'scratchpadDark', 'loglevel:ai-chat-exporter']
+2026-09-29 14:28:44,309 [INFO] bridge: Browser family: chromium, path: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe
+2026-09-29 14:28:57,487 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\b7c6c800-49a
+2026-09-29 14:28:57,527 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-s59_uc92
+2026-09-29 14:35:49,499 [INFO] bridge: handle_launch: url=https://httpbin.org/cookies browser=edge cookies=1 storage_keys=[]
+2026-09-29 14:35:49,548 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:35:55,935 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\b347d4a1-142
+2026-09-29 14:35:55,972 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-hy0okka5
+2026-09-29 14:36:11,087 [INFO] bridge: handle_launch: url=https://httpbin.org/cookies browser=edge cookies=1 storage_keys=[]
+2026-09-29 14:36:11,110 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:36:16,328 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\1cd8bf49-b9b
+2026-09-29 14:36:16,368 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-b9pp3evo
+2026-09-29 14:36:42,402 [INFO] bridge: handle_launch: url=https://httpbin.org/cookies browser=firefox cookies=1 storage_keys=[]
+2026-09-29 14:36:42,420 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:36:42,420 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:36:42,425 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t
+2026-09-29 14:36:42,426 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:36:42,426 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t\user.js (UUID: a72d0fd3-aff4-4ecf-b3fa-9c6a4727466b)
+2026-09-29 14:36:42,433 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=6je5f-8fMu8T_ACePGwrnOkKHseczuFguSBzGc3bLjQ
+2026-09-29 14:36:42,433 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-9gn7272t', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=6je5f-8fMu8T_ACePGwrnOkKHseczuFguSBzGc3bLjQ']
+2026-09-29 14:36:43,840 [INFO] cookie_server: Handoff payload consumed by extension (token: 6je5f-8f...)
+2026-09-29 14:36:43,840 [INFO] bridge: Ephemeral Firefox handoff consumed after 1406 ms
+2026-09-29 14:36:43,847 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t pid=32948 domain=httpbin.org
+2026-09-29 14:36:44,730 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=28180 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t firefox_pid=32948 domain=httpbin.org
+2026-09-29 14:36:45,166 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:36:48,938 [INFO] session_daemon: Daemon: handoff payload consumed (token 6je5f-8f...)
+2026-09-29 14:36:59,465 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 14:36:59,465 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,466 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t
+2026-09-29 14:36:59,467 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,469 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,470 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,472 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,473 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,474 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,475 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,476 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,478 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,479 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,480 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,481 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,482 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,484 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,485 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,486 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,488 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,489 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,490 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,491 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,491 [DEBUG] profile: rmtree failed ([WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-9gn7272t\\session.pid'), retrying in 0.3s: C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t
+2026-09-29 14:36:59,492 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,493 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,495 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,496 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,497 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,498 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,499 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,500 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,501 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,502 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=httpbin.org cleaned=None
+2026-09-29 14:36:59,809 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t
+2026-09-29 14:36:59,809 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-9gn7272t
+2026-09-29 14:37:05,104 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 14:37:12,368 [INFO] bridge: handle_launch: url=https://chatgpt.com/ browser=firefox cookies=25 storage_keys=['oai/apps/tpp/default-tab-last-applied-recommendation/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history-without-projects', 'oai/apps/hasSeenNoAuthImagegenNux', 'oai/apps/lastUtmCampaign', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-YXWN19HVpkOEQtA6EDKECF2H', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/pinned-items', '_account', 'oai/apps/lastKnownPinnedSidebarItemsCount', 'oai/apps/hasAnyProjects', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/snorlax-history', 'statsig.session_id.1792610830', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/models', 'oai/apps/lastPageLoadDate', 'statsig.stable_id.1792610830', 'oai/apps/conversationDrafts', 'oai/apps/tatertotInContextUpsellBannerV2', 'oai/apps/loggedInUserMessageCount', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/lastSignupAttribution', 'RESUME_TOKEN_STORE_KEY', '19c8dcded010e906', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history', 'oai/apps/subscriptionFailedBanner', 'search.attributions-settings', 'oai-did', 'oai/apps/pendingSurveySpec', 'oai/apps/chatTheme/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/ownerDomainBackfillLastRunAt/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/capExpiresAt', 'oai/apps/tpp/chat-surface-mode', 'client-correlated-secret', 'oai/apps/noAuthUserMessageCount', 'oai/apps/connectorInContextUpsellBannerV1', 'oai/apps/debugSettings', 'oai/apps/recentsOrganizationAutomaticDefault/user-YXWN19HVpkOEQtA6EDKECF2H']
+2026-09-29 14:37:12,386 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:37:12,387 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:37:12,391 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft
+2026-09-29 14:37:12,393 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:37:12,393 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft\user.js (UUID: fe4cc0e2-b311-40e1-81d6-8a14132e3c83)
+2026-09-29 14:37:12,400 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=eUEcotmnOFnffMyN_OhTxYXZGc_2EEs8BxsXT65fkpM
+2026-09-29 14:37:12,400 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-hfzbcfft', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=eUEcotmnOFnffMyN_OhTxYXZGc_2EEs8BxsXT65fkpM']
+2026-09-29 14:37:13,735 [INFO] cookie_server: Handoff payload consumed by extension (token: eUEcotmn...)
+2026-09-29 14:37:13,735 [INFO] bridge: Ephemeral Firefox handoff consumed after 1334 ms
+2026-09-29 14:37:13,742 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft pid=29180 domain=chatgpt.com
+2026-09-29 14:37:14,630 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=25756 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft firefox_pid=29180 domain=chatgpt.com
+2026-09-29 14:37:15,133 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:37:24,770 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 14:37:24,771 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,771 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft
+2026-09-29 14:37:24,772 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,775 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,777 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,778 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,779 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,780 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,782 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,783 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,784 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,785 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,786 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,787 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,789 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,790 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,792 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,793 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,794 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,795 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,796 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,798 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,799 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,800 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,801 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,802 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,803 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,805 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,809 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,810 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,811 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,812 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chatgpt.com cleaned=None
+2026-09-29 14:37:24,864 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft
+2026-09-29 14:37:24,864 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-hfzbcfft
+2026-09-29 14:37:29,887 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 14:38:01,446 [INFO] bridge: handle_launch: url=https://httpbin.org/cookies browser=firefox cookies=1 storage_keys=[]
+2026-09-29 14:38:01,464 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:38:01,464 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:38:01,469 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la
+2026-09-29 14:38:01,470 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:38:01,471 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la\user.js (UUID: d8807bec-8290-466b-a05c-0ead4522cc08)
+2026-09-29 14:38:01,475 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=cUCSg9ZatwrINECAJAlQmn-_SiJrQ-Bs5IKKiCj5bQ4
+2026-09-29 14:38:01,475 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-0c9u08la', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=cUCSg9ZatwrINECAJAlQmn-_SiJrQ-Bs5IKKiCj5bQ4']
+2026-09-29 14:38:02,771 [INFO] cookie_server: Handoff payload consumed by extension (token: cUCSg9Za...)
+2026-09-29 14:38:02,771 [INFO] bridge: Ephemeral Firefox handoff consumed after 1296 ms
+2026-09-29 14:38:02,776 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la pid=31572 domain=httpbin.org
+2026-09-29 14:38:03,663 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=25932 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la firefox_pid=31572 domain=httpbin.org
+2026-09-29 14:38:04,130 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:38:07,677 [INFO] session_daemon: Daemon: handoff payload consumed (token cUCSg9Za...)
+2026-09-29 14:41:04,231 [INFO] bridge: handle_launch: url=https://mdn.github.io/dom-examples/web-storage/?utm_source=chatgpt.com browser=edge cookies=0 storage_keys=['image', 'font', 'bgcolor', 'loglevel:ai-chat-exporter']
+2026-09-29 14:41:04,231 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:41:09,853 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\49a4cf4f-aa7
+2026-09-29 14:41:09,898 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-5v3dpr1j
+2026-09-29 14:41:13,510 [INFO] bridge: handle_launch: url=https://mdn.github.io/dom-examples/web-storage/?utm_source=chatgpt.com browser=edge cookies=0 storage_keys=['image', 'font', 'bgcolor', 'loglevel:ai-chat-exporter']
+2026-09-29 14:41:13,510 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:41:18,099 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\959e7c5c-345
+2026-09-29 14:41:18,152 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-j1hhtgim
+2026-09-29 14:41:32,242 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 14:41:32,243 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la
+2026-09-29 14:41:32,296 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la
+2026-09-29 14:41:32,296 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-0c9u08la
+2026-09-29 14:41:37,775 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 14:47:51,609 [INFO] bridge: handle_launch: url=https://mdn.github.io/dom-examples/web-storage/?utm_source=chatgpt.com browser=edge cookies=0 storage_keys=['image', 'font', 'bgcolor', 'loglevel:ai-chat-exporter']
+2026-09-29 14:47:51,656 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:48:11,384 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\e6a249f0-1fb
+2026-09-29 14:48:11,523 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-_ej7rb73
+2026-09-29 14:49:42,074 [INFO] bridge: handle_launch: url=https://mdn.github.io/dom-examples/web-storage/?utm_source=chatgpt.com browser=edge cookies=0 storage_keys=['image', 'migration_test', 'font', 'bgcolor', 'loglevel:ai-chat-exporter']
+2026-09-29 14:49:42,125 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:50:21,645 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\6dcbdc0e-62a
+2026-09-29 14:50:21,793 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-xw_4u98j
+2026-09-29 14:50:58,609 [INFO] bridge: handle_launch: url=https://mdn.github.io/dom-examples/web-storage/?utm_source=chatgpt.com browser=edge cookies=0 storage_keys=['image', 'migration_test', 'font', 'bgcolor', 'loglevel:ai-chat-exporter']
+2026-09-29 14:50:58,637 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:51:33,893 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\096851e7-67f
+2026-09-29 14:51:34,080 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-tr166s56
+2026-09-29 14:52:28,466 [INFO] bridge: handle_launch: url=https://chatgpt.com/c/6abb7824-bcc4-83e8-830f-f8c974fb507a browser=edge cookies=27 storage_keys=['cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history-without-projects', 'statsig.stable_id.1792610830', 'oai/apps/appDirectoryVisited', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/recentsOrganizationAutomaticDefault/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/loggedInUserMessageCount', 'oai/apps/ownerDomainBackfillLastRunAt/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/lastPageLoadDate', 'oai/apps/connectorInContextUpsellBannerV1', 'oai/apps/chatTheme/user-YXWN19HVpkOEQtA6EDKECF2H', 'oai/apps/lastUtmCampaign', 'client-correlated-secret', 'oai/apps/hasAnyProjects', 'oai/apps/subscriptionFailedBanner', 'oai/apps/tpp/default-tab-last-applied-recommendation/user-YXWN19HVpkOEQtA6EDKECF2H', 'statsig.session_id.1792610830', 'oai/apps/lastKnownPinnedSidebarItemsCount', 'oai/apps/tatertotInContextUpsellBannerV2', 'oai/apps/debugSettings', 'oai/apps/lastPersistedSignupAttribution', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/snorlax-history', 'oai/apps/accountSwitchSessions', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/conversation-history', 'oai/apps/recentsOrganization/user-hLixZUpYkHdEoaVatL7wjEMI', 'RESUME_TOKEN_STORE_KEY', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/pinned-items', 'cache/user-YXWN19HVpkOEQtA6EDKECF2H/c8d3cadc-af95-4aff-bb81-d63a337d2278/models', 'oai/apps/hasSeenNoAuthImagegenNux', 'oai/apps/lastSignupAttribution', '6949817d13611e21', 'oai/apps/baselineStarterPromptImpressionCounts/v1/user-hLixZUpYkHdEoaVatL7wjEMI', 'search.attributions-settings', 'loglevel:ai-chat-exporter', 'oai-did', 'oai/apps/ownerDomainBackfillLastRunAt/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/chatTheme/user-hLixZUpYkHdEoaVatL7wjEMI', 'oai/apps/conversationDrafts', 'oai/apps/capExpiresAt', 'oai/apps/pendingSurveySpec']
+2026-09-29 14:52:28,494 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:52:35,104 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\35d82fae-737
+2026-09-29 14:52:35,169 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-if2tb46_
+2026-09-29 14:52:44,446 [INFO] bridge: handle_launch: url=https://chat.deepseek.com/ browser=edge cookies=4 storage_keys=['__ds_remote_feature_store_model', '__appKit_userInfo', '__appKit_@deepseek/chat_banner', '__ds_remote_feature_store_provider', 'thinkingEnabled', '__appKit_@deepseek/chat_debug', 'hif_leim_cached', 'awswaf_token_refresh_timestamp', '__tea_cache_tokens_20006317', '__appKit_@deepseek/chat_lastSessionValue', 'deepseek-device-id:chat', 'settingsJwt', 'searchStateTriggerAppliedVersion', 'userToken', '__appKit_@deepseek/chat_localePreference', 'APMPLUS__cache__server__config__675113', '__appKit_@deepseek/chat_debugPanelEnabled', 'debugLiteModelChannel', '__tea_cache_first_20006317', '__appKit_@deepseek/chat_1078e731-069f-4765-b7e6-92a5efb13ab4_userStorage', '__ds_remote_feature_did', 'APMPLUS675113', 'searchEnabled', 'hif_dliq_cached', '__close_idb_signal', 'aws_waf_token_challenge_attempts', 'closeUnsafeEnvWarn', 'aws_waf_referrer', '__appKit_@deepseek/chat_themePreference', '__appKit_@deepseek/chat_bannerSettings', 'loglevel:ai-chat-exporter', '__appKit_@deepseek/chat_fg_enableNoIdbCache', 'configurableBannerShownKeys', 'debugModelChannel', 'smidV2', '__ds_remote_feature_store', '__appKit_@deepseek/chat_fg_enableHcaptcha', '.thumbcache_6b2e5483f9d858d7c661c5e276b6a6ae']
+2026-09-29 14:52:44,470 [INFO] bridge: Browser family: chromium, path: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+2026-09-29 14:52:49,042 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\13c1ca1d-322
+2026-09-29 14:52:49,101 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-a4xrc0kb
+2026-09-29 14:53:24,939 [INFO] bridge: handle_launch: url=https://chat.deepseek.com/ browser=brave cookies=4 storage_keys=['__ds_remote_feature_store_model', '__appKit_userInfo', '__appKit_@deepseek/chat_banner', '__ds_remote_feature_store_provider', 'thinkingEnabled', '__appKit_@deepseek/chat_debug', 'hif_leim_cached', 'awswaf_token_refresh_timestamp', '__tea_cache_tokens_20006317', '__appKit_@deepseek/chat_lastSessionValue', 'deepseek-device-id:chat', 'settingsJwt', 'searchStateTriggerAppliedVersion', 'userToken', '__appKit_@deepseek/chat_localePreference', 'APMPLUS__cache__server__config__675113', '__appKit_@deepseek/chat_debugPanelEnabled', 'debugLiteModelChannel', '__tea_cache_first_20006317', '__appKit_@deepseek/chat_1078e731-069f-4765-b7e6-92a5efb13ab4_userStorage', '__ds_remote_feature_did', 'APMPLUS675113', 'searchEnabled', 'hif_dliq_cached', '__close_idb_signal', 'aws_waf_token_challenge_attempts', 'closeUnsafeEnvWarn', 'aws_waf_referrer', '__appKit_@deepseek/chat_themePreference', '__appKit_@deepseek/chat_bannerSettings', 'loglevel:ai-chat-exporter', '__appKit_@deepseek/chat_fg_enableNoIdbCache', 'configurableBannerShownKeys', 'debugModelChannel', 'smidV2', '__ds_remote_feature_store', '__appKit_@deepseek/chat_fg_enableHcaptcha', '.thumbcache_6b2e5483f9d858d7c661c5e276b6a6ae']
+2026-09-29 14:53:24,961 [INFO] bridge: Browser family: chromium, path: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe
+2026-09-29 14:53:28,999 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-sessions\05eccf33-097
+2026-09-29 14:53:29,017 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-mcx22brf
+2026-09-29 14:53:48,237 [INFO] bridge: handle_launch: url=https://chat.deepseek.com/ browser=firefox cookies=3 storage_keys=['__close_idb_signal', 'aws_waf_token_challenge_attempts', '__ds_remote_feature_store_model', '__tea_cache_tokens_20006317', 'searchStateTriggerAppliedVersion', '__appKit_@deepseek/chat_themePreference', '__ds_remote_feature_store_provider', '__appKit_@deepseek/chat_debugPanelEnabled', '__appKit_@deepseek/chat_fg_enableHcaptcha', 'hif_dliq_cached', 'aws_waf_referrer', 'settingsJwt', 'smidV2', 'APMPLUS675113', 'awswaf_token_refresh_timestamp', 'closeUnsafeEnvWarn', 'hif_leim_cached', 'userToken', 'debugModelChannel', 'configurableBannerShownKeys', '__appKit_@deepseek/chat_1078e731-069f-4765-b7e6-92a5efb13ab4_userStorage', 'debugLiteModelChannel', 'thinkingEnabled', '.thumbcache_6b2e5483f9d858d7c661c5e276b6a6ae', 'deepseek-device-id:chat', '__appKit_@deepseek/chat_banner', '__tea_cache_first_20006317', '__ds_remote_feature_did', 'searchEnabled', '__ds_remote_feature_store', '__appKit_@deepseek/chat_debug', 'APMPLUS__cache__server__config__675113', '__appKit_@deepseek/chat_lastSessionValue', '__appKit_userInfo', '__appKit_@deepseek/chat_fg_enableNoIdbCache', '__appKit_@deepseek/chat_localePreference', '__appKit_@deepseek/chat_bannerSettings']
+2026-09-29 14:53:48,254 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 14:53:48,254 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 14:53:48,259 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c
+2026-09-29 14:53:48,261 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 14:53:48,261 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c\user.js (UUID: 7c22cf60-63e9-498d-9c20-df8860d46aac)
+2026-09-29 14:53:48,265 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=u-fF8kaDkuEilRhfhbpsjfOSa3JMTE9rO9GpqkqIhpk
+2026-09-29 14:53:48,265 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-_ybf_u8c', '-no-remote', '-new-instance', 'http://127.0.0.1:47831/handoff?token=u-fF8kaDkuEilRhfhbpsjfOSa3JMTE9rO9GpqkqIhpk']
+2026-09-29 14:53:49,606 [INFO] cookie_server: Handoff payload consumed by extension (token: u-fF8kaD...)
+2026-09-29 14:53:49,606 [INFO] bridge: Ephemeral Firefox handoff consumed after 1340 ms
+2026-09-29 14:53:49,612 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c pid=18960 domain=deepseek.com
+2026-09-29 14:53:50,500 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=13644 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c firefox_pid=18960 domain=deepseek.com
+2026-09-29 14:53:50,986 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 14:53:58,647 [INFO] session_daemon: Daemon: explicit /return ping for domain=chat.deepseek.com
+2026-09-29 14:53:58,653 [INFO] session_daemon: Daemon: explicit /return ping for domain=chat.deepseek.com
+2026-09-29 14:53:58,655 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,656 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,657 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,658 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,659 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,660 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,662 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,663 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,664 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,665 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,666 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,667 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,668 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,669 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,670 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,671 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,672 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,673 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,674 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,675 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,676 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,678 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,679 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,680 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,681 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,682 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,683 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,684 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,685 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,686 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:53:58,687 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=chat.deepseek.com cleaned=None
+2026-09-29 14:54:02,963 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 14:54:02,964 [INFO] session_daemon: Daemon: cleaning ephemeral profile C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c
+2026-09-29 14:54:03,019 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c
+2026-09-29 14:54:03,019 [INFO] session_daemon: Daemon: cleanup cleaned=True profile=C:\Users\User\AppData\Local\Temp\cb-gecko-_ybf_u8c
+2026-09-29 14:54:08,355 [INFO] session_daemon: Daemon exiting cleaned=True
+2026-09-29 15:35:21,478 [INFO] bridge: handle_launch: url=https://httpbin.org/get browser=firefox cookies=1 storage_keys=['cb_test_ls']
+2026-09-29 15:35:21,511 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 15:35:21,511 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 15:35:21,515 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-9itq72vg
+2026-09-29 15:35:21,517 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-9itq72vg\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 15:35:21,517 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-9itq72vg\user.js (UUID: 92b12370-c1ee-48bc-b342-c374330b56ff)
+2026-09-29 15:35:21,521 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=pP2WmhkwSV_S-zosH4w5c_CUKBOfdz-V4ClQPRLkNNc
+2026-09-29 15:35:21,521 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-9itq72vg', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=pP2WmhkwSV_S-zosH4w5c_CUKBOfdz-V4ClQPRLkNNc']
+2026-09-29 15:35:22,953 [INFO] cookie_server: Handoff payload consumed by extension (token: pP2Wmhkw...)
+2026-09-29 15:35:22,953 [INFO] bridge: Ephemeral Firefox handoff consumed after 1431 ms
+2026-09-29 15:35:22,959 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-9itq72vg pid=30828 domain=httpbin.org
+2026-09-29 15:39:00,226 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-9itq72vg
+2026-09-29 15:39:00,237 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-9itq72vg
+2026-09-29 15:39:00,237 [INFO] profile: Orphan sweep removed 1 leftover profile(s).
+2026-09-29 15:39:00,237 [INFO] bridge: handle_launch: url=http://127.0.0.1:48991/ browser=firefox cookies=0 storage_keys=['test_ls_key']
+2026-09-29 15:39:00,237 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 15:39:00,237 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 15:39:00,241 [INFO] bridge: Created ephemeral gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-iuxrudab
+2026-09-29 15:39:00,243 [INFO] profile: Sideloaded companion XPI -> C:\Users\User\AppData\Local\Temp\cb-gecko-iuxrudab\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 15:39:00,243 [INFO] profile: Wrote user.js to C:\Users\User\AppData\Local\Temp\cb-gecko-iuxrudab\user.js (UUID: 1b3496c3-7b9f-4b9e-ae62-ff32bef882ac)
+2026-09-29 15:39:00,247 [INFO] bridge: Handoff URL (ephemeral): http://127.0.0.1:47831/handoff?token=FRq5kSOhxvnhuQTnr9OVGKjgHKEsMz_IH2het7RsGIU
+2026-09-29 15:39:00,247 [INFO] bridge: Launching Firefox (ephemeral companion mode) with flags: ['-profile', 'C:\\Users\\User\\AppData\\Local\\Temp\\cb-gecko-iuxrudab', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=FRq5kSOhxvnhuQTnr9OVGKjgHKEsMz_IH2het7RsGIU']
+2026-09-29 15:39:01,382 [INFO] cookie_server: Handoff payload consumed by extension (token: FRq5kSOh...)
+2026-09-29 15:39:01,382 [INFO] bridge: Ephemeral Firefox handoff consumed after 1134 ms
+2026-09-29 15:39:01,390 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\AppData\Local\Temp\cb-gecko-iuxrudab pid=31880 domain=127.0.0.1
+2026-09-29 15:39:02,282 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=35480 profile=C:\Users\User\AppData\Local\Temp\cb-gecko-iuxrudab firefox_pid=31880 domain=127.0.0.1
+2026-09-29 15:39:02,724 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 16:01:05,345 [INFO] profile: Sweeping orphaned gecko profile: C:\Users\User\AppData\Local\Temp\cb-gecko-iuxrudab
+2026-09-29 16:01:05,373 [DEBUG] profile: Removed directory: C:\Users\User\AppData\Local\Temp\cb-gecko-iuxrudab
+2026-09-29 16:01:05,373 [INFO] profile: Orphan sweep removed 1 leftover profile(s).
+2026-09-29 16:01:05,373 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=1 storage_keys=[]
+2026-09-29 16:01:05,374 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 16:01:05,374 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 16:01:05,378 [INFO] bridge: Resolved persistent gecko profile: C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:01:05,380 [INFO] profile: Staged companion XPI -> C:\Users\User\.fx-bridge\profiles\firefox\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 16:01:05,380 [INFO] profile: Updated persistent user.js at C:\Users\User\.fx-bridge\profiles\firefox\user.js
+2026-09-29 16:01:05,384 [INFO] bridge: Handoff URL (persistent): http://127.0.0.1:47831/handoff?token=W9to3Ge0QesQZGy2eFImQsZkorYHCbmDGkrvQT0C_gA
+2026-09-29 16:01:05,384 [INFO] bridge: Launching Firefox (persistent companion mode) with flags: ['-profile', 'C:\\Users\\User\\.fx-bridge\\profiles\\firefox', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=W9to3Ge0QesQZGy2eFImQsZkorYHCbmDGkrvQT0C_gA']
+2026-09-29 16:01:06,731 [INFO] cookie_server: Handoff payload consumed by extension (token: W9to3Ge0...)
+2026-09-29 16:01:06,731 [INFO] bridge: Firefox persistent handoff successfully consumed after 1346 ms
+2026-09-29 16:01:06,737 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\.fx-bridge\profiles\firefox pid=26088 domain=example.com
+2026-09-29 16:01:07,623 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=34620 profile=C:\Users\User\.fx-bridge\profiles\firefox firefox_pid=26088 domain=example.com
+2026-09-29 16:04:02,539 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=1 storage_keys=[]
+2026-09-29 16:04:02,559 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 16:04:02,559 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 16:04:02,563 [INFO] bridge: Resolved persistent gecko profile: C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:04:02,564 [INFO] profile: Staged companion XPI -> C:\Users\User\.fx-bridge\profiles\firefox\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 16:04:02,571 [INFO] profile: Updated persistent user.js at C:\Users\User\.fx-bridge\profiles\firefox\user.js
+2026-09-29 16:04:02,575 [INFO] bridge: Handoff URL (persistent): http://127.0.0.1:47831/handoff?token=ZCUodP0NifAfAWvIGUgcZuvjJ5VKZKVcMThseRQ_LXk
+2026-09-29 16:04:02,575 [INFO] bridge: Launching Firefox (persistent companion mode) with flags: ['-profile', 'C:\\Users\\User\\.fx-bridge\\profiles\\firefox', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=ZCUodP0NifAfAWvIGUgcZuvjJ5VKZKVcMThseRQ_LXk']
+2026-09-29 16:04:03,550 [INFO] cookie_server: Handoff payload consumed by extension (token: ZCUodP0N...)
+2026-09-29 16:04:03,551 [INFO] bridge: Firefox persistent handoff successfully consumed after 975 ms
+2026-09-29 16:04:03,557 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\.fx-bridge\profiles\firefox pid=34700 domain=example.com
+2026-09-29 16:04:04,445 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=33480 profile=C:\Users\User\.fx-bridge\profiles\firefox firefox_pid=34700 domain=example.com
+2026-09-29 16:06:39,395 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=1 storage_keys=[]
+2026-09-29 16:06:39,412 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 16:06:39,412 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 16:06:39,416 [INFO] bridge: Resolved persistent gecko profile: C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:06:39,418 [INFO] profile: Staged companion XPI -> C:\Users\User\.fx-bridge\profiles\firefox\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 16:06:39,425 [INFO] profile: Updated persistent user.js at C:\Users\User\.fx-bridge\profiles\firefox\user.js
+2026-09-29 16:06:39,429 [INFO] bridge: Handoff URL (persistent): http://127.0.0.1:47831/handoff?token=guVqNzKvQZKcKdjoG1gETQb3xw_XtRtvjLPhbPAx1RQ
+2026-09-29 16:06:39,429 [INFO] bridge: Launching Firefox (persistent companion mode) with flags: ['-profile', 'C:\\Users\\User\\.fx-bridge\\profiles\\firefox', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=guVqNzKvQZKcKdjoG1gETQb3xw_XtRtvjLPhbPAx1RQ']
+2026-09-29 16:06:40,451 [INFO] cookie_server: Handoff payload consumed by extension (token: guVqNzKv...)
+2026-09-29 16:06:40,451 [INFO] bridge: Firefox persistent handoff successfully consumed after 1021 ms
+2026-09-29 16:06:40,456 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\.fx-bridge\profiles\firefox pid=10216 domain=example.com
+2026-09-29 16:06:41,349 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=15768 profile=C:\Users\User\.fx-bridge\profiles\firefox firefox_pid=10216 domain=example.com
+2026-09-29 16:06:41,795 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 16:06:48,983 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 16:06:48,984 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=example.com cleaned=None
+2026-09-29 16:06:48,984 [INFO] session_daemon: Daemon: persistent profile retained (not deleted): C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:06:48,985 [INFO] session_daemon: Daemon: cleanup cleaned=False profile=C:\Users\User\.fx-bridge\profiles\firefox (mode=persistent)
+2026-09-29 16:07:42,169 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=1 storage_keys=[]
+2026-09-29 16:07:42,189 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 16:07:42,189 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 16:07:42,193 [INFO] bridge: Resolved persistent gecko profile: C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:07:42,195 [INFO] profile: Staged companion XPI -> C:\Users\User\.fx-bridge\profiles\firefox\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 16:07:42,201 [INFO] profile: Updated persistent user.js at C:\Users\User\.fx-bridge\profiles\firefox\user.js
+2026-09-29 16:07:42,205 [INFO] bridge: Handoff URL (persistent): http://127.0.0.1:47831/handoff?token=k-8PqsRIrKTlfDHcLHjbAooR6oE8XdBr5HttGmtcNPY
+2026-09-29 16:07:42,205 [INFO] bridge: Launching Firefox (persistent companion mode) with flags: ['-profile', 'C:\\Users\\User\\.fx-bridge\\profiles\\firefox', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=k-8PqsRIrKTlfDHcLHjbAooR6oE8XdBr5HttGmtcNPY']
+2026-09-29 16:07:43,298 [INFO] cookie_server: Handoff payload consumed by extension (token: k-8PqsRI...)
+2026-09-29 16:07:43,298 [INFO] bridge: Firefox persistent handoff successfully consumed after 1091 ms
+2026-09-29 16:07:43,304 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\.fx-bridge\profiles\firefox pid=21256 domain=example.com
+2026-09-29 16:07:44,197 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=33496 profile=C:\Users\User\.fx-bridge\profiles\firefox firefox_pid=21256 domain=example.com
+2026-09-29 16:07:44,629 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 16:07:51,794 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 16:07:51,794 [INFO] session_daemon: Daemon: persistent profile retained (not deleted): C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:07:51,794 [INFO] session_daemon: Daemon: cleanup cleaned=False profile=C:\Users\User\.fx-bridge\profiles\firefox (mode=persistent)
+2026-09-29 16:07:51,795 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=example.com cleaned=False
+2026-09-29 16:10:04,941 [INFO] bridge: handle_launch: url=https://example.com browser=firefox cookies=1 storage_keys=[]
+2026-09-29 16:10:04,964 [INFO] bridge: Browser family: gecko, path: C:\Program Files\Mozilla Firefox\firefox.exe
+2026-09-29 16:10:04,964 [INFO] bridge: Gecko injection mode: companion
+2026-09-29 16:10:04,969 [INFO] bridge: Resolved persistent gecko profile: C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:10:04,970 [INFO] profile: Staged companion XPI -> C:\Users\User\.fx-bridge\profiles\firefox\extensions\chromiumbridge-companion@faisalbhuiyan.com.xpi
+2026-09-29 16:10:04,977 [INFO] profile: Updated persistent user.js at C:\Users\User\.fx-bridge\profiles\firefox\user.js
+2026-09-29 16:10:04,981 [INFO] bridge: Handoff URL (persistent): http://127.0.0.1:47831/handoff?token=nM9Vnuyc0zcobU-_85_iiTsh4-D6ExxWdygD1HTyPHs
+2026-09-29 16:10:04,981 [INFO] bridge: Launching Firefox (persistent companion mode) with flags: ['-profile', 'C:\\Users\\User\\.fx-bridge\\profiles\\firefox', '-no-remote', '-new-instance', '-width', '960', '-height', '640', 'http://127.0.0.1:47831/handoff?token=nM9Vnuyc0zcobU-_85_iiTsh4-D6ExxWdygD1HTyPHs']
+2026-09-29 16:10:06,039 [INFO] cookie_server: Handoff payload consumed by extension (token: nM9Vnuyc...)
+2026-09-29 16:10:06,039 [INFO] bridge: Firefox persistent handoff successfully consumed after 1057 ms
+2026-09-29 16:10:06,047 [INFO] bridge: Spawned session daemon for profile=C:\Users\User\.fx-bridge\profiles\firefox pid=33900 domain=example.com
+2026-09-29 16:10:06,940 [INFO] session_daemon: Daemon listening on 127.0.0.1:47831 pid=5208 profile=C:\Users\User\.fx-bridge\profiles\firefox firefox_pid=33900 domain=example.com
+2026-09-29 16:10:07,346 [INFO] session_daemon: Daemon: Firefox session confirmed (profile in use)
+2026-09-29 16:10:14,466 [INFO] session_daemon: Daemon: Firefox session ended (exit confirmed x3)
+2026-09-29 16:10:14,467 [INFO] session_daemon: Daemon: persistent profile retained (not deleted): C:\Users\User\.fx-bridge\profiles\firefox
+2026-09-29 16:10:14,467 [INFO] session_daemon: Daemon: cleanup cleaned=False profile=C:\Users\User\.fx-bridge\profiles\firefox (mode=persistent)
+2026-09-29 16:10:14,467 [INFO] session_daemon: Daemon: /wait-return RETURNED domain=example.com cleaned=False

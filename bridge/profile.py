@@ -141,15 +141,25 @@ def is_xpi_signed(xpi_path):
         return False
 
 
-def locate_companion_xpi(config=None):
+def locate_companion_xpi(config=None, message=None):
     """
     Locate the companion XPI file.
     Priority:
-      1. User-configured exact path from config (gecko_companion_xpi or session.gecko_companion_xpi).
+      1. Explicit path in launch message from extension (companion_xpi or gecko_companion_xpi).
+      2. User-configured exact path from config (gecko_companion_xpi or session.gecko_companion_xpi).
          Uses the EXACT path specified. If it doesn't exist, returns None.
-      2. Default repo location: releases/gecko-extension/<id>.xpi
+      3. Default signed repo location: releases/gecko-extension/signed/firefox-companion-1.0.0.xpi
+      4. Default repo location: releases/gecko-extension/<id>.xpi
     Returns the absolute path, or None if not found.
     """
+    if message:
+        configured = message.get("companion_xpi") or message.get("gecko_companion_xpi")
+        if configured and isinstance(configured, str) and configured.strip():
+            target = os.path.normpath(os.path.abspath(os.path.expanduser(configured.strip())))
+            if os.path.isfile(target):
+                return target
+            log.warning("Message companion_xpi does not exist: %s", target)
+
     if config:
         configured = config.get("gecko_companion_xpi") or config.get("session", {}).get("gecko_companion_xpi")
         if configured and isinstance(configured, str) and configured.strip():
@@ -159,9 +169,16 @@ def locate_companion_xpi(config=None):
             log.warning("Configured gecko_companion_xpi does not exist: %s", target)
             return None
 
-    # Fallback default location relative to bridge
+    # Fallback default locations relative to bridge
     bridge_dir = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(bridge_dir)
+    signed_path = os.path.normpath(os.path.join(
+        repo_root, "releases", "gecko-extension", "signed",
+        "firefox-companion-1.0.0.xpi"
+    ))
+    if os.path.isfile(signed_path):
+        return signed_path
+
     std_path = os.path.normpath(os.path.join(
         repo_root, "releases", "gecko-extension",
         f"{ADDON_ID}.xpi"
@@ -268,15 +285,16 @@ user_pref("browser.tabs.warnOnClose", false);
 
 # ── Persistent Profile ──────────────────────────────────
 
-def resolve_persistent(path=None):
+def resolve_persistent(path=None, browser_id=None):
     """
     Resolve and ensure a persistent profile directory exists.
-    If no path provided, uses a default location.
+    If no path provided, uses an isolated location per browser family/id.
     Returns the absolute path.
     """
     if not path:
         home = os.path.expanduser("~")
-        path = os.path.join(home, ".fx-bridge", "profiles", "default")
+        subfolder = browser_id if browser_id else "default"
+        path = os.path.join(home, ".fx-bridge", "profiles", subfolder)
 
     path = os.path.expanduser(path)
     path = os.path.abspath(path)
@@ -286,6 +304,71 @@ def resolve_persistent(path=None):
 
     os.makedirs(path, exist_ok=True)
     return path
+
+
+def stage_gecko_persistent_profile(profile_dir, companion_xpi):
+    """
+    Prepare a persistent Firefox profile for companion handoff:
+      1. Sideload/update the signed companion XPI into <profile>/extensions/<id>.xpi
+      2. Ensure user.js has autoDisableScopes=0 and pinned UUID (updating/appending,
+         without wiping existing profile preferences).
+
+    Args:
+        profile_dir:    Path to the persistent profile directory.
+        companion_xpi:  Path to the signed companion .xpi file.
+    """
+    os.makedirs(profile_dir, exist_ok=True)
+
+    # 1. Sideload companion XPI
+    ext_dir = os.path.join(profile_dir, "extensions")
+    os.makedirs(ext_dir, exist_ok=True)
+    dest_xpi = os.path.join(ext_dir, f"{ADDON_ID}.xpi")
+    shutil.copy2(companion_xpi, dest_xpi)
+    log.info("Staged companion XPI -> %s", dest_xpi)
+
+    # 2. Update/append user.js without overwriting user's persistent prefs
+    user_js_path = os.path.join(profile_dir, "user.js")
+    existing_content = ""
+    if os.path.isfile(user_js_path):
+        try:
+            with open(user_js_path, "r", encoding="utf-8") as f:
+                existing_content = f.read()
+        except OSError:
+            pass
+
+    # Ensure pinned UUID exists or generate one
+    session_uuid = str(uuid.uuid4())
+    uuids_map = {ADDON_ID: session_uuid}
+    uuids_pref_value = json.dumps(json.dumps(uuids_map))
+
+    required_prefs = [
+        ('user_pref("extensions.autoDisableScopes"', 'user_pref("extensions.autoDisableScopes", 0);'),
+        ('user_pref("extensions.webextensions.uuids"', f'user_pref("extensions.webextensions.uuids", {uuids_pref_value});'),
+        ('user_pref("browser.shell.checkDefaultBrowser"', 'user_pref("browser.shell.checkDefaultBrowser", false);'),
+        ('user_pref("browser.aboutwelcome.enabled"', 'user_pref("browser.aboutwelcome.enabled", false);'),
+        ('user_pref("browser.startup.homepage_override.mstone"', 'user_pref("browser.startup.homepage_override.mstone", "ignore");'),
+        ('user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification"', 'user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);'),
+        ('user_pref("datareporting.policy.dataSubmissionPolicyAcceptedVersion"', 'user_pref("datareporting.policy.dataSubmissionPolicyAcceptedVersion", 2);'),
+        ('user_pref("toolkit.telemetry.reportingpolicy.firstRun"', 'user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);'),
+        ('user_pref("browser.warnOnQuit"', 'user_pref("browser.warnOnQuit", false);'),
+        ('user_pref("browser.sessionstore.resume_from_crash"', 'user_pref("browser.sessionstore.resume_from_crash", false);'),
+        ('user_pref("browser.tabs.warnOnClose"', 'user_pref("browser.tabs.warnOnClose", false);'),
+    ]
+
+    lines = existing_content.splitlines() if existing_content else []
+    for prefix, full_pref in required_prefs:
+        found = False
+        for i, line in enumerate(lines):
+            if line.strip().startswith(prefix):
+                lines[i] = full_pref
+                found = True
+                break
+        if not found:
+            lines.append(full_pref)
+
+    with open(user_js_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    log.info("Updated persistent user.js at %s", user_js_path)
 
 
 # ── Profile Validation ──────────────────────────────────

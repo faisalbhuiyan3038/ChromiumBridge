@@ -338,6 +338,7 @@ def start_cookie_server(cookies, target_url="", storage_data=None):
     _CookieHandler._payload_consumed_event = None
 
     try:
+        HTTPServer.allow_reuse_address = True
         server = HTTPServer(("127.0.0.1", COOKIE_PORT), _CookieHandler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -387,6 +388,7 @@ def start_handoff_server(cookies, target_url="", storage_data=None):
     _CookieHandler.storage_data = json.dumps(storage_data or {}).encode("utf-8")
 
     try:
+        HTTPServer.allow_reuse_address = True
         server = HTTPServer(("127.0.0.1", COOKIE_PORT), _CookieHandler)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()

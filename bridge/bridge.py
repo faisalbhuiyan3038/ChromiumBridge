@@ -34,9 +34,10 @@ import threading
 from profile import (
     create_ephemeral, resolve_persistent, cleanup,
     sweep_orphaned_profiles, is_xpi_signed, locate_companion_xpi,
-    inspect_xpi, stage_gecko_ephemeral_profile, wait_profile_free, _rmtree_with_backoff,
+    inspect_xpi, stage_gecko_ephemeral_profile, stage_gecko_persistent_profile,
+    wait_profile_free, _rmtree_with_backoff,
 )
-from cookies import stage_cookies
+from cookies import stage_cookies, stage_storage
 from cookies_gecko import stage_gecko_profile
 from launcher import (
     prepare_companion,
@@ -77,7 +78,7 @@ def _signal_return(domain):
 
 def _spawn_session_daemon(profile_dir, firefox_pid, domain, url,
                           cookies, storage_data, handoff_token,
-                          await_consume=False):
+                          await_consume=False, profile_mode="ephemeral"):
     """
     Spawn the detached per-handoff session host (bridge/session_daemon.py).
 
@@ -117,6 +118,7 @@ def _spawn_session_daemon(profile_dir, firefox_pid, domain, url,
             "--domain", domain or "",
             "--port", str(COOKIE_PORT),
             "--payload-file", payload_path,
+            "--profile-mode", profile_mode,
         ]
         if await_consume:
             cmd.append("--await-consume")
@@ -241,7 +243,7 @@ def handle_launch(message):
 
                 # ── Ephemeral profile: cold-start Firefox with sideloaded companion ──
                 if profile_mode == "ephemeral":
-                    companion_xpi = locate_companion_xpi(config)
+                    companion_xpi = locate_companion_xpi(config, message)
                     if not companion_xpi:
                         configured_xpi = (
                             config.get("gecko_companion_xpi")
@@ -365,8 +367,56 @@ def handle_launch(message):
                         "duration": duration_ms,
                     }
 
-                # ── Persistent profile: attach to existing Firefox instance ──
+                # ── Persistent profile: attach with companion extension ──
                 else:
+                    companion_xpi = locate_companion_xpi(config, message)
+                    if not companion_xpi:
+                        configured_xpi = (
+                            config.get("gecko_companion_xpi")
+                            or session_cfg.get("gecko_companion_xpi", "")
+                        )
+                        if configured_xpi:
+                            msg = (
+                                f"Companion XPI not found at configured path: '{configured_xpi}'. "
+                                "Please verify the path in extension Settings (Options -> Session -> Companion XPI)."
+                            )
+                        else:
+                            msg = (
+                                "Gecko Companion XPI not found. Please configure the XPI file path in "
+                                "extension Settings (Options -> Session -> Companion XPI) or place it in "
+                                "releases/gecko-extension/."
+                            )
+                        return {
+                            "status": "error",
+                            "event": "no_xpi",
+                            "error": msg,
+                        }
+
+                    if not is_xpi_signed(companion_xpi):
+                        return {
+                            "status": "error",
+                            "event": "unsigned_xpi",
+                            "path": companion_xpi,
+                            "error": (
+                                f"Companion XPI at '{companion_xpi}' is not signed by AMO yet. "
+                                "Submit it to AMO (unlisted channel), download the signed copy, "
+                                "and update the path in Settings."
+                            ),
+                        }
+
+                    per_browser = session_cfg.get("persistent_profiles", {})
+                    persistent_path = per_browser.get(browser_id, "")
+                    if not persistent_path:
+                        persistent_path = session_cfg.get("persistent_profile_path", "")
+                    profile_dir = resolve_persistent(persistent_path, browser_id=browser_id)
+                    log.info("Resolved persistent gecko profile: %s", profile_dir)
+
+                    try:
+                        stage_gecko_persistent_profile(profile_dir, companion_xpi)
+                    except Exception as e:
+                        log.error("Failed to stage persistent gecko profile: %s", e)
+                        return {"error": f"Failed to prepare persistent Firefox profile: {e}"}
+
                     # Start handoff server with tokenized endpoint
                     handoff_server, handoff_token = start_handoff_server(
                         cookies, target_url=url, storage_data=storage_data
@@ -382,34 +432,45 @@ def handle_launch(message):
                         config=config,
                         url=launch_url,
                         mode=mode,
-                        profile_dir=None,    # no isolation — attach to default profile
+                        profile_dir=profile_dir,
                         incognito=incognito,
-                        companion_mode=True,
+                        companion_mode=False,
                     )
                     log.info("Launching Firefox (persistent companion mode) with flags: %s", flags)
 
                     start_time = time.time()
                     process = launch(browser_path, flags)
 
-                    # In persistent mode, expect the companion to respond within 6s
-                    # (it should already be installed in the user's main profile).
                     consumed_event = _CookieHandler._payload_consumed_event
-                    consumed = consumed_event.wait(timeout=6.0) if consumed_event else False
+                    consumed = consumed_event.wait(timeout=30.0) if consumed_event else False
 
                     duration_ms = int((time.time() - start_time) * 1000)
 
                     if not consumed:
-                        log.warning("Companion extension did not claim payload within 6s (likely not installed)")
+                        log.warning("Persistent companion did not claim payload within 30s")
+                        _spawn_session_daemon(
+                            profile_dir, process.pid, domain, url,
+                            cookies, storage_data, handoff_token,
+                            await_consume=True, profile_mode="persistent",
+                        )
                         stop_cookie_server(handoff_server)
                         return {
                             "status": "error",
                             "event": "unclaimed",
-                            "error": "Gecko companion extension not detected in this Firefox profile. Install the companion extension to enable automatic tab handoffs.",
+                            "error": "The companion extension did not start within 30s. "
+                                     "If using release Firefox, ensure the companion XPI is AMO-signed.",
                         }
 
-                    log.info("Firefox handoff successfully consumed after %d ms", duration_ms)
+                    log.info("Firefox persistent handoff successfully consumed after %d ms", duration_ms)
                     log_session(domain, browser_id, duration_ms, "launched")
                     log_launch_time(browser_id, time.time() - start_time)
+
+                    _spawn_session_daemon(
+                        profile_dir, process.pid, domain, url,
+                        cookies, storage_data, handoff_token,
+                        profile_mode="persistent",
+                    )
+                    stop_cookie_server(handoff_server)
 
                     return {
                         "status": "ok",
@@ -425,7 +486,7 @@ def handle_launch(message):
                     persistent_path = per_browser.get(browser_id, "")
                     if not persistent_path:
                         persistent_path = session_cfg.get("persistent_profile_path", "")
-                    profile_dir = resolve_persistent(persistent_path)
+                    profile_dir = resolve_persistent(persistent_path, browser_id=browser_id)
                 else:
                     profile_dir = create_ephemeral()
 
@@ -480,7 +541,7 @@ def handle_launch(message):
                 persistent_path = per_browser.get(browser_id, "")
                 if not persistent_path:
                     persistent_path = session_cfg.get("persistent_profile_path", "")
-                profile_dir = resolve_persistent(persistent_path)
+                profile_dir = resolve_persistent(persistent_path, browser_id=browser_id)
             else:
                 profile_dir = create_ephemeral()
 
@@ -488,6 +549,9 @@ def handle_launch(message):
 
             if cookies:
                 stage_cookies(cookies, url, companion_dir)
+
+            if storage_data:
+                stage_storage(storage_data, companion_dir)
 
             cookie_server = None
             if cookies or storage_data:

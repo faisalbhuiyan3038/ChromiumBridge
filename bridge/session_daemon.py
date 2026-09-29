@@ -60,10 +60,11 @@ def _write_status(status_path, data):
         log.debug("Could not write session status %s: %s", status_path, e)
 
 
-def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=False):
+def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=False, profile_mode="ephemeral"):
     from http.server import HTTPServer, BaseHTTPRequestHandler
     from urllib.parse import urlparse, parse_qs
 
+    HTTPServer.allow_reuse_address = True
     token = payload.get("token")
     handoff_payload_bytes = json.dumps({
         "url": payload.get("url", ""),
@@ -83,7 +84,7 @@ def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=Fa
         "return_event": threading.Event(),
         "return_explicit": False,  # True only when /return arrived via HTTP
         "return_domain": None,
-        "return_cleaned": None,  # None=pending, True/False after cleanup attempt
+        "return_cleaned": False if profile_mode == "persistent" else None,  # False for persistent, True/False after ephemeral cleanup
         "start_time": time.time(),
     }
 
@@ -325,18 +326,14 @@ def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=Fa
         log.exception("Daemon lifetime watch unexpected failure — "
                       "will NOT delete profile without confirmed exit")
 
-    # Signal return so Chromium unblocks + banners (idempotent if the user
-    # already clicked Back to Chromium, which sets return_explicit).
-    if state["return_domain"] is None:
-        state["return_domain"] = domain
-    state["return_event"].set()
-    set_status(returned=True, return_domain=state["return_domain"])
-
-    # ── Cleanup with extended backoff (60s for AV/.wal locks). ──
-    # Only runs on confirmed exit (or session cap, where rmtree of a live
-    # profile safely fails on file locks and the folder is left for sweep).
+    # ── Cleanup ──
+    # Ephemeral profiles are deleted with extended backoff.
+    # Persistent profiles are preserved across sessions (never deleted).
     cleaned = False
-    if not exit_confirmed:
+    if profile_mode == "persistent":
+        log.info("Daemon: persistent profile retained (not deleted): %s", profile_dir)
+        cleaned = False
+    elif not exit_confirmed:
         log.error("Daemon: no confirmed exit — leaving profile for orphan sweep")
     else:
         try:
@@ -345,8 +342,15 @@ def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=Fa
         except Exception as e:
             log.warning("Daemon cleanup failed: %s", e)
     state["return_cleaned"] = cleaned
-    log.info("Daemon: cleanup cleaned=%s profile=%s", cleaned, profile_dir)
+    log.info("Daemon: cleanup cleaned=%s profile=%s (mode=%s)", cleaned, profile_dir, profile_mode)
     set_status(cleaned=cleaned)
+
+    # Signal return so Chromium unblocks + banners (idempotent if the user
+    # already clicked Back to Chromium, which sets return_explicit).
+    if state["return_domain"] is None:
+        state["return_domain"] = domain
+    state["return_event"].set()
+    set_status(returned=True, return_domain=state["return_domain"])
 
     # If rmtree failed, leave folder for the next-launch orphan sweep (safe).
     # Keep server alive briefly so pending /wait-return polls see cleaned flag.
@@ -362,7 +366,7 @@ def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=Fa
             os.remove(payload["_payload_file"])
     except OSError:
         pass
-    if cleaned:
+    if cleaned or profile_mode == "persistent":
         try:
             if os.path.isfile(status_path):
                 os.remove(status_path)
@@ -382,6 +386,7 @@ def main(argv=None):
     ap.add_argument("--port", default=COOKIE_PORT_DEFAULT, type=int)
     ap.add_argument("--payload-file", required=True)
     ap.add_argument("--await-consume", action="store_true")
+    ap.add_argument("--profile-mode", default="ephemeral", choices=["ephemeral", "persistent"])
     args = ap.parse_args(argv)
 
     try:
@@ -392,7 +397,8 @@ def main(argv=None):
         return 1
     payload["_payload_file"] = args.payload_file
     return run_daemon(args.profile_dir, args.firefox_pid, args.domain,
-                      args.port, payload, await_consume=args.await_consume)
+                      args.port, payload, await_consume=args.await_consume,
+                      profile_mode=args.profile_mode)
 
 
 if __name__ == "__main__":

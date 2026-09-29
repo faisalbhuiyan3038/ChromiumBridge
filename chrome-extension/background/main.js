@@ -181,21 +181,56 @@ async function performHandoff(tabId, url, overrides = {}) {
   // 2. Collect localStorage & sessionStorage from content script with timeout
   let storageData = { localStorage: null, sessionStorage: null, origin: null };
   if (settings.port_localstorage !== false && tabId) {
+    let storageResponse = null;
     try {
-      const storageResponse = await Promise.race([
+      storageResponse = await Promise.race([
         chrome.tabs.sendMessage(tabId, { action: "extractStorage" }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Storage extraction timed out")), 3000)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Storage extraction timed out")), 1500)),
       ]);
-      if (storageResponse) {
-        storageData.origin = storageResponse.origin || null;
-        storageData.localStorage = storageResponse.localStorage || null;
-        storageData.sessionStorage = storageResponse.sessionStorage || null;
-        const lsKeys = storageData.localStorage ? Object.keys(storageData.localStorage).length : 0;
-        const ssKeys = storageData.sessionStorage ? Object.keys(storageData.sessionStorage).length : 0;
-        console.log(`[ChromiumBridge] Storage extracted: localStorage=${lsKeys} keys, sessionStorage=${ssKeys} keys`);
-      }
     } catch (err) {
-      console.warn("[ChromiumBridge] Could not extract storage data:", err.message);
+      // Content script may not be injected into existing tab; try scripting fallback
+    }
+
+    if (!storageResponse && chrome.scripting) {
+      try {
+        const results = await chrome.scripting.executeScript({
+          target: { tabId },
+          func: () => {
+            const res = { origin: window.location.origin, localStorage: {}, sessionStorage: {} };
+            try {
+              if (window.localStorage && window.localStorage.length > 0) {
+                for (let i = 0; i < window.localStorage.length; i++) {
+                  const k = window.localStorage.key(i);
+                  res.localStorage[k] = window.localStorage.getItem(k);
+                }
+              }
+            } catch {}
+            try {
+              if (window.sessionStorage && window.sessionStorage.length > 0) {
+                for (let i = 0; i < window.sessionStorage.length; i++) {
+                  const k = window.sessionStorage.key(i);
+                  res.sessionStorage[k] = window.sessionStorage.getItem(k);
+                }
+              }
+            } catch {}
+            return res;
+          }
+        });
+        if (results && results[0]?.result) {
+          storageResponse = results[0].result;
+        }
+      } catch (err) {
+        console.warn("[ChromiumBridge] executeScript fallback failed:", err.message);
+      }
+    }
+
+    if (storageResponse) {
+      storageData.origin = storageResponse.origin || null;
+      storageData.localStorage = storageResponse.localStorage || null;
+      storageData.sessionStorage = storageResponse.sessionStorage || null;
+      const lsKeys = storageData.localStorage ? Object.keys(storageData.localStorage).length : 0;
+      const ssKeys = storageData.sessionStorage ? Object.keys(storageData.sessionStorage).length : 0;
+      console.log(`[ChromiumBridge] Storage extracted: localStorage=${lsKeys} keys, sessionStorage=${ssKeys} keys`);
     }
   }
 
@@ -217,6 +252,7 @@ async function performHandoff(tabId, url, overrides = {}) {
     mode,
     profile,
     incognito: settings.incognito_passthrough && isIncognito,
+    companion_xpi: settings.gecko_companion_xpi || undefined,
   };
 
   _activeHandoffs.set(tabId, { url, domain, startTime: Date.now() });
