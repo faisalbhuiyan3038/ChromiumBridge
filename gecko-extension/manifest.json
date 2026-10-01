@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "ChromiumBridge Gecko Companion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Companion extension for ChromiumBridge — receives authenticated tab handoffs from Chromium browsers into Firefox.",
 
   "browser_specific_settings": {

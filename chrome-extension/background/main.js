@@ -338,36 +338,30 @@ async function waitForReturn(domain, tabId, windowId) {
           }
         }
 
-        // 1. Refocus window
-        try {
-          if (windowId) {
-            await chrome.windows.update(windowId, { focused: true });
-          }
-        } catch (wErr) {
-          console.warn("[ChromiumBridge] Could not refocus windowId:", wErr.message);
-        }
-
-        // 2. Refocus tab if still alive, otherwise pick active tab in window
+        // Check if the user is still on the originating window/tab.
+        // If they've switched away, DON'T steal focus — show a
+        // non-intrusive OS notification instead.
+        let userStillHere = false;
         let targetTabId = tabId;
         try {
-          const tab = await chrome.tabs.get(tabId);
-          if (tab) {
-            await chrome.tabs.update(tabId, { active: true });
-          } else {
-            throw new Error("Tab not found");
+          const currentWin = await chrome.windows.getLastFocused();
+          if (currentWin && currentWin.id === windowId) {
+            const tab = await chrome.tabs.get(tabId);
+            if (tab && tab.active) {
+              userStillHere = true;
+            }
           }
-        } catch {
-          try {
-            const queryOpts = windowId ? { active: true, windowId } : { active: true, currentWindow: true };
-            const [activeTab] = await chrome.tabs.query(queryOpts);
-            targetTabId = activeTab?.id || null;
-          } catch {}
-        }
+        } catch {}
 
-        // 3. Display the feedback banner on the target tab
-        if (targetTabId) {
-          await triggerFeedbackBanner(targetTabId, data.domain || domain, data.duration, cleaned);
+        if (userStillHere) {
+          // User is still looking at the originating tab — safe to show banner
+          try {
+            await triggerFeedbackBanner(targetTabId, data.domain || domain, data.duration, cleaned);
+          } catch {}
         } else {
+          // User has switched away — show a non-intrusive notification.
+          // Do NOT call chrome.windows.update(focused: true) or
+          // chrome.tabs.update(active: true) — that would steal focus.
           await showReturnNotification(data.domain || domain, cleaned);
         }
         break;

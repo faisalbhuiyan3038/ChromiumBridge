@@ -209,6 +209,14 @@ def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=Fa
                 self.send_header("Content-Type", "text/html")
                 self.end_headers()
                 self.wfile.write(b"<html><body>ChromiumBridge session active.</body></html>")
+            elif path == "/shutdown":
+                # Graceful shutdown endpoint — called by bridge.py before
+                # starting a new handoff to release port 47831.
+                log.info("Daemon: /shutdown requested — initiating graceful exit")
+                self._send_json(b'{"status":"shutting_down"}')
+                # Schedule shutdown on a background thread so the HTTP response
+                # is fully sent before the server stops.
+                threading.Thread(target=_deferred_shutdown, args=(server,), daemon=True).start()
             else:
                 self.send_response(404)
                 self.end_headers()
@@ -220,6 +228,17 @@ def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=Fa
             self.end_headers()
 
         def log_message(self, *args):
+            pass
+
+    shutdown_requested = threading.Event()
+
+    def _deferred_shutdown(srv):
+        """Shut down the server after a brief delay so the HTTP response is sent."""
+        time.sleep(0.3)
+        shutdown_requested.set()
+        try:
+            srv.shutdown()
+        except Exception:
             pass
 
     # Bind with retry: bridge.py stops its own server just before spawning us,
@@ -289,10 +308,21 @@ def run_daemon(profile_dir, firefox_pid, domain, port, payload, await_consume=Fa
                         "exit detection armed anyway")
         set_status(session_confirmed=seen_in_use)
 
-        deadline = time.monotonic() + 3 * 3600
+
+        # Persistent profiles: shorter deadline since we're not doing cleanup
+        # and holding port 47831 blocks future handoffs.
+        # Ephemeral profiles: long deadline to handle slow AV + file lock scenarios.
+        if profile_mode == "persistent":
+            deadline = time.monotonic() + 300  # 5 minutes max for persistent
+        else:
+            deadline = time.monotonic() + 3 * 3600  # 3 hours for ephemeral
         confirmations = 0
         capped = False
         while True:  # Phase 2
+            # Check if a /shutdown request was received from bridge.py
+            if shutdown_requested.is_set():
+                log.info("Daemon: /shutdown was requested — breaking exit watch")
+                break
             if time.monotonic() >= deadline:
                 capped = True
                 break

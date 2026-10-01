@@ -285,6 +285,41 @@ user_pref("browser.tabs.warnOnClose", false);
 
 # ── Persistent Profile ──────────────────────────────────
 
+def _extract_existing_uuid(profile_dir, addon_id):
+    """
+    Look for an existing pinned UUID for the given addon ID in the profile's
+    user.js and prefs.js. Firefox writes runtime-assigned UUIDs into prefs.js,
+    while user.js contains our staged overrides.
+
+    Returns the UUID string if found, or None.
+    """
+    import re
+    pattern = r'user_pref\("extensions\.webextensions\.uuids",\s*(.+?)\);'
+    for filename in ("prefs.js", "user.js"):
+        filepath = os.path.join(profile_dir, filename)
+        if not os.path.isfile(filepath):
+            continue
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+        except OSError:
+            continue
+        match = re.search(pattern, content)
+        if not match:
+            continue
+        try:
+            raw_value = match.group(1).strip()
+            # The pref value is double-JSON-encoded: a JSON string containing a JSON object
+            outer = json.loads(raw_value)
+            uuids = json.loads(outer)
+            existing = uuids.get(addon_id)
+            if existing:
+                log.info("Found existing UUID for %s in %s: %s", addon_id, filename, existing)
+                return existing
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+    return None
+
 def resolve_persistent(path=None, browser_id=None):
     """
     Resolve and ensure a persistent profile directory exists.
@@ -319,12 +354,25 @@ def stage_gecko_persistent_profile(profile_dir, companion_xpi):
     """
     os.makedirs(profile_dir, exist_ok=True)
 
-    # 1. Sideload companion XPI
+    # 1. Sideload companion XPI — skip if already installed and identical.
+    #    Re-copying triggers Firefox's addon validation pipeline, which can
+    #    cause "Extension not detected" or disable the extension on relaunch.
     ext_dir = os.path.join(profile_dir, "extensions")
     os.makedirs(ext_dir, exist_ok=True)
     dest_xpi = os.path.join(ext_dir, f"{ADDON_ID}.xpi")
-    shutil.copy2(companion_xpi, dest_xpi)
-    log.info("Staged companion XPI -> %s", dest_xpi)
+    should_copy = True
+    if os.path.isfile(dest_xpi):
+        try:
+            src_size = os.path.getsize(companion_xpi)
+            dst_size = os.path.getsize(dest_xpi)
+            if src_size == dst_size:
+                should_copy = False
+                log.info("Companion XPI already installed and same size, skipping copy: %s", dest_xpi)
+        except OSError:
+            pass
+    if should_copy:
+        shutil.copy2(companion_xpi, dest_xpi)
+        log.info("Staged companion XPI -> %s", dest_xpi)
 
     # 2. Update/append user.js without overwriting user's persistent prefs
     user_js_path = os.path.join(profile_dir, "user.js")
@@ -336,8 +384,12 @@ def stage_gecko_persistent_profile(profile_dir, companion_xpi):
         except OSError:
             pass
 
-    # Ensure pinned UUID exists or generate one
-    session_uuid = str(uuid.uuid4())
+    # Preserve the existing pinned UUID if the addon is already registered.
+    # Generating a new UUID every launch breaks Firefox's internal addon
+    # database because it conflicts with the UUID Firefox already assigned
+    # on first install (stored in prefs.js).
+    existing_uuid = _extract_existing_uuid(profile_dir, ADDON_ID)
+    session_uuid = existing_uuid if existing_uuid else str(uuid.uuid4())
     uuids_map = {ADDON_ID: session_uuid}
     uuids_pref_value = json.dumps(json.dumps(uuids_map))
 

@@ -119,6 +119,28 @@
       if (hasStorageData(storage)) {
         await waitForNavigation(tabId, targetUrl);
         await injectStorage(tabId, storage);
+
+        // 6. Reload the page once so SPAs pick up injected storage on boot.
+        //    Without this, apps that read localStorage/sessionStorage during
+        //    initial script execution see empty values (storage was injected
+        //    at document_idle, after their scripts already ran).
+        //    Guard against infinite reload using a per-tab flag.
+        const reloadKey = `_cb_reloaded_${tabId}`;
+        try {
+          const reloadCheck = await browser.storage.local.get(reloadKey);
+          if (!reloadCheck[reloadKey]) {
+            await browser.storage.local.set({ [reloadKey]: true });
+            await browser.tabs.reload(tabId);
+            // Re-inject storage after reload (reload clears sessionStorage)
+            await waitForNavigation(tabId, targetUrl);
+            await injectStorage(tabId, storage);
+          }
+          // Clean up the reload flag
+          await browser.storage.local.remove(reloadKey);
+        } catch (reloadErr) {
+          console.warn("[ChromiumBridge Gecko Companion] Post-storage reload failed:", reloadErr.message);
+          try { await browser.storage.local.remove(reloadKey); } catch {}
+        }
       }
     }
   }

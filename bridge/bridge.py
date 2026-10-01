@@ -58,6 +58,69 @@ import urllib.request
 import urllib.parse
 
 
+def _kill_stale_daemon():
+    """
+    Check for and kill any lingering session daemon holding port 47831.
+    This prevents "Invalid token" errors when a persistent profile daemon
+    from a previous session is still running.
+
+    Strategy: try graceful /shutdown endpoint first, fall back to PID kill.
+    """
+    # 1. Try graceful shutdown via HTTP
+    try:
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{COOKIE_PORT}/shutdown", method="GET"
+        )
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            resp.read()
+        log.info("Sent /shutdown to stale daemon on port %d", COOKIE_PORT)
+        time.sleep(1.0)  # Give daemon time to release the port
+        return
+    except Exception:
+        pass  # No daemon listening, or it didn't respond
+
+    # 2. Fallback: scan session status files for daemon PIDs and kill them
+    sessions_dir = os.path.join(tempfile.gettempdir(), "cb-sessions")
+    if not os.path.isdir(sessions_dir):
+        return
+    for fname in os.listdir(sessions_dir):
+        if not fname.endswith(".json") or fname.endswith(".payload.json"):
+            continue
+        status_path = os.path.join(sessions_dir, fname)
+        try:
+            with open(status_path, "r", encoding="utf-8") as f:
+                status = json.load(f)
+            daemon_pid = status.get("daemon_pid")
+            if daemon_pid and _pid_alive_bridge(daemon_pid):
+                log.info("Killing stale session daemon pid=%d before new handoff", daemon_pid)
+                _kill_pid(daemon_pid)
+                time.sleep(0.5)  # Give port time to release
+        except (OSError, json.JSONDecodeError, KeyError):
+            continue
+
+
+def _pid_alive_bridge(pid):
+    """Quick PID alive check (reuses profile.py logic)."""
+    from profile import _pid_alive
+    return _pid_alive(pid)
+
+
+def _kill_pid(pid):
+    """Kill a process by PID."""
+    try:
+        if os.name == "nt":
+            import ctypes
+            k32 = ctypes.windll.kernel32
+            h = k32.OpenProcess(1, False, pid)  # PROCESS_TERMINATE
+            if h:
+                k32.TerminateProcess(h, 1)
+                k32.CloseHandle(h)
+        else:
+            import signal as _signal
+            os.kill(pid, _signal.SIGTERM)
+    except Exception as e:
+        log.debug("Could not kill pid %d: %s", pid, e)
+
 def _signal_return(domain):
     """
     Fire http://127.0.0.1:<PORT>/return?domain=<domain> to signal
@@ -240,6 +303,10 @@ def handle_launch(message):
 
             # ── Companion mode: route through gecko-extension ──
             if gecko_mode == "companion":
+
+                # Kill any lingering session daemon from a previous handoff
+                # that may still be holding port 47831 with an old token.
+                _kill_stale_daemon()
 
                 # ── Ephemeral profile: cold-start Firefox with sideloaded companion ──
                 if profile_mode == "ephemeral":

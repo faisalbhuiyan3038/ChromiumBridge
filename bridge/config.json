@@ -8,7 +8,7 @@
   "browser_overrides": {
     "firefox_nightly": "C:\\Program Files\\Firefox Nightly\\firefox.exe"
   },
-  "gecko_companion_xpi": "M:\\.systemfile\\ChromiumBridge\\releases\\gecko-extension\\signed\\firefox-companion-1.0.0.xpi",
+  "gecko_companion_xpi": "M:\\.systemfile\\ChromiumBridge\\releases\\gecko-extension\\signed\\firefox-companion-1.0.1.xpi",
   "window_modes": {
     "default": "popup",
     "app_domains": [
@@ -19,7 +19,7 @@
   },
   "session": {
     "profile_mode": "persistent",
-    "gecko_companion_xpi": "M:\\.systemfile\\ChromiumBridge\\releases\\gecko-extension\\signed\\firefox-companion-1.0.0.xpi",
+    "gecko_companion_xpi": "M:\\.systemfile\\ChromiumBridge\\releases\\gecko-extension\\signed\\firefox-companion-1.0.1.xpi",
     "persistent_profile_path": "",
     "persistent_profiles": {},
     "port_cookies": true,
