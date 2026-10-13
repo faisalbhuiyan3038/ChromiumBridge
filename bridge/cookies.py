@@ -51,3 +51,31 @@ def stage_cookies(cookies, target_url, companion_dir):
 
     with open(receiver_path, "w", encoding="utf-8") as f:
         f.write(content)
+
+
+def stage_storage(storage_data, companion_dir):
+    """
+    Embed the storage dictionary directly into the companion's storage-injector.js file.
+    Replaces the placeholder with actual data so storage is available at document_start.
+
+    Args:
+        storage_data: dict with 'origin', 'localStorage', 'sessionStorage'
+        companion_dir: path to the session-local companion extension copy
+    """
+    if not storage_data:
+        return
+
+    injector_path = os.path.join(companion_dir, "content", "storage-injector.js")
+    if not os.path.isfile(injector_path):
+        return
+
+    with open(injector_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    storage_json = json.dumps(storage_data, indent=None, separators=(",", ":"))
+    replacement = f"const INJECTED_STORAGE = {storage_json};"
+    content = content.replace("const INJECTED_STORAGE = null;", replacement, 1)
+
+    with open(injector_path, "w", encoding="utf-8") as f:
+        f.write(content)
+

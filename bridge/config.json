@@ -1,11 +1,14 @@
 {
   "version": 2,
   "default_browser": "brave",
-  "python_path": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-  "bridge_dir": "M:\\.systemfile\\New folder\\bridge",
+  "default_gecko_browser": "firefox",
+  "chrome_extension_id": "gkmimgmenjencipgjlojgdkfcomioeah",
+  "python_path": "C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "bridge_dir": "M:\\.systemfile\\ChromiumBridge\\bridge",
   "browser_overrides": {
-    "viv_second": "M:\\Vivaldi\\Application\\vivaldi.exe"
+    "firefox_nightly": "C:\\Program Files\\Firefox Nightly\\firefox.exe"
   },
+  "gecko_companion_xpi": "M:\\.systemfile\\ChromiumBridge\\releases\\gecko-extension\\signed\\firefox-companion-1.0.1.xpi",
   "window_modes": {
     "default": "popup",
     "app_domains": [
@@ -16,17 +19,17 @@
   },
   "session": {
     "profile_mode": "persistent",
+    "gecko_companion_xpi": "M:\\.systemfile\\ChromiumBridge\\releases\\gecko-extension\\signed\\firefox-companion-1.0.1.xpi",
     "persistent_profile_path": "",
-    "persistent_profiles": {
-      "brave": "C:\\Users\\User\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default"
-    },
+    "persistent_profiles": {},
     "port_cookies": true,
     "port_localstorage": true,
     "port_sessionstorage": true,
     "cleanup_on_close": true,
     "incognito_passthrough": true,
     "discard_firefox_tab": false,
-    "record_history": true
+    "record_history": true,
+    "gecko_injection_mode": "companion"
   },
   "extension_presets": {
     "streaming": [],

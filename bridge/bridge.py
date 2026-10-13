@@ -1,7 +1,8 @@
 #!/usr/bin/env python3 -u
 """
-bridge.py — ChromeBridge native messaging host.
+bridge.py — ChromeBridge / FirefoxBridge unified native messaging host.
 Reads length-prefixed JSON from stdin, dispatches actions, responds via stdout.
+Supports bidirectional handoff: Firefox -> Chromium and Chromium -> Gecko.
 """
 
 import sys
@@ -9,15 +10,205 @@ import json
 import struct
 import time
 import traceback
+import logging
+import os
+import subprocess
+import tempfile
 
-from detect import detect_all, resolve_browser, detect_profiles
-from profile import create_ephemeral, resolve_persistent, cleanup
-from cookies import stage_cookies
-from launcher import prepare_companion, build_flags, launch, wait_and_cleanup
+# Write debug log next to the bridge script so issues can be diagnosed easily
+_log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bridge_debug.log")
+logging.basicConfig(
+    filename=_log_file,
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+log = logging.getLogger("bridge")
+
+from detect import (
+    detect_all,
+    resolve_browser,
+    detect_profiles,
+    get_browser_family,
+)
+import threading
+from profile import (
+    create_ephemeral, resolve_persistent, cleanup,
+    sweep_orphaned_profiles, is_xpi_signed, locate_companion_xpi,
+    inspect_xpi, stage_gecko_ephemeral_profile, stage_gecko_persistent_profile,
+    wait_profile_free, _rmtree_with_backoff,
+)
+from cookies import stage_cookies, stage_storage
+from cookies_gecko import stage_gecko_profile
+from launcher import (
+    prepare_companion,
+    build_flags,
+    build_gecko_flags,
+    launch,
+    wait_and_cleanup,
+)
 from config import load_config, save_config, get_config_value, set_config_value
 from logger import log_session, log_launch_time
-from cookie_server import start_cookie_server, stop_cookie_server, COOKIE_PORT
+from cookie_server import (
+    start_cookie_server, start_handoff_server, stop_cookie_server,
+    COOKIE_PORT, _CookieHandler,
+)
 from install import reinstall_from_config
+
+import urllib.request
+import urllib.parse
+
+
+def _kill_stale_daemon():
+    """
+    Check for and kill any lingering session daemon holding port 47831.
+    This prevents "Invalid token" errors when a persistent profile daemon
+    from a previous session is still running.
+
+    Strategy: try graceful /shutdown endpoint first, fall back to PID kill.
+    """
+    # 1. Try graceful shutdown via HTTP
+    try:
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{COOKIE_PORT}/shutdown", method="GET"
+        )
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            resp.read()
+        log.info("Sent /shutdown to stale daemon on port %d", COOKIE_PORT)
+        time.sleep(1.0)  # Give daemon time to release the port
+        return
+    except Exception:
+        pass  # No daemon listening, or it didn't respond
+
+    # 2. Fallback: scan session status files for daemon PIDs and kill them
+    sessions_dir = os.path.join(tempfile.gettempdir(), "cb-sessions")
+    if not os.path.isdir(sessions_dir):
+        return
+    for fname in os.listdir(sessions_dir):
+        if not fname.endswith(".json") or fname.endswith(".payload.json"):
+            continue
+        status_path = os.path.join(sessions_dir, fname)
+        try:
+            with open(status_path, "r", encoding="utf-8") as f:
+                status = json.load(f)
+            daemon_pid = status.get("daemon_pid")
+            if daemon_pid and _pid_alive_bridge(daemon_pid):
+                log.info("Killing stale session daemon pid=%d before new handoff", daemon_pid)
+                _kill_pid(daemon_pid)
+                time.sleep(0.5)  # Give port time to release
+        except (OSError, json.JSONDecodeError, KeyError):
+            continue
+
+
+def _pid_alive_bridge(pid):
+    """Quick PID alive check (reuses profile.py logic)."""
+    from profile import _pid_alive
+    return _pid_alive(pid)
+
+
+def _kill_pid(pid):
+    """Kill a process by PID."""
+    try:
+        if os.name == "nt":
+            import ctypes
+            k32 = ctypes.windll.kernel32
+            h = k32.OpenProcess(1, False, pid)  # PROCESS_TERMINATE
+            if h:
+                k32.TerminateProcess(h, 1)
+                k32.CloseHandle(h)
+        else:
+            import signal as _signal
+            os.kill(pid, _signal.SIGTERM)
+    except Exception as e:
+        log.debug("Could not kill pid %d: %s", pid, e)
+
+def _signal_return(domain):
+    """
+    Fire http://127.0.0.1:<PORT>/return?domain=<domain> to signal
+    the Chromium extension that Firefox has exited. Called from
+    background watcher threads when proc.wait() completes.
+    Best-effort — silently ignores errors (server may already be gone).
+    """
+    try:
+        encoded_domain = urllib.parse.quote(domain or "", safe="")
+        url = f"http://127.0.0.1:{COOKIE_PORT}/return?domain={encoded_domain}"
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            resp.read()
+        log.info("Signaled /return for domain=%s", domain)
+    except Exception as e:
+        log.debug("Could not signal /return (server may already be closed): %s", e)
+
+
+def _spawn_session_daemon(profile_dir, firefox_pid, domain, url,
+                          cookies, storage_data, handoff_token,
+                          await_consume=False, profile_mode="ephemeral"):
+    """
+    Spawn the detached per-handoff session host (bridge/session_daemon.py).
+
+    The native-messaging bridge process exits as soon as it answers Chrome's
+    one-shot sendNativeMessage call, which would kill any in-process daemon
+    threads (HTTP server + Firefox watcher). The detached daemon survives
+    that exit and owns /wait-return, /return, the Firefox lifetime watch,
+    and ephemeral profile deletion.
+
+    Returns True if the daemon was spawned, False otherwise.
+    """
+    try:
+        bridge_dir = os.path.dirname(os.path.abspath(__file__))
+        daemon_script = os.path.join(bridge_dir, "session_daemon.py")
+        if not os.path.isfile(daemon_script):
+            log.error("session_daemon.py not found at %s", daemon_script)
+            return False
+
+        sessions_dir = os.path.join(tempfile.gettempdir(), "cb-sessions")
+        os.makedirs(sessions_dir, exist_ok=True)
+        payload_path = os.path.join(
+            sessions_dir,
+            os.path.basename(profile_dir.rstrip(os.sep)) + ".payload.json",
+        )
+        with open(payload_path, "w", encoding="utf-8") as f:
+            json.dump({
+                "token": handoff_token,
+                "url": url,
+                "cookies": cookies or [],
+                "storage": storage_data or {},
+            }, f)
+
+        cmd = [
+            sys.executable, daemon_script,
+            "--profile-dir", profile_dir,
+            "--firefox-pid", str(firefox_pid),
+            "--domain", domain or "",
+            "--port", str(COOKIE_PORT),
+            "--payload-file", payload_path,
+            "--profile-mode", profile_mode,
+        ]
+        if await_consume:
+            cmd.append("--await-consume")
+
+        popen_kwargs = {
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+            "stdin": subprocess.DEVNULL,
+            "close_fds": True,
+        }
+        if os.name == "nt":
+            # DETACHED_PROCESS (0x08) + CREATE_NO_WINDOW (0x08000000):
+            # survives bridge exit, no console flash.
+            popen_kwargs["creationflags"] = 0x08 | 0x08000000
+        else:
+            popen_kwargs["start_new_session"] = True
+
+        subprocess.Popen(cmd, **popen_kwargs)
+        log.info("Spawned session daemon for profile=%s pid=%s domain=%s",
+                 profile_dir, firefox_pid, domain)
+        # NOTE: the caller stops its own handoff server BEFORE spawning us,
+        # so no sleep is needed here — the daemon retries its bind loop and
+        # tolerates the release gap.
+        return True
+    except Exception as e:
+        log.error("Failed to spawn session daemon: %s", e, exc_info=True)
+        return False
 
 
 def read_message():
@@ -40,115 +231,431 @@ def send_message(message):
     sys.stdout.buffer.flush()
 
 
-def handle_ping():
+def handle_ping(message=None):
     """Handle ping action — return status and detected browsers."""
     try:
         config = load_config()
-        browsers = detect_all(config)
+        target_type = message.get("target_type") if message else None
+        browsers = detect_all(config, target_type=target_type)
+        chromium_browsers = [b for b in browsers if b.get("family") == "chromium"]
+        gecko_browsers = [b for b in browsers if b.get("family") == "gecko"]
+
         return {
             "status": "ok",
             "browsers": browsers,
+            "chromium_browsers": chromium_browsers,
+            "gecko_browsers": gecko_browsers,
             "timestamp": time.time(),
         }
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
 
-def handle_detect():
+def handle_detect(message=None):
     """Handle detect action — return list of detected browsers."""
     try:
         config = load_config()
-        browsers = detect_all(config)
-        return {"browsers": browsers}
+        target_type = message.get("target_type") if message else None
+        browsers = detect_all(config, target_type=target_type)
+        chromium_browsers = [b for b in browsers if b.get("family") == "chromium"]
+        gecko_browsers = [b for b in browsers if b.get("family") == "gecko"]
+
+        return {
+            "browsers": browsers,
+            "chromium_browsers": chromium_browsers,
+            "gecko_browsers": gecko_browsers,
+        }
     except Exception as e:
         return {"error": str(e)}
 
 
 def handle_launch(message):
-    """Handle launch action — full handoff flow."""
+    """Handle launch action — full handoff flow for both Chromium and Gecko."""
     try:
         config = load_config()
         url = message.get("url", "")
         domain = message.get("domain", "")
         cookies = message.get("cookies", [])
-        browser_id = message.get("browser", config.get("default_browser", "chrome"))
+        browser_id = message.get("browser", config.get("default_browser", "brave"))
         mode = message.get("mode", "popup")
         profile_mode = message.get("profile", "ephemeral")
         incognito = message.get("incognito", False)
+        storage_data = message.get("storage", {})
+
+        log.info("handle_launch: url=%s browser=%s cookies=%d storage_keys=%s",
+                 url, browser_id, len(cookies),
+                 list(storage_data.get("localStorage", {}).keys()) if storage_data.get("localStorage") else [])
 
         # Resolve browser path
         browser_path = resolve_browser(browser_id, config)
         if not browser_path:
+            log.error("Browser '%s' not found on this system", browser_id)
             return {"error": f"Browser '{browser_id}' not found on this system."}
 
-        # Create profile
-        if profile_mode == "persistent":
-            # Check per-browser path first, then global fallback
+        family = get_browser_family(browser_id, config=config, path=browser_path)
+        log.info("Browser family: %s, path: %s", family, browser_path)
+
+        # ── Branch A: Gecko Target (Firefox, LibreWolf, Floorp, Zen) ──
+        if family == "gecko":
             session_cfg = config.get("session", {})
-            per_browser = session_cfg.get("persistent_profiles", {})
-            persistent_path = per_browser.get(browser_id, "")
-            if not persistent_path:
-                persistent_path = session_cfg.get("persistent_profile_path", "")
-            profile_dir = resolve_persistent(persistent_path)
+            gecko_mode = session_cfg.get("gecko_injection_mode", "companion")
+            log.info("Gecko injection mode: %s", gecko_mode)
+
+            # ── Companion mode: route through gecko-extension ──
+            if gecko_mode == "companion":
+
+                # Kill any lingering session daemon from a previous handoff
+                # that may still be holding port 47831 with an old token.
+                _kill_stale_daemon()
+
+                # ── Ephemeral profile: cold-start Firefox with sideloaded companion ──
+                if profile_mode == "ephemeral":
+                    companion_xpi = locate_companion_xpi(config, message)
+                    if not companion_xpi:
+                        configured_xpi = (
+                            config.get("gecko_companion_xpi")
+                            or session_cfg.get("gecko_companion_xpi", "")
+                        )
+                        if configured_xpi:
+                            msg = (
+                                f"Companion XPI not found at configured path: '{configured_xpi}'. "
+                                "Please verify the path in extension Settings (Options -> Session -> Companion XPI)."
+                            )
+                        else:
+                            msg = (
+                                "Gecko Companion XPI not found. Please configure the XPI file path in "
+                                "extension Settings (Options -> Session -> Companion XPI) or place it in "
+                                "releases/gecko-extension/."
+                            )
+                        return {
+                            "status": "error",
+                            "event": "no_xpi",
+                            "error": msg,
+                        }
+
+                    if not is_xpi_signed(companion_xpi):
+                        return {
+                            "status": "error",
+                            "event": "unsigned_xpi",
+                            "path": companion_xpi,
+                            "error": (
+                                f"Companion XPI at '{companion_xpi}' is not signed by AMO yet. "
+                                "Submit it to AMO (unlisted channel), download the signed copy, "
+                                "and update the path in Settings."
+                            ),
+                        }
+
+                    profile_dir = create_ephemeral()
+                    log.info("Created ephemeral gecko profile: %s", profile_dir)
+
+                    try:
+                        stage_gecko_ephemeral_profile(profile_dir, companion_xpi)
+                    except Exception as e:
+                        log.error("Failed to stage ephemeral gecko profile: %s", e)
+                        _rmtree_with_backoff(profile_dir)
+                        return {"error": f"Failed to prepare ephemeral Firefox profile: {e}"}
+
+                    # Start handoff server with tokenized payload
+                    handoff_server, handoff_token = start_handoff_server(
+                        cookies, target_url=url, storage_data=storage_data
+                    )
+                    if not handoff_server:
+                        _rmtree_with_backoff(profile_dir)
+                        return {"error": "Failed to start handoff server on port %d" % COOKIE_PORT}
+
+                    launch_url = f"http://127.0.0.1:{COOKIE_PORT}/handoff?token={handoff_token}"
+                    log.info("Handoff URL (ephemeral): %s", launch_url)
+
+                    flags = build_gecko_flags(
+                        config=config,
+                        url=launch_url,
+                        mode=mode,
+                        profile_dir=profile_dir,   # isolated profile with sideloaded XPI
+                        incognito=incognito,
+                        companion_mode=False,       # use -profile/-no-remote/-new-instance
+                    )
+                    log.info("Launching Firefox (ephemeral companion mode) with flags: %s", flags)
+
+                    start_time = time.time()
+                    process = launch(browser_path, flags)
+
+                    # Wait for the sideloaded companion to consume the payload.
+                    # Cold-start with AV scanning can take up to ~15s on the first run;
+                    # 30s ensures we don't falsely timeout on slow machines.
+                    consumed_event = _CookieHandler._payload_consumed_event
+                    consumed = consumed_event.wait(timeout=30.0) if consumed_event else False
+
+                    duration_ms = int((time.time() - start_time) * 1000)
+
+                    if not consumed:
+                        log.warning(
+                            "Ephemeral companion did not claim payload within 30s. "
+                            "XPI may be unsigned or invalid on this Firefox build."
+                        )
+                        # Hand lifetime + server ownership to the detached daemon
+                        # so late-starting Firefox can still consume + cleanup runs
+                        # even after this one-shot bridge process exits.
+                        _spawn_session_daemon(
+                            profile_dir, process.pid, domain, url,
+                            cookies, storage_data, handoff_token,
+                            await_consume=True,
+                        )
+                        stop_cookie_server(handoff_server)
+                        return {
+                            "status": "error",
+                            "event": "unclaimed",
+                            "error": "The companion extension did not start within 30s. "
+                                     "If using release Firefox, ensure the companion XPI is AMO-signed.",
+                        }
+
+                    log.info("Ephemeral Firefox handoff consumed after %d ms", duration_ms)
+                    log_session(domain, browser_id, duration_ms, "launched")
+                    log_launch_time(browser_id, time.time() - start_time)
+
+                    # Hand server + lifetime ownership to the detached session
+                    # daemon (survives this one-shot bridge process). It keeps
+                    # /wait-return + /return alive, signals Chromium on Firefox
+                    # exit (any close path), deletes the cb-gecko-* profile,
+                    # and reports `cleaned` for the banner. In-process daemon
+                    # threads would die with us — never use them here.
+                    _spawn_session_daemon(
+                        profile_dir, process.pid, domain, url,
+                        cookies, storage_data, handoff_token,
+                    )
+                    stop_cookie_server(handoff_server)
+
+                    # Return immediately — Firefox retains focus, popup closes cleanly.
+                    # The session daemon keeps the handoff server alive for
+                    # /wait-return and /return endpoints.
+                    return {
+                        "status": "ok",
+                        "event": "launched",
+                        "domain": domain,
+                        "duration": duration_ms,
+                    }
+
+                # ── Persistent profile: attach with companion extension ──
+                else:
+                    companion_xpi = locate_companion_xpi(config, message)
+                    if not companion_xpi:
+                        configured_xpi = (
+                            config.get("gecko_companion_xpi")
+                            or session_cfg.get("gecko_companion_xpi", "")
+                        )
+                        if configured_xpi:
+                            msg = (
+                                f"Companion XPI not found at configured path: '{configured_xpi}'. "
+                                "Please verify the path in extension Settings (Options -> Session -> Companion XPI)."
+                            )
+                        else:
+                            msg = (
+                                "Gecko Companion XPI not found. Please configure the XPI file path in "
+                                "extension Settings (Options -> Session -> Companion XPI) or place it in "
+                                "releases/gecko-extension/."
+                            )
+                        return {
+                            "status": "error",
+                            "event": "no_xpi",
+                            "error": msg,
+                        }
+
+                    if not is_xpi_signed(companion_xpi):
+                        return {
+                            "status": "error",
+                            "event": "unsigned_xpi",
+                            "path": companion_xpi,
+                            "error": (
+                                f"Companion XPI at '{companion_xpi}' is not signed by AMO yet. "
+                                "Submit it to AMO (unlisted channel), download the signed copy, "
+                                "and update the path in Settings."
+                            ),
+                        }
+
+                    per_browser = session_cfg.get("persistent_profiles", {})
+                    persistent_path = per_browser.get(browser_id, "")
+                    if not persistent_path:
+                        persistent_path = session_cfg.get("persistent_profile_path", "")
+                    profile_dir = resolve_persistent(persistent_path, browser_id=browser_id)
+                    log.info("Resolved persistent gecko profile: %s", profile_dir)
+
+                    try:
+                        stage_gecko_persistent_profile(profile_dir, companion_xpi)
+                    except Exception as e:
+                        log.error("Failed to stage persistent gecko profile: %s", e)
+                        return {"error": f"Failed to prepare persistent Firefox profile: {e}"}
+
+                    # Start handoff server with tokenized endpoint
+                    handoff_server, handoff_token = start_handoff_server(
+                        cookies, target_url=url, storage_data=storage_data
+                    )
+                    if not handoff_server:
+                        log.error("Failed to start handoff server")
+                        return {"error": "Failed to start handoff server on port %d" % COOKIE_PORT}
+
+                    launch_url = f"http://127.0.0.1:{COOKIE_PORT}/handoff?token={handoff_token}"
+                    log.info("Handoff URL (persistent): %s", launch_url)
+
+                    flags = build_gecko_flags(
+                        config=config,
+                        url=launch_url,
+                        mode=mode,
+                        profile_dir=profile_dir,
+                        incognito=incognito,
+                        companion_mode=False,
+                    )
+                    log.info("Launching Firefox (persistent companion mode) with flags: %s", flags)
+
+                    start_time = time.time()
+                    process = launch(browser_path, flags)
+
+                    consumed_event = _CookieHandler._payload_consumed_event
+                    consumed = consumed_event.wait(timeout=30.0) if consumed_event else False
+
+                    duration_ms = int((time.time() - start_time) * 1000)
+
+                    if not consumed:
+                        log.warning("Persistent companion did not claim payload within 30s")
+                        _spawn_session_daemon(
+                            profile_dir, process.pid, domain, url,
+                            cookies, storage_data, handoff_token,
+                            await_consume=True, profile_mode="persistent",
+                        )
+                        stop_cookie_server(handoff_server)
+                        return {
+                            "status": "error",
+                            "event": "unclaimed",
+                            "error": "The companion extension did not start within 30s. "
+                                     "If using release Firefox, ensure the companion XPI is AMO-signed.",
+                        }
+
+                    log.info("Firefox persistent handoff successfully consumed after %d ms", duration_ms)
+                    log_session(domain, browser_id, duration_ms, "launched")
+                    log_launch_time(browser_id, time.time() - start_time)
+
+                    _spawn_session_daemon(
+                        profile_dir, process.pid, domain, url,
+                        cookies, storage_data, handoff_token,
+                        profile_mode="persistent",
+                    )
+                    stop_cookie_server(handoff_server)
+
+                    return {
+                        "status": "ok",
+                        "event": "launched",
+                        "domain": domain,
+                        "duration": duration_ms,
+                    }
+
+            # ── Legacy mode: direct SQLite injection (original flow) ──
+            else:
+                if profile_mode == "persistent":
+                    per_browser = session_cfg.get("persistent_profiles", {})
+                    persistent_path = per_browser.get(browser_id, "")
+                    if not persistent_path:
+                        persistent_path = session_cfg.get("persistent_profile_path", "")
+                    profile_dir = resolve_persistent(persistent_path, browser_id=browser_id)
+                else:
+                    profile_dir = create_ephemeral()
+
+                log.info("Gecko profile dir (legacy): %s", profile_dir)
+
+                # Direct SQLite cookie & pref injection
+                stage_gecko_profile(profile_dir, cookies=cookies, target_url=url)
+                log.info("stage_gecko_profile complete: %d cookies injected", len(cookies))
+
+                # Optional local storage server
+                cookie_server = None
+                if cookies or storage_data:
+                    cookie_server = start_cookie_server(
+                        cookies, target_url=url, storage_data=storage_data
+                    )
+                    log.info("Cookie server started" if cookie_server else "Cookie server FAILED to start")
+
+                flags = build_gecko_flags(
+                    config=config,
+                    url=url,
+                    mode=mode,
+                    profile_dir=profile_dir,
+                    incognito=incognito,
+                    companion_mode=False,
+                )
+                log.info("Launching Firefox (legacy mode) with flags: %s", flags)
+
+                start_time = time.time()
+                process = launch(browser_path, flags)
+
+                # Wait for Gecko browser to exit
+                process.wait()
+                duration_ms = int((time.time() - start_time) * 1000)
+                log.info("Firefox exited after %d ms", duration_ms)
+
+                stop_cookie_server(cookie_server)
+                log_session(domain, browser_id, duration_ms, "closed")
+                log_launch_time(browser_id, time.time() - start_time)
+                wait_and_cleanup(profile_dir, profile_mode)
+
+                return {
+                    "event": "closed",
+                    "domain": domain,
+                    "duration": duration_ms,
+                }
+
+        # ── Branch B: Chromium Target (Brave, Edge, Vivaldi, Opera) ──
         else:
-            profile_dir = create_ephemeral()
+            if profile_mode == "persistent":
+                session_cfg = config.get("session", {})
+                per_browser = session_cfg.get("persistent_profiles", {})
+                persistent_path = per_browser.get(browser_id, "")
+                if not persistent_path:
+                    persistent_path = session_cfg.get("persistent_profile_path", "")
+                profile_dir = resolve_persistent(persistent_path, browser_id=browser_id)
+            else:
+                profile_dir = create_ephemeral()
 
-        # Prepare companion extension (session-local copy)
-        companion_dir = prepare_companion(profile_dir)
+            companion_dir = prepare_companion(profile_dir)
 
-        # Stage cookies into companion copy (for --load-extension path)
-        if cookies:
-            stage_cookies(cookies, url, companion_dir)
+            if cookies:
+                stage_cookies(cookies, url, companion_dir)
 
-        # Extract storage data (localStorage/sessionStorage)
-        storage_data = message.get("storage", {})
+            if storage_data:
+                stage_storage(storage_data, companion_dir)
 
-        # Start localhost cookie server (companion fetches cookies from here)
-        cookie_server = None
-        if cookies or storage_data:
-            cookie_server = start_cookie_server(
-                cookies, target_url=url, storage_data=storage_data
+            cookie_server = None
+            if cookies or storage_data:
+                cookie_server = start_cookie_server(
+                    cookies, target_url=url, storage_data=storage_data
+                )
+
+            if cookie_server:
+                launch_url = f"http://127.0.0.1:{COOKIE_PORT}/"
+            else:
+                launch_url = url
+
+            flags = build_flags(
+                config=config,
+                url=launch_url,
+                mode=mode,
+                profile_dir=profile_dir,
+                companion_dir=companion_dir,
+                incognito=incognito,
             )
-            
-        # Use loading page as initial URL if server started successfully
-        if cookie_server:
-            launch_url = f"http://127.0.0.1:{COOKIE_PORT}/"
-        else:
-            launch_url = url
 
-        # Build flags with the initial URL
-        flags = build_flags(
-            config=config,
-            url=launch_url,
-            mode=mode,
-            profile_dir=profile_dir,
-            companion_dir=companion_dir,
-            incognito=incognito,
-        )
+            start_time = time.time()
+            process = launch(browser_path, flags)
 
-        # Launch
-        start_time = time.time()
-        process = launch(browser_path, flags)
+            process.wait()
+            duration_ms = int((time.time() - start_time) * 1000)
 
-        # Wait for Chromium to close
-        process.wait()
-        duration_ms = int((time.time() - start_time) * 1000)
+            stop_cookie_server(cookie_server)
+            log_session(domain, browser_id, duration_ms, "closed")
+            log_launch_time(browser_id, time.time() - start_time)
+            wait_and_cleanup(profile_dir, profile_mode, companion_dir)
 
-        # Stop cookie server
-        stop_cookie_server(cookie_server)
-
-        # Log session
-        log_session(domain, browser_id, duration_ms, "closed")
-        log_launch_time(browser_id, time.time() - start_time)
-
-        # Cleanup
-        wait_and_cleanup(profile_dir, profile_mode, companion_dir)
-
-        return {
-            "event": "closed",
-            "domain": domain,
-            "duration": duration_ms,
-        }
+            return {
+                "event": "closed",
+                "domain": domain,
+                "duration": duration_ms,
+            }
 
     except Exception as e:
         return {"error": str(e), "traceback": traceback.format_exc()}
@@ -168,7 +675,6 @@ def handle_config_set(message):
     try:
         config = load_config()
         new_config = message.get("config", {})
-        # Deep merge top-level keys
         for key, value in new_config.items():
             if isinstance(value, dict) and isinstance(config.get(key), dict):
                 config[key].update(value)
@@ -183,7 +689,6 @@ def handle_config_set(message):
 def handle_reinstall(message):
     """Re-run native host installation with current config paths."""
     try:
-        # Optionally update paths in config first
         new_python = message.get("python_path")
         new_bridge_dir = message.get("bridge_dir")
         if new_python or new_bridge_dir:
@@ -207,7 +712,6 @@ def handle_detect_profiles(message):
             profiles = detect_profiles(browser_id, config)
             return {"profiles": profiles}
         else:
-            # Detect for all known browsers
             all_profiles = {}
             browsers = detect_all(config)
             for b in browsers:
@@ -215,6 +719,56 @@ def handle_detect_profiles(message):
             return {"profiles": all_profiles}
     except Exception as e:
         return {"error": str(e)}
+
+
+def handle_check_xpi(message):
+    """Check companion XPI path and AMO signature status."""
+    try:
+        config = load_config()
+        path = message.get("path")
+        return inspect_xpi(path, config)
+    except Exception as e:
+        return {"found": False, "error": str(e)}
+
+
+def handle_browse_file(message):
+    """
+    Open native OS file picker to select the signed XPI.
+    Returns the exact absolute filesystem path chosen by the user.
+    """
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+
+        initial_dir = None
+        current = message.get("current_path")
+        if current and os.path.exists(os.path.dirname(current)):
+            initial_dir = os.path.dirname(current)
+
+        chosen = filedialog.askopenfilename(
+            title="Select Gecko Companion Extension (.xpi)",
+            filetypes=[("Firefox Extension (*.xpi)", "*.xpi"), ("All Files (*.*)", "*.*")],
+            initialdir=initial_dir,
+        )
+        root.destroy()
+
+        if chosen:
+            exact_path = os.path.normpath(os.path.abspath(chosen))
+            inspection = inspect_xpi(exact_path)
+            return {
+                "status": "ok",
+                "selected": True,
+                "path": exact_path,
+                "signed": inspection.get("signed", False),
+            }
+        return {"status": "ok", "selected": False}
+    except Exception as e:
+        log.error("Failed to open native file dialog: %s", e)
+        return {"status": "error", "error": str(e)}
 
 
 def main():
@@ -227,9 +781,9 @@ def main():
         action = message.get("action", "")
 
         if action == "ping":
-            response = handle_ping()
+            response = handle_ping(message)
         elif action == "detect":
-            response = handle_detect()
+            response = handle_detect(message)
         elif action == "launch":
             response = handle_launch(message)
         elif action == "config_get":
@@ -240,6 +794,10 @@ def main():
             response = handle_reinstall(message)
         elif action == "detect_profiles":
             response = handle_detect_profiles(message)
+        elif action == "check_xpi":
+            response = handle_check_xpi(message)
+        elif action == "browse_file":
+            response = handle_browse_file(message)
         elif action == "health":
             response = {"status": "ok", "timestamp": time.time()}
         else:
@@ -249,4 +807,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # Sweep any leftover cb-gecko-* profiles from previous crashed sessions
+    # before entering the message loop, so stale cookies don't sit on disk.
+    sweep_orphaned_profiles()
     main()

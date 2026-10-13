@@ -7,6 +7,9 @@
  * or from inline injection (INJECTED_STORAGE placeholder replaced by bridge/cookies.py).
  */
 
+// !! BRIDGE_STORAGE_INJECTION_POINT — replaced by bridge/cookies.py !!
+const INJECTED_STORAGE = null;
+
 (function () {
   "use strict";
 
@@ -23,26 +26,43 @@
       if (s[DONE_KEY]) return;
     } catch { /* session storage unavailable */ }
 
-    let storageData = null;
+    let storageData = INJECTED_STORAGE;
 
-    // Try fetching from the bridge's localhost server
-    try {
-      const response = await fetch(STORAGE_SERVER_URL);
-      if (response.ok) {
-        storageData = await response.json();
-      }
-    } catch {
-      // Server not available — no storage to inject
-      return;
+    // Fallback: check extension session storage (set by receiver.js)
+    if (!storageData) {
+      try {
+        const stored = await chrome.storage.session.get("_cb_storage_data");
+        if (stored && stored._cb_storage_data) {
+          storageData = stored._cb_storage_data;
+        }
+      } catch {}
+    }
+
+    // Secondary fallback: fetch from localhost if not blocked by mixed-content
+    if (!storageData && window.location.protocol === "http:") {
+      try {
+        const response = await fetch(STORAGE_SERVER_URL);
+        if (response.ok) {
+          storageData = await response.json();
+        }
+      } catch {}
     }
 
     if (!storageData) return;
 
     const currentOrigin = window.location.origin;
-    const targetOrigin = storageData.origin || "";
+    const targetOrigin = (storageData.origin || "").replace(/\/+$/, "");
 
-    // Only inject if we're on the correct origin
-    if (targetOrigin && currentOrigin !== targetOrigin) return;
+    // Only inject if on the matching origin/hostname
+    if (targetOrigin) {
+      let matches = (currentOrigin === targetOrigin);
+      try {
+        if (!matches && new URL(currentOrigin).hostname === new URL(targetOrigin).hostname) {
+          matches = true;
+        }
+      } catch {}
+      if (!matches) return;
+    }
 
     // Inject localStorage
     if (storageData.localStorage && typeof storageData.localStorage === "object") {

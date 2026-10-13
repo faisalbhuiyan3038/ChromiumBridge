@@ -113,19 +113,54 @@
     // Collect localStorage and sessionStorage from the tab's content script
     let storageData = { localStorage: null, sessionStorage: null, origin: null };
     if (settings.port_localstorage !== false || settings.port_sessionstorage !== false) {
+      let response = null;
       try {
-        const response = await browser.tabs.sendMessage(tabId, { action: "extractStorage" });
-        if (response) {
-          storageData.origin = response.origin || null;
-          if (settings.port_localstorage !== false) {
-            storageData.localStorage = response.localStorage || null;
-          }
-          if (settings.port_sessionstorage !== false) {
-            storageData.sessionStorage = response.sessionStorage || null;
-          }
-        }
+        response = await browser.tabs.sendMessage(tabId, { action: "extractStorage" });
       } catch (err) {
-        console.warn("[ChromeBridge] Could not extract storage data:", err);
+        // Content script might not be injected in this tab yet
+      }
+
+      if (!response && browser.tabs.executeScript) {
+        try {
+          const results = await browser.tabs.executeScript(tabId, {
+            code: `(function() {
+              var res = { origin: window.location.origin, localStorage: {}, sessionStorage: {} };
+              try {
+                if (window.localStorage && window.localStorage.length > 0) {
+                  for (var i = 0; i < window.localStorage.length; i++) {
+                    var k = window.localStorage.key(i);
+                    res.localStorage[k] = window.localStorage.getItem(k);
+                  }
+                }
+              } catch(e) {}
+              try {
+                if (window.sessionStorage && window.sessionStorage.length > 0) {
+                  for (var i = 0; i < window.sessionStorage.length; i++) {
+                    var k = window.sessionStorage.key(i);
+                    res.sessionStorage[k] = window.sessionStorage.getItem(k);
+                  }
+                }
+              } catch(e) {}
+              return res;
+            })()`,
+            runAt: "document_idle"
+          });
+          if (results && results[0]) {
+            response = results[0];
+          }
+        } catch (err) {
+          console.warn("[ChromeBridge] tabs.executeScript fallback failed:", err);
+        }
+      }
+
+      if (response) {
+        storageData.origin = response.origin || null;
+        if (settings.port_localstorage !== false) {
+          storageData.localStorage = response.localStorage || null;
+        }
+        if (settings.port_sessionstorage !== false) {
+          storageData.sessionStorage = response.sessionStorage || null;
+        }
       }
     }
 

@@ -11,15 +11,19 @@ CONFIG_FILENAME = "config.json"
 DEFAULT_CONFIG = {
     "version": 2,
     "default_browser": "brave",
+    "default_gecko_browser": "firefox",
+    "chrome_extension_id": "",
     "python_path": "",
     "bridge_dir": "",
     "browser_overrides": {},
+    "gecko_companion_xpi": "",
     "window_modes": {
         "default": "popup",
         "app_domains": ["netflix.com", "youtube.com", "figma.com"],
     },
     "session": {
         "profile_mode": "ephemeral",
+        "gecko_companion_xpi": "",
         "persistent_profile_path": "",
         "persistent_profiles": {},
         "port_cookies": True,
